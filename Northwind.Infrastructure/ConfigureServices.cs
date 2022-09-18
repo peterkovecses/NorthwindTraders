@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Northwind.Domain.Common.Interfaces;
 using Northwind.Infrastructure.Persistence;
+using Northwind.Infrastructure.Persistence.Repositories;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -9,8 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<NorthwindContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+                options.UseSqlServer(configuration.GetConnectionString("NorthwindDatabase"),
                     builder => builder.MigrationsAssembly(typeof(NorthwindContext).Assembly.FullName)));
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }
