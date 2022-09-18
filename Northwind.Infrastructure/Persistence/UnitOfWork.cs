@@ -1,6 +1,8 @@
 ﻿using Northwind.Domain.Common.Interfaces;
+using Northwind.Domain.Common.Interfaces.Repositories;
+using Northwind.Infrastructure.Persistence.Repositories;
 
-namespace Northwind.Infrastructure.Persistence.Repositories
+namespace Northwind.Infrastructure.Persistence
 {
     public class UnitOfWork : IUnitOfWork
     {

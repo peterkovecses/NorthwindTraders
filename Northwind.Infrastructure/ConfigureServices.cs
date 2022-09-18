@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Infrastructure.Persistence;
-using Northwind.Infrastructure.Persistence.Repositories;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
