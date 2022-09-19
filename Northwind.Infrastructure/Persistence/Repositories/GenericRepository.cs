@@ -38,7 +38,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             await _context.Set<TEntity>().AddAsync(entity);
         }
 
-        public async Task AddRange(IEnumerable<TEntity> entities)
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await _context.Set<TEntity>().AddRangeAsync(entities);
         }

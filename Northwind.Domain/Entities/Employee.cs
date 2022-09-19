@@ -29,9 +29,8 @@
         public string? PhotoPath { get; set; }
 
         public virtual Employee? ReportsToNavigation { get; set; }
-        public virtual ICollection<Employee> InverseReportsToNavigation { get; set; }
-        public virtual ICollection<Order> Orders { get; set; }
-
-        public virtual ICollection<Territory> Territories { get; set; }
+        public virtual ICollection<Employee> InverseReportsToNavigation { get; private set; }
+        public virtual ICollection<Order> Orders { get; private set; }
+        public virtual ICollection<Territory> Territories { get; private set; }
     }
 }

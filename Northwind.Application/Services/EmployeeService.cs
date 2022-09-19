@@ -2,6 +2,7 @@
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
+using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
 {
@@ -23,24 +24,61 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
         }
 
-        public Task<EmployeeDto>? GetByIdAsync(int id)
+        public async Task<EmployeeDto>? GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+
+            return _mapper.Map<EmployeeDto>(employee);
         }
 
-        public Task<int> CreateAsync(EmployeeDto employee)
+        public async Task<int> CreateAsync(EmployeeDto employeeDto)
         {
-            throw new NotImplementedException();
+            var employee = _mapper.Map<Employee>(employeeDto);
+
+            await _unitOfWork.Employees.AddAsync(employee);
+            await _unitOfWork.CompleteAsync();
+
+            return employee.EmployeeId;
         }
 
-        public Task<EmployeeDto> DeleteAsync(EmployeeDto employee)
+        public async Task UpdateAsync(EmployeeDto employeeDto)
         {
-            throw new NotImplementedException();
+            var employeeInDb = await _unitOfWork.Employees.GetByIdAsync(employeeDto.EmployeeId);
+
+            _mapper.Map(employeeDto, employeeInDb);
+
+            await _unitOfWork.CompleteAsync();
         }
 
-        public Task<IEnumerable<EmployeeDto>> DeleteRangeAsync(IEnumerable<EmployeeDto> employees)
+        public async Task<EmployeeDto> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+
+            _unitOfWork.Employees.Remove(employee);
+            await _unitOfWork.CompleteAsync();
+
+            return _mapper.Map<EmployeeDto>(employee);
+        }
+
+        public async Task<IEnumerable<EmployeeDto>> DeleteRangeAsync(int[] ids)
+        {
+            var employees = await _unitOfWork.Employees.FindAsync(e => ids.Contains(e.EmployeeId));
+
+            _unitOfWork.Employees.RemoveRange(employees);
+            await _unitOfWork.CompleteAsync();
+
+            return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+        }
+
+        public async Task<bool> IsExists(int id)
+        {
+            return await _unitOfWork.Employees.GetByIdAsync(id) != null;
+        }
+
+        public async Task<bool> AreExists(int[] ids)
+        {
+            ids = ids.Distinct().ToArray();
+            return (await _unitOfWork.Employees.FindAsync(e => ids.Contains(e.EmployeeId))).Count() == ids.Length;
         }
     }
 }

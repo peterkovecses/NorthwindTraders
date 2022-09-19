@@ -10,6 +10,6 @@
         public int RegionId { get; set; }
         public string RegionDescription { get; set; } = null!;
 
-        public virtual ICollection<Territory> Territories { get; set; }
+        public virtual ICollection<Territory> Territories { get; private set; }
     }
 }
