@@ -9,9 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<NorthwindContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("NorthwindDatabase"),
-                    builder => builder.MigrationsAssembly(typeof(NorthwindContext).Assembly.FullName)));
+            services.AddDbContext<NorthwindContext>(options => options.UseSqlServer(configuration.GetConnectionString("NorthwindDatabase")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
