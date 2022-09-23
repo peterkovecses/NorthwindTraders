@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Infrastructure.Persistence;
+using Northwind.Infrastructure.Persistence.Interceptors;
+using Northwind.Infrastructure.Services;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -12,6 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddDbContext<NorthwindContext>(options => options.UseSqlServer(configuration.GetConnectionString("NorthwindDatabase")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+            services.AddScoped<AuditInterceptor>();
 
             return services;
         }

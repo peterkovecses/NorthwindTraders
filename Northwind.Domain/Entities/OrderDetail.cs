@@ -1,6 +1,8 @@
-﻿namespace Northwind.Domain.Entities
+﻿using Northwind.Domain.Common;
+
+namespace Northwind.Domain.Entities
 {
-    public partial class OrderDetail
+    public partial class OrderDetail : EntityBase
     {
         public int OrderId { get; set; }
         public int ProductId { get; set; }

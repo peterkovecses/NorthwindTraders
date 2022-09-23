@@ -1,6 +1,8 @@
-﻿namespace Northwind.Domain.Entities
+﻿using Northwind.Domain.Common;
+
+namespace Northwind.Domain.Entities
 {
-    public partial class Region
+    public partial class Region : EntityBase
     {
         public Region()
         {

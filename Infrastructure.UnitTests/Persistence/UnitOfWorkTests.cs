@@ -5,15 +5,15 @@ namespace Infrastructure.UnitTests.Persistence
 {
     public class UnitOfWorkTests
     {
-        private readonly Mock<NorthwindContext> _mockContext;
+        private readonly Mock<NorthwindContext> _contextMock;
         private readonly UnitOfWork _sut;
 
         public UnitOfWorkTests()
         {
             var options = new DbContextOptions<NorthwindContext>();
-            _mockContext = new Mock<NorthwindContext>(options);
+            _contextMock = new Mock<NorthwindContext>(options);
 
-            _sut = new UnitOfWork(_mockContext.Object);
+            _sut = new UnitOfWork(_contextMock.Object);
         }
 
         [Fact]
@@ -23,7 +23,7 @@ namespace Infrastructure.UnitTests.Persistence
             await _sut.CompleteAsync();
 
             // Assert
-            _mockContext.Verify(c => c.SaveChangesAsync(new CancellationToken()));
+            _contextMock.Verify(c => c.SaveChangesAsync(new CancellationToken()));
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Infrastructure.UnitTests.Persistence
             _sut.Dispose();
 
             // Assert
-            _mockContext.Verify(c => c.Dispose());
+            _contextMock.Verify(c => c.Dispose());
         }
     }
 }

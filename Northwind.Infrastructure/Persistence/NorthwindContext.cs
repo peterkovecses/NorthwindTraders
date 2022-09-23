@@ -1,14 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Northwind.Domain.Entities;
+using Northwind.Infrastructure.Persistence.Interceptors;
 using System.Reflection;
 
 namespace Northwind.Infrastructure.Persistence
 {
     public partial class NorthwindContext : DbContext
     {
-        public NorthwindContext(DbContextOptions<NorthwindContext> options)
+        private readonly AuditInterceptor _auditInterceptor;
+
+        public NorthwindContext(DbContextOptions<NorthwindContext> options, AuditInterceptor auditInterceptor)
             : base(options)
         {
+            _auditInterceptor = auditInterceptor;
         }
 
         public DbSet<Category> Categories { get; set; } = null!;
@@ -30,6 +34,9 @@ namespace Northwind.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
+        {
+            optionsBuilder.AddInterceptors(_auditInterceptor);
+        }
     }
 }
