@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Northwind.Domain.Common.Interfaces;
 using Northwind.Infrastructure.Persistence;
+using Northwind.Infrastructure.Persistence.Interceptors;
 
 namespace Infrastructure.UnitTests.Persistence
 {
@@ -11,7 +13,9 @@ namespace Infrastructure.UnitTests.Persistence
         public UnitOfWorkTests()
         {
             var options = new DbContextOptions<NorthwindContext>();
-            _contextMock = new Mock<NorthwindContext>(options);
+            var dateTimeProviderMock = new Mock<IDateTimeProvider>();
+            var interceptorMock = new Mock<AuditInterceptor>(dateTimeProviderMock.Object);
+            _contextMock = new Mock<NorthwindContext>(options, interceptorMock.Object);
 
             _sut = new UnitOfWork(_contextMock.Object);
         }

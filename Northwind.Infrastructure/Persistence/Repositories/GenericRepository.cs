@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Northwind.Domain.Common;
 using Northwind.Domain.Common.Interfaces.Repositories;
-using System.Linq.Expressions;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
@@ -13,19 +13,34 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAsync()
+        public async Task<IEnumerable<TEntity>> GetAllAsync(PaginationFilter? paginationFilter = null)
         {
-            return await _context.Set<TEntity>().ToListAsync();
+            if (paginationFilter == null)
+            {
+                return await _context.Set<TEntity>().ToListAsync();
+            }
+            int toSkip = GetNumberOfItemsToSkip(paginationFilter);
+
+            return await _context.Set<TEntity>().Skip(toSkip).Take(paginationFilter.PageSize).ToListAsync();
         }
 
-        public async Task<TEntity>? GetByIdAsync(int id)
+        public async Task<TEntity>? GetAsync(int id)
         {
             return await _context.Set<TEntity>().FindAsync(id);
         }
 
-        public async Task<IEnumerable<TEntity>> FindAsync(System.Linq.Expressions.Expression<Func<TEntity, bool>> predicate)
+        public async Task<IEnumerable<TEntity>> FindAllAsync(
+            System.Linq.Expressions.Expression<Func<TEntity, bool>> predicate, 
+            PaginationFilter? paginationFilter = null)
         {
-            return await _context.Set<TEntity>().Where(predicate).ToListAsync();
+            if (paginationFilter == null)
+            {
+                return await _context.Set<TEntity>().Where(predicate).ToListAsync();
+            }
+
+            var skip = GetNumberOfItemsToSkip(paginationFilter);
+
+            return await _context.Set<TEntity>().Where(predicate).Skip(skip).Take(paginationFilter.PageSize).ToListAsync();
         }
 
         public async Task<TEntity?> FindSingleOrDefaultAsync(System.Linq.Expressions.Expression<Func<TEntity, bool>> predicate)
@@ -51,6 +66,11 @@ namespace Northwind.Infrastructure.Persistence.Repositories
         public void RemoveRange(IEnumerable<TEntity> entities)
         {
             _context.Set<TEntity>().RemoveRange(entities);
+        }
+
+        private static int GetNumberOfItemsToSkip(PaginationFilter? paginationFilter)
+        {
+            return (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
         }
     }
 }

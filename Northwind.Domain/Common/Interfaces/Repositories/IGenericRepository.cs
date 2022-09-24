@@ -4,9 +4,9 @@ namespace Northwind.Domain.Common.Interfaces.Repositories
 {
     public interface IGenericRepository<TEntity> where TEntity : class
     {
-        Task<IEnumerable<TEntity>> GetAsync();
-        Task<TEntity>? GetByIdAsync(int id);
-        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
+        Task<IEnumerable<TEntity>> GetAllAsync(PaginationFilter? paginationFilter = null);
+        Task<TEntity>? GetAsync(int id);
+        Task<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> predicate, PaginationFilter? paginationFilter = null);
         Task<TEntity?> FindSingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);
 
         Task AddAsync(TEntity entity);

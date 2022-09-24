@@ -23,7 +23,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_WhenCalled_EntriesAreReturned()
+        public async Task GetAll_WhenCalled_EntriesAreReturned()
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
@@ -33,14 +33,14 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new GenericRepository<TestClass>(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync();
+            var result = await sut.GetAllAsync();
 
             //Assert
             result.Should().BeEquivalentTo(TestEntities);
         }
 
         [Fact]
-        public async Task GetById_WhenValidIdPassed_EntryIsReturnedWithTheSameId()
+        public async Task Get_WhenValidIdPassed_EntryIsReturnedWithTheSameId()
         {
             // Arrange
             var testObject = new TestClass { Id = 3 };
@@ -54,7 +54,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new GenericRepository<TestClass>(_contextMock.Object);
 
             // Act
-            var result = await sut.GetByIdAsync(testObject.Id);
+            var result = await sut.GetAsync(testObject.Id);
 
             //Assert
             result.Should().BeEquivalentTo(testObject);
@@ -72,7 +72,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new GenericRepository<TestClass>(_contextMock.Object);
 
             // Act
-            var result = await sut.GetByIdAsync(id);
+            var result = await sut.GetAsync(id);
 
             //Assert
             result.Should().BeNull();
@@ -99,7 +99,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             };
 
             // Act
-            var result = await sut.FindAsync(predicate);
+            var result = await sut.FindAllAsync(predicate);
 
             //Assert
             result.Should().BeEquivalentTo(expected);

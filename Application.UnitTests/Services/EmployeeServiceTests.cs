@@ -22,35 +22,35 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task Get_WhenCalled_ProperMethodsCalled()
+        public async Task GetAll_WhenCalled_ProperMethodsCalled()
         {
             // Arrange
             var employeesMock = new Mock<IEnumerable<Employee>>();
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync()).Returns(Task.FromResult(employeesMock.Object));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAllAsync(null)).Returns(Task.FromResult(employeesMock.Object));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
-            await _sut.GetAsync();
+            await _sut.GetAllAsync();
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetAsync());
+            _unitOfWorkMock.Verify(u => u.Employees.GetAllAsync(null));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
         }
 
         [Fact]
-        public async Task GetById_WhenIdPassed_ProperMethodsCalled()
+        public async Task Get_WhenIdPassed_ProperMethodsCalled()
         {
             // Arrange
             var id = 12;
             var employee = new Employee { EmployeeId = id };
-            _unitOfWorkMock.Setup(u => u.Employees.GetByIdAsync(id)).Returns(Task.FromResult(employee));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(id)).Returns(Task.FromResult(employee));
             _mapperMock.Setup(m => m.Map<EmployeeDto>(employee)).Returns(new EmployeeDto());
 
             // Act
-            await _sut.GetByIdAsync(id);
+            await _sut.GetAsync(id);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetByIdAsync(id));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(id));
             _mapperMock.Verify(m => m.Map<EmployeeDto>(employee));
         }
 
@@ -78,14 +78,14 @@ namespace Application.UnitTests.Services
             // Arrange
             var employeeDto = new EmployeeDto { EmployeeId = 30 };
             var employeeInDb = new Employee();
-            _unitOfWorkMock.Setup(u => u.Employees.GetByIdAsync(employeeDto.EmployeeId)).Returns(Task.FromResult(employeeInDb));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(employeeDto.EmployeeId)).Returns(Task.FromResult(employeeInDb));
             _mapperMock.Setup(m => m.Map(employeeDto, employeeInDb));
 
             // Act
             await _sut.UpdateAsync(employeeDto);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetByIdAsync(employeeDto.EmployeeId));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(employeeDto.EmployeeId));
             _unitOfWorkMock.Verify(u => u.CompleteAsync());
             _mapperMock.Verify(m => m.Map(employeeDto, employeeInDb));
         }
@@ -96,14 +96,14 @@ namespace Application.UnitTests.Services
             // Arrange
             var id = 20;
             var employee = new Employee { EmployeeId = id };
-            _unitOfWorkMock.Setup(u => u.Employees.GetByIdAsync(id)).Returns(Task.FromResult(employee));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(id)).Returns(Task.FromResult(employee));
             _mapperMock.Setup(m => m.Map<EmployeeDto>(employee)).Returns(new EmployeeDto());
 
             // Act
             await _sut.DeleteAsync(id);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetByIdAsync(id));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(id));
             _unitOfWorkMock.Verify(u => u.Employees.Remove(employee));
             _unitOfWorkMock.Verify(u => u.CompleteAsync());
             _mapperMock.Verify(m => m.Map<EmployeeDto>(employee));
@@ -115,14 +115,14 @@ namespace Application.UnitTests.Services
             // Arrange
             var ids = new int[] { 9, 12, 17 };
             var employeesMock = new Mock<IEnumerable<Employee>>().Object;
-            _unitOfWorkMock.Setup(u => u.Employees.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult(employeesMock));
+            _unitOfWorkMock.Setup(u => u.Employees.FindAllAsync(It.IsAny<Expression<Func<Employee, bool>>>(), null)).Returns(Task.FromResult(employeesMock));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock)).Returns(new List<EmployeeDto>());
 
             // Act
             await _sut.DeleteRangeAsync(ids);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>()));
+            _unitOfWorkMock.Verify(u => u.Employees.FindAllAsync(It.IsAny<Expression<Func<Employee, bool>>>(), null));
             _unitOfWorkMock.Verify(u => u.Employees.RemoveRange(employeesMock));
             _unitOfWorkMock.Verify(u => u.CompleteAsync());
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock));
@@ -133,13 +133,13 @@ namespace Application.UnitTests.Services
         {
             // Arrange
             var id = 20;
-            _unitOfWorkMock.Setup(u => u.Employees.GetByIdAsync(id)).Returns(Task.FromResult(new Employee()));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(id)).Returns(Task.FromResult(new Employee()));
 
             // Act
             await _sut.IsExists(id);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetByIdAsync(id));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(id));
         }
 
         [Fact]
@@ -154,13 +154,13 @@ namespace Application.UnitTests.Services
                 new Employee { EmployeeId = ids[2] }
             }.AsEnumerable();
 
-            _unitOfWorkMock.Setup(u => u.Employees.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult(employees));           
+            _unitOfWorkMock.Setup(u => u.Employees.FindAllAsync(It.IsAny<Expression<Func<Employee, bool>>>(), null)).Returns(Task.FromResult(employees));           
 
             // Act
             await _sut.AreExists(ids);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.FindAsync(It.IsAny<Expression<Func<Employee, bool>>>()));
+            _unitOfWorkMock.Verify(u => u.Employees.FindAllAsync(It.IsAny<Expression<Func<Employee, bool>>>(), null));
         }
     }
 }

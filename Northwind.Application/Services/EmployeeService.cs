@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Northwind.Application.Common.Interfaces;
+using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
+using Northwind.Domain.Common;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Entities;
 
@@ -17,16 +19,17 @@ namespace Northwind.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<EmployeeDto>> GetAsync()
+        public async Task<IEnumerable<EmployeeDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
-            var employees = await _unitOfWork.Employees.GetAsync();
+            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
+            var employees = await _unitOfWork.Employees.GetAllAsync(paginationFilter);
 
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
         }
 
-        public async Task<EmployeeDto>? GetByIdAsync(int id)
+        public async Task<EmployeeDto>? GetAsync(int id)
         {
-            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+            var employee = await _unitOfWork.Employees.GetAsync(id);
 
             return _mapper.Map<EmployeeDto>(employee);
         }
@@ -43,7 +46,7 @@ namespace Northwind.Application.Services
 
         public async Task UpdateAsync(EmployeeDto employeeDto)
         {
-            var employeeInDb = await _unitOfWork.Employees.GetByIdAsync(employeeDto.EmployeeId);
+            var employeeInDb = await _unitOfWork.Employees.GetAsync(employeeDto.EmployeeId);
 
             _mapper.Map(employeeDto, employeeInDb);
 
@@ -52,7 +55,7 @@ namespace Northwind.Application.Services
 
         public async Task<EmployeeDto> DeleteAsync(int id)
         {
-            var employee = await _unitOfWork.Employees.GetByIdAsync(id);
+            var employee = await _unitOfWork.Employees.GetAsync(id);
 
             _unitOfWork.Employees.Remove(employee);
             await _unitOfWork.CompleteAsync();
@@ -62,7 +65,7 @@ namespace Northwind.Application.Services
 
         public async Task<IEnumerable<EmployeeDto>> DeleteRangeAsync(int[] ids)
         {
-            var employees = await _unitOfWork.Employees.FindAsync(e => ids.Contains(e.EmployeeId));
+            var employees = await _unitOfWork.Employees.FindAllAsync(e => ids.Contains(e.EmployeeId));
 
             _unitOfWork.Employees.RemoveRange(employees);
             await _unitOfWork.CompleteAsync();
@@ -72,13 +75,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(int id)
         {
-            return await _unitOfWork.Employees.GetByIdAsync(id) != null;
+            return await _unitOfWork.Employees.GetAsync(id) != null;
         }
 
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Employees.FindAsync(e => ids.Contains(e.EmployeeId))).Count() == ids.Length;
+            return (await _unitOfWork.Employees.FindAllAsync(e => ids.Contains(e.EmployeeId))).Count() == ids.Length;
         }
     }
 }
