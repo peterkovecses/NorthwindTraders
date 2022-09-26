@@ -4,7 +4,7 @@ using Northwind.Domain.Common.Queries;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
+    public abstract class GenericRepository<TEntity, TId> : IGenericRepository<TEntity, TId> where TEntity : class
     {
         protected readonly DbContext _context;
 
@@ -24,7 +24,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             return await _context.Set<TEntity>().Skip(toSkip).Take(paginationFilter.PageSize).ToListAsync();
         }
 
-        public async Task<TEntity>? GetAsync(int id)
+        public async Task<TEntity>? GetAsync(TId id)
         {
             return await _context.Set<TEntity>().FindAsync(id);
         }

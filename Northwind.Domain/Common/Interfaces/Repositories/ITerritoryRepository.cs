@@ -2,7 +2,7 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface ITerritoryRepository : IGenericRepository<Territory>
+    public interface ITerritoryRepository : IGenericRepository<Territory, int>
     {
     }
 }

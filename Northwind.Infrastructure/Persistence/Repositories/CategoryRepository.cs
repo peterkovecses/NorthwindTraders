@@ -3,7 +3,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
+    public class CategoryRepository : GenericRepository<Category, int>, ICategoryRepository
     {
         public CategoryRepository(NorthwindContext context) : base(context)
         {

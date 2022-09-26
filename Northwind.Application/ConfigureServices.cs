@@ -19,7 +19,12 @@ namespace Microsoft.Extensions.DependencyInjection
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
 
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ICustomerDemographicService, CustomerDemographicService>();
+            services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IOrderDetailService, OrderDetailService>();
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddScoped<IPaginatedUriService>(provider =>

@@ -2,7 +2,8 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface ICustomerDemographicRepository : IGenericRepository<CustomerDemographic>
+    public interface ICustomerDemographicRepository : IGenericRepository<CustomerDemographic, string>
     {
+        
     }
 }

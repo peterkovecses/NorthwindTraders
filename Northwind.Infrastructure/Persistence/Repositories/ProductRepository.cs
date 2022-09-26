@@ -3,7 +3,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class ProductRepository : GenericRepository<Product>, IProductRepository
+    public class ProductRepository : GenericRepository<Product, int>, IProductRepository
     {
         public ProductRepository(NorthwindContext context) : base(context)
         {

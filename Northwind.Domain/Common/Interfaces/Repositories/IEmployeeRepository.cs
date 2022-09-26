@@ -2,7 +2,7 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface IEmployeeRepository : IGenericRepository<Employee>
+    public interface IEmployeeRepository : IGenericRepository<Employee, int>
     {
     }
 }

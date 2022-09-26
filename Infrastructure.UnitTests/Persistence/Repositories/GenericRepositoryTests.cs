@@ -30,7 +30,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
             var result = await sut.GetAllAsync();
@@ -51,7 +51,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
             var result = await sut.GetAsync(testObject.Id);
@@ -69,7 +69,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
             var result = await sut.GetAsync(id);
@@ -90,7 +90,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             var expected = new List<TestClass>
             {
@@ -117,7 +117,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
             var result = await sut.FindSingleOrDefaultAsync(predicate);
@@ -135,7 +135,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
             var result = await sut.FindSingleOrDefaultAsync(predicate);
@@ -153,7 +153,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act & Assert
             sut.Invoking(x => x.FindSingleOrDefaultAsync(predicate)).Should().ThrowAsync<InvalidOperationException>();
@@ -167,7 +167,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
             var objectToAdd = new TestClass();
 
             // Act
@@ -185,7 +185,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
             var objectsToAdd = new List<TestClass> { new TestClass(), new TestClass() };
 
             // Act
@@ -203,7 +203,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
             var objectToRemove = new TestClass { Id = 1 };
 
             // Act
@@ -221,7 +221,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
 
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
 
-            var sut = new GenericRepository<TestClass>(_contextMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
             var objectsToRemove = new List<TestClass> { new TestClass { Id = 1 }, new TestClass { Id = 2 } };
 
             // Act
@@ -235,5 +235,12 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
     public class TestClass
     {
         public int Id { get; set; }
+    }
+
+    public class TestGenericRepository : GenericRepository<TestClass, int>
+    {
+        public TestGenericRepository(DbContext context) : base(context)
+        {
+        }
     }
 }

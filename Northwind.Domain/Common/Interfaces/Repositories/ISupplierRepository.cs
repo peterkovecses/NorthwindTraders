@@ -2,7 +2,7 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface IShipperRepository : IGenericRepository<Shipper, int>
+    public interface ISupplierRepository : IGenericRepository<Supplier, int>
     {
     }
 }

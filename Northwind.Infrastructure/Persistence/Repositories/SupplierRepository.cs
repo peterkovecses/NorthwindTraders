@@ -3,9 +3,9 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class ShipperRepository : GenericRepository<Shipper, int>, IShipperRepository
+    public class SupplierRepository : GenericRepository<Supplier, int>, ISupplierRepository
     {
-        public ShipperRepository(NorthwindContext context) : base(context)
+        public SupplierRepository(NorthwindContext northwindContext) : base(northwindContext)
         {
         }
 

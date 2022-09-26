@@ -2,7 +2,7 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface IOrderRepository : IGenericRepository<Order>
+    public interface IOrderRepository : IGenericRepository<Order, int>
     {
     }
 }

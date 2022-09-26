@@ -2,15 +2,15 @@
 
 namespace Northwind.Application.Common.Interfaces
 {
-    public interface IGenericService<T> where T : class
+    public interface IGenericService<TEntity, TId> where TEntity : class
     {
-        Task<IEnumerable<T>> GetAllAsync(PaginationQuery? paginationQuery = null);
-        Task<T>? GetAsync(int id);
-        Task<int> CreateAsync(T obj);
-        Task UpdateAsync(T obj);
-        Task<T> DeleteAsync(int id);
-        Task<IEnumerable<T>> DeleteRangeAsync(int[] ids);
-        Task<bool> IsExists(int id);
-        Task<bool> AreExists(int[] id);
+        Task<IEnumerable<TEntity>> GetAllAsync(PaginationQuery? paginationQuery = null);
+        Task<TEntity>? GetAsync(TId id);
+        Task<TId> CreateAsync(TEntity obj);
+        Task UpdateAsync(TEntity obj);
+        Task<TEntity> DeleteAsync(TId id);
+        Task<IEnumerable<TEntity>> DeleteRangeAsync(TId[] ids);
+        Task<bool> IsExists(TId id);
+        Task<bool> AreExists(TId[] id);
     }
 }

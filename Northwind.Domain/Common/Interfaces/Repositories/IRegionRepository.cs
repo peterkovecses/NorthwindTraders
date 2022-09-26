@@ -2,7 +2,7 @@
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {
-    public interface IRegionRepository : IGenericRepository<Region>
+    public interface IRegionRepository : IGenericRepository<Region, int>
     {
     }
 }
