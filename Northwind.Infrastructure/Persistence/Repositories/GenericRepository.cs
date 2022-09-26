@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Northwind.Domain.Common;
 using Northwind.Domain.Common.Interfaces.Repositories;
+using Northwind.Domain.Common.Queries;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {

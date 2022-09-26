@@ -1,4 +1,4 @@
-﻿namespace Northwind.Domain.Common
+﻿namespace Northwind.Domain.Common.Queries
 {
     public class PaginationFilter
     {

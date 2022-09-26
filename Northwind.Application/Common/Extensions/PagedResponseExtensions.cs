@@ -5,7 +5,7 @@ namespace Northwind.Application.Common.Extensions
 {
     public static class PagedResponseExtensions
     {
-        public static PagedResponse<T> AddPagination<T>(
+        public static PagedResponse<T> SetPagination<T>(
             this PagedResponse<T> pagedResponse,
             PaginationQuery paginationQuery,
             string nextPageUri,

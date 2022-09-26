@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Northwind.Domain.Common.Queries;
 
 namespace Northwind.Domain.Common.Interfaces.Repositories
 {

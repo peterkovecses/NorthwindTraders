@@ -2,7 +2,7 @@
 
 namespace Northwind.Application.Common.Extensions
 {
-    public static class ResponseConverter
+    public static class ResponseHelper
     {
         public static Response<T> ToResponse<T>(this T obj)
         {

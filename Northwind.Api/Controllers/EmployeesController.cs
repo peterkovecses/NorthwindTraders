@@ -32,7 +32,7 @@ namespace Northwind.Api.Controllers
 
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
-            return Ok(employees.ToPagedResponse().AddPagination(paginationQuery, next, previous));
+            return Ok(employees.ToPagedResponse().SetPagination(paginationQuery, next, previous));
         }
 
         [HttpGet("{id}", Name = "GetEmployee")]

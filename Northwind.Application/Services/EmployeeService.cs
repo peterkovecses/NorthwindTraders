@@ -2,8 +2,8 @@
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common;
 using Northwind.Domain.Common.Interfaces;
+using Northwind.Domain.Common.Queries;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
