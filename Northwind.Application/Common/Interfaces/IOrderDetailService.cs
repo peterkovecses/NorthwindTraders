@@ -1,5 +1,5 @@
 ﻿using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Models;
+using Northwind.Application.Common.Models;
 
 namespace Northwind.Application.Common.Interfaces
 {

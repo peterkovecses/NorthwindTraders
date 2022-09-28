@@ -5,5 +5,6 @@ namespace Northwind.Domain.Common.Interfaces.Repositories
 {
     public interface IOrderDetailRepository : IGenericRepository<OrderDetail, OrderDetailKey>
     {
+        Task<IEnumerable<OrderDetail>>? GetAsync(OrderDetailKey[] keys);
     }
 }

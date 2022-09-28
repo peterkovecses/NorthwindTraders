@@ -99,7 +99,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpDelete]
-        [Route("Delete")]
+        [Route("delete")]
         public async Task<IActionResult> DeleteEmployees([FromQuery] int[] ids)
         {
             if (!await _employeeService.AreExists(ids))

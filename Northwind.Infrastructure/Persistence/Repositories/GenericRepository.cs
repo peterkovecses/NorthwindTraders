@@ -24,7 +24,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             return await _context.Set<TEntity>().Skip(toSkip).Take(paginationFilter.PageSize).ToListAsync();
         }
 
-        public async Task<TEntity>? GetAsync(TId id)
+        public virtual async Task<TEntity>? GetAsync(TId id)
         {
             return await _context.Set<TEntity>().FindAsync(id);
         }

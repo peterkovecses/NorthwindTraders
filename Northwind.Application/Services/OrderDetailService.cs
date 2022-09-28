@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using Northwind.Application.Common.Interfaces;
+using Northwind.Application.Common.Models;
 using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Models;
 using Northwind.Domain.Common.Queries;
 using Northwind.Domain.Entities;
+using DomainModels = Northwind.Domain.Common.Models;
 
 namespace Northwind.Application.Services
 {
@@ -30,7 +31,7 @@ namespace Northwind.Application.Services
 
         public async Task<OrderDetailDto>? GetAsync(OrderDetailKey id)
         {
-            var orderDetail = await _unitOfWork.OrderDetails.GetAsync(id);
+            var orderDetail = await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(id));
 
             return _mapper.Map<OrderDetailDto>(orderDetail);
         }
@@ -48,7 +49,7 @@ namespace Northwind.Application.Services
         public async Task UpdateAsync(OrderDetailDto orderDetailDto)
         {
             var key = new OrderDetailKey(orderDetailDto.OrderId, orderDetailDto.ProductId);
-            var orderDetailInDb = await _unitOfWork.OrderDetails.GetAsync(key);
+            var orderDetailInDb = await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(key));
 
             _mapper.Map(orderDetailDto, orderDetailInDb);
 
@@ -57,7 +58,7 @@ namespace Northwind.Application.Services
 
         public async Task<OrderDetailDto> DeleteAsync(OrderDetailKey id)
         {
-            var orderDetail = await _unitOfWork.OrderDetails.GetAsync(id);
+            var orderDetail = await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(id));
 
             _unitOfWork.OrderDetails.Remove(orderDetail);
             await _unitOfWork.CompleteAsync();
@@ -67,23 +68,34 @@ namespace Northwind.Application.Services
 
         public async Task<IEnumerable<OrderDetailDto>> DeleteRangeAsync(OrderDetailKey[] ids)
         {
-            var orderDetails = await _unitOfWork.OrderDetails.FindAllAsync(orderDetail => ids.Contains(new OrderDetailKey(orderDetail.OrderId, orderDetail.ProductId)));
+            var orderDetailsToRemove = await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(ids));
 
-            _unitOfWork.OrderDetails.RemoveRange(orderDetails);
+            _unitOfWork.OrderDetails.RemoveRange(orderDetailsToRemove);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails);
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetailsToRemove);
         }
 
         public async Task<bool> IsExists(OrderDetailKey id)
         {
-            return await _unitOfWork.OrderDetails.GetAsync(id) != null;
+            return await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(id)) != null;
         }
 
         public async Task<bool> AreExists(OrderDetailKey[] ids)
         {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.OrderDetails.FindAllAsync(orderDetail => ids.Contains(new OrderDetailKey(orderDetail.OrderId, orderDetail.ProductId)))).Count() == ids.Length;
+            var orderDetails = await _unitOfWork.OrderDetails.GetAsync(ConvertToDomainObject(ids));
+
+            return orderDetails.Count() == ids.Length;
+        }
+
+        private DomainModels.OrderDetailKey ConvertToDomainObject(OrderDetailKey key)
+        {
+            return _mapper.Map<DomainModels.OrderDetailKey>(key);
+        }
+
+        private DomainModels.OrderDetailKey[] ConvertToDomainObject(OrderDetailKey[] keys)
+        {
+            return _mapper.Map<DomainModels.OrderDetailKey[]>(keys);
         }
     }
 }

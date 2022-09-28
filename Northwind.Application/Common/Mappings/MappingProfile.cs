@@ -3,6 +3,9 @@ using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Queries;
 using Northwind.Domain.Entities;
+using ApplicationModels = Northwind.Application.Common.Models;
+using DomainModels = Northwind.Domain.Common.Models;
+
 
 namespace Northwind.Application.Common.Mappings
 {
@@ -34,6 +37,7 @@ namespace Northwind.Application.Common.Mappings
             CreateMap<TerritoryDto, Territory>();
 
             CreateMap<PaginationQuery, PaginationFilter>();
+            CreateMap<ApplicationModels.OrderDetailKey, DomainModels.OrderDetailKey>();
         }
     }
 }

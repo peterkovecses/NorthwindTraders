@@ -2,7 +2,7 @@
 
 namespace Northwind.Application.Common.Interfaces
 {
-    public interface ITerritoryService : IGenericService<TerritoryDto, int>
+    public interface ITerritoryService : IGenericService<TerritoryDto, string>
     {
     }
 }

@@ -3,7 +3,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class TerritoryRepository : GenericRepository<Territory, int>, ITerritoryRepository
+    public class TerritoryRepository : GenericRepository<Territory, string>, ITerritoryRepository
     {
         public TerritoryRepository(NorthwindContext context) : base(context)
         {
