@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using LinqKit;
+using Microsoft.EntityFrameworkCore;
 using Northwind.Domain.Common.Interfaces.Repositories;
 using Northwind.Domain.Common.Models;
 using Northwind.Domain.Entities;
@@ -19,14 +19,14 @@ namespace Northwind.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<OrderDetail>> GetAsync(OrderDetailKey[] keys)
         {
-            var q = NorthwindContext.OrderDetails.AsQueryable();
-            
+            var predicate = PredicateBuilder.New<OrderDetail>();
+
             foreach (var key in keys)
             {
-                q = q.Where(orderDetail => orderDetail.OrderId == key.OrderId && orderDetail.ProductId == key.ProductId);
+                predicate = predicate.Or(orderDetail => orderDetail.OrderId == key.OrderId && orderDetail.ProductId == key.ProductId);
             }
 
-            return await q.ToListAsync();
+            return await NorthwindContext.OrderDetails.AsExpandable().Where(predicate).ToListAsync();
         }
 
         public NorthwindContext NorthwindContext
