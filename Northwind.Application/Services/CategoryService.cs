@@ -23,21 +23,21 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CategoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<Response<IEnumerable<CategoryDto>>> GetAllAsync()
+        {
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
+        }
+
+        public async Task<PagedResponse<CategoryDto>> GetAllAsync(PaginationQuery paginationQuery)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var categories = await _unitOfWork.Categories.GetAllAsync(paginationFilter);
-
-            var response = _mapper.Map<IEnumerable<CategoryDto>>(categories).ToPagedResponse();
-
-            if (paginationQuery == null)
-            {
-                return response;
-            }
-
+            var (totalItems, categories) = await _unitOfWork.Categories.GetAllAsync(paginationFilter);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
-            return response.SetPagination(paginationQuery, next, previous);
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories)
+                .ToPagedResponse()
+                .SetPagination(paginationQuery, next, previous, totalItems);
         }
          
         public async Task<Response<CategoryDto>> GetAsync(int id)

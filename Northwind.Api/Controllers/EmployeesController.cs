@@ -19,6 +19,15 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
+        [Route("all")]
+        public async Task<IActionResult> GetEmployees()
+        {
+            var response = await _employeeService.GetAllAsync();
+
+            return Ok(response);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] PaginationQuery paginationQuery)
         {
             var response = await _employeeService.GetAllAsync(paginationQuery);

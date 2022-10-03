@@ -13,16 +13,23 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(PaginationFilter? paginationFilter = null)
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            if (paginationFilter == null)
-            {
-                return await _context.Set<TEntity>().ToListAsync();
-            }
+            return await _context.Set<TEntity>().ToListAsync();
+        }
 
+        public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAllAsync(PaginationFilter paginationFilter)
+        {
             int toSkip = GetNumberOfItemsToSkip(paginationFilter);
+            var query = _context.Set<TEntity>().AsQueryable();
 
-            return await _context.Set<TEntity>().Skip(toSkip).Take(paginationFilter.PageSize).ToListAsync();
+            var totalItemsTask = query.CountAsync();
+
+            var itemsTask = query
+                .Skip(toSkip)
+                .Take(paginationFilter.PageSize);
+
+            return (await totalItemsTask, await itemsTask.ToListAsync());
         }
 
         public virtual async Task<TEntity>? GetAsync(TId id)

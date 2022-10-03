@@ -9,11 +9,13 @@ namespace Northwind.Application.Common.Extensions
             this PagedResponse<T> pagedResponse,
             PaginationQuery paginationQuery,
             string nextPageUri,
-            string previousPageUri)
+            string previousPageUri,
+            int totalItems)
         {
-            pagedResponse.PageNumber = paginationQuery.PageNumber >= 1 ? paginationQuery.PageNumber : null;
-            pagedResponse.PageSize = paginationQuery.PageSize >= 1 ? paginationQuery.PageSize : null;
-            pagedResponse.NextPage = pagedResponse.Data.Any() && pagedResponse.Data.Count() == paginationQuery.PageSize ? nextPageUri : null;
+            pagedResponse.PageNumber = paginationQuery.PageNumber;
+            pagedResponse.PageSize = paginationQuery.PageSize;
+            pagedResponse.TotalItems = totalItems;
+            pagedResponse.NextPage = pagedResponse.TotalPages > pagedResponse.PageNumber ? nextPageUri : null;
             pagedResponse.PreviousPage = previousPageUri;
             
             return pagedResponse;

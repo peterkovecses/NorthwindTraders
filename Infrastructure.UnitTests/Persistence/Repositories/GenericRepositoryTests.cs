@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
+using Northwind.Domain.Common.Queries;
 using Northwind.Infrastructure.Persistence.Repositories;
 using System.Linq.Expressions;
 
@@ -18,18 +19,19 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             TestEntities = new List<TestClass>
             {
                 new TestClass { Id = 1 },
-                new TestClass { Id = 2 }
+                new TestClass { Id = 2 },
+                new TestClass { Id = 3 },
+                new TestClass { Id = 4 },
+                new TestClass { Id = 5 }
             };
         }
 
         [Fact]
-        public async Task GetAll_WhenCalled_EntriesAreReturned()
+        public async Task GetAll_WhenPaginationFilterParameterNotGiven_EntriesAreReturned()
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
@@ -40,17 +42,35 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
+        public async Task GetAll_WhenCalledPaginationFilterParameterGiven_ExpectedEntriesAreReturned()
+        {
+            // Arrange            
+            var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
+            _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
+            var sut = new TestGenericRepository(_contextMock.Object);
+            var paginationFilter = new PaginationFilter { PageNumber = 2, PageSize = 2 };
+            var expected = new List<TestClass>
+            {
+                new TestClass { Id = 3 },
+                new TestClass { Id = 4 }
+            };
+
+            // Act
+            var result = await sut.GetAllAsync(paginationFilter);
+
+            //Assert
+            result.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
         public async Task Get_WhenValidIdPassed_EntryIsReturnedWithTheSameId()
         {
             // Arrange
             var testObject = new TestClass { Id = 3 };
             TestEntities.Add(testObject);
-
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();            
             dbSetMock.Setup(d => d.FindAsync(testObject.Id)).ReturnsAsync(testObject);
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
@@ -66,9 +86,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             // Arrange
             var id = 3;
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
@@ -84,12 +102,9 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             // Arrange
             var testObject = new TestClass { Id = 3 };
             TestEntities.Add(testObject);
-
             Expression<Func<TestClass, bool>> predicate = t => t.Id < 3;
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             var expected = new List<TestClass>
@@ -110,13 +125,9 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         {
             // Arrange
             var expected = new TestClass { Id = 3 };
-            TestEntities.Add(expected);
-
             Expression<Func<TestClass, bool>> predicate = t => t.Id == 3;
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
@@ -130,11 +141,9 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         public async Task FindSingleOrDefault_WhenNoEntryMatchesTheCondition_ReturnsNull()
         {
             // Arrange
-            Expression<Func<TestClass, bool>> predicate = t => t.Id == 3;
+            Expression<Func<TestClass, bool>> predicate = t => t.Id == 11;
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
@@ -150,9 +159,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             // Arrange
             Expression<Func<TestClass, bool>> predicate = t => t.Id < 3;
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act & Assert
@@ -164,9 +171,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
             var objectToAdd = new TestClass();
 
@@ -182,9 +187,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
             var objectsToAdd = new List<TestClass> { new TestClass(), new TestClass() };
 
@@ -200,9 +203,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
             var objectToRemove = new TestClass { Id = 1 };
 
@@ -218,9 +219,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         {
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
-
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
-
             var sut = new TestGenericRepository(_contextMock.Object);
             var objectsToRemove = new List<TestClass> { new TestClass { Id = 1 }, new TestClass { Id = 2 } };
 

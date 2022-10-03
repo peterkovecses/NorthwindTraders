@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Northwind.Application.Common.Interfaces;
+using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
 using Northwind.Application.Services;
 using Northwind.Domain.Common.Interfaces;
+using Northwind.Domain.Common.Queries;
 using Northwind.Domain.Entities;
 using System.Linq.Expressions;
 
@@ -24,19 +26,54 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetAll_WhenCalled_ProperMethodsCalled()
+        public async Task GetAll_WhenPaginationQueryParameterNotGiven_ProperMethodsCalled()
         {
             // Arrange
             var employeesMock = new Mock<IEnumerable<Employee>>();
-            _unitOfWorkMock.Setup(u => u.Employees.GetAllAsync(null)).Returns(Task.FromResult(employeesMock.Object));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAllAsync()).Returns(Task.FromResult(employeesMock.Object));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
             await _sut.GetAllAsync();
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetAllAsync(null));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAllAsync());
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
+        }
+
+        [Fact]
+        public async Task GetAll_WhenPaginationQueryParameterGiven_ProperMethodsCalled()
+        {
+            // Arrange
+            var employees = new List<Employee>
+            {
+                new Employee { EmployeeId = 1 },
+                new Employee { EmployeeId = 2 },
+                new Employee { EmployeeId = 3 },
+                new Employee { EmployeeId = 4 },
+                new Employee { EmployeeId = 5 }
+            };
+
+            var filteredEmployees = employees.Where(e => e.EmployeeId < 5);
+            var totalEmployees = employees.Count();
+            var paginationQuery = new PaginationQuery();
+            var paginationFilter = new PaginationFilter();
+            var next = "next";
+            var previous = "previous";
+
+            _mapperMock.Setup(m => m.Map<PaginationFilter>(paginationQuery)).Returns(paginationFilter);
+            _unitOfWorkMock.Setup(u => u.Employees.GetAllAsync(paginationFilter)).Returns(Task.FromResult((totalEmployees, filteredEmployees)));
+            _uriServiceMock.Setup(u => u.GetNavigations(paginationQuery)).Returns((next, previous));
+            _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employees)).Returns(new List<EmployeeDto>());
+
+            // Act
+            await _sut.GetAllAsync(paginationQuery);
+
+            // Assert
+            _mapperMock.Verify(m => m.Map<PaginationFilter>(paginationQuery));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAllAsync(paginationFilter));
+            _uriServiceMock.Verify(u => u.GetNavigations(paginationQuery));
+            _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(filteredEmployees));
         }
 
         [Fact]

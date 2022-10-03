@@ -5,7 +5,8 @@ namespace Northwind.Domain.Common.Interfaces.Repositories
 {
     public interface IGenericRepository<TEntity, TId> where TEntity : class
     {
-        Task<IEnumerable<TEntity>> GetAllAsync(PaginationFilter? paginationFilter = null);
+        Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<(int totalItems, IEnumerable<TEntity> items)> GetAllAsync(PaginationFilter paginationFilter);
         Task<TEntity>? GetAsync(TId id);
         Task<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> predicate, PaginationFilter? paginationFilter = null);
         Task<TEntity?> FindSingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);

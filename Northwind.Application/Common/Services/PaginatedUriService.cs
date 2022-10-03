@@ -20,12 +20,12 @@ namespace Northwind.Application.Common.Services
 
             if (paginationQuery.PageNumber >= 1)
             {
-                next = GetPaginatedUri(_baseUri, new PaginationQuery(paginationQuery.PageNumber + 1, paginationQuery.PageSize));
+                next = GetPaginatedUri(_baseUri, new PaginationQuery { PageNumber = paginationQuery.PageNumber + 1, PageSize = paginationQuery.PageSize });
             }
 
             if (paginationQuery.PageNumber - 1 >= 1)
             {
-                previous = GetPaginatedUri(_baseUri, new PaginationQuery(paginationQuery.PageNumber - 1, paginationQuery.PageSize));
+                previous = GetPaginatedUri(_baseUri, new PaginationQuery { PageNumber = paginationQuery.PageNumber - 1, PageSize = paginationQuery.PageSize });
             }
 
             return (next, previous);

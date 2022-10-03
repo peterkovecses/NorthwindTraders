@@ -25,21 +25,21 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<OrderDetailDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<Response<IEnumerable<OrderDetailDto>>> GetAllAsync()
+        {
+            var orderDetails = await _unitOfWork.OrderDetails.GetAllAsync();
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails).ToResponse();
+        }
+
+        public async Task<PagedResponse<OrderDetailDto>> GetAllAsync(PaginationQuery paginationQuery)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var orderDetails = await _unitOfWork.OrderDetails.GetAllAsync(paginationFilter);
-
-            var response = _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails).ToPagedResponse();
-
-            if (paginationQuery == null)
-            {
-                return response;
-            }
-
+            var (totalItems, orderDetails) = await _unitOfWork.OrderDetails.GetAllAsync(paginationFilter);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
-            return response.SetPagination(paginationQuery, next, previous);
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails)
+                .ToPagedResponse()
+                .SetPagination(paginationQuery, next, previous, totalItems);
         }
 
         public async Task<Response<OrderDetailDto>> GetAsync(OrderDetailKey id)

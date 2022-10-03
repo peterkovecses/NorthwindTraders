@@ -23,21 +23,21 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<TerritoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<Response<IEnumerable<TerritoryDto>>> GetAllAsync()
+        {
+            var territories = await _unitOfWork.Territories.GetAllAsync();
+            return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
+        }
+
+        public async Task<PagedResponse<TerritoryDto>> GetAllAsync(PaginationQuery paginationQuery)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var territories = await _unitOfWork.Territories.GetAllAsync(paginationFilter);
-
-            var response = _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToPagedResponse();
-
-            if (paginationQuery == null)
-            {
-                return response;
-            }
-
+            var (totalItems, territories) = await _unitOfWork.Territories.GetAllAsync(paginationFilter);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
-            return response.SetPagination(paginationQuery, next, previous);
+            return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
+                .ToPagedResponse()
+                .SetPagination(paginationQuery, next, previous, totalItems);
         }
 
         public async Task<Response<TerritoryDto>> GetAsync(string id)
