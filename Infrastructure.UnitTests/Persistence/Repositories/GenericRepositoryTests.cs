@@ -49,17 +49,23 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             _contextMock.Setup(c => c.Set<TestClass>()).Returns(dbSetMock.Object);
             var sut = new TestGenericRepository(_contextMock.Object);
             var paginationFilter = new PaginationFilter { PageNumber = 2, PageSize = 2 };
-            var expected = new List<TestClass>
+
+            var expectedCount = TestEntities.Count;
+
+            var expectedItems = new List<TestClass>
             {
                 new TestClass { Id = 3 },
                 new TestClass { Id = 4 }
             };
 
+            var expectedResult = (expectedCount, expectedItems);
+
+
             // Act
             var result = await sut.GetAllAsync(paginationFilter);
 
             //Assert
-            result.Should().BeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(expectedResult);
         }
 
         [Fact]
