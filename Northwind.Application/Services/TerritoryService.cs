@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
+using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Common.Queries;
@@ -12,65 +14,79 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPaginatedUriService _uriService;
 
-        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper)
+        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
-        public async Task<IEnumerable<TerritoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<PagedResponse<TerritoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
             var territories = await _unitOfWork.Territories.GetAllAsync(paginationFilter);
 
-            return _mapper.Map<IEnumerable<TerritoryDto>>(territories);
+            var response = _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToPagedResponse();
+
+            if (paginationQuery == null)
+            {
+                return response;
+            }
+
+            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+
+            return response.SetPagination(paginationQuery, next, previous);
         }
 
-        public async Task<TerritoryDto>? GetAsync(string id)
+        public async Task<Response<TerritoryDto>> GetAsync(string id)
         {
             var territory = await _unitOfWork.Territories.GetAsync(id);
 
-            return _mapper.Map<TerritoryDto>(territory);
+            return _mapper.Map<TerritoryDto>(territory).ToResponse();
         }
 
-        public async Task<string> CreateAsync(TerritoryDto territoryDto)
+        public async Task<Response<TerritoryDto>> CreateAsync(TerritoryDto territoryDto)
         {
             var territory = _mapper.Map<Territory>(territoryDto);
 
             await _unitOfWork.Territories.AddAsync(territory);
             await _unitOfWork.CompleteAsync();
 
-            return territory.TerritoryId;
+            territoryDto.TerritoryId = territory.TerritoryId;
+
+            return territoryDto.ToResponse();
         }
 
-        public async Task UpdateAsync(TerritoryDto territoryDto)
+        public async Task<Response<TerritoryDto>> UpdateAsync(TerritoryDto territoryDto)
         {
             var territoryInDb = await _unitOfWork.Territories.GetAsync(territoryDto.TerritoryId);
-
             _mapper.Map(territoryDto, territoryInDb);
 
             await _unitOfWork.CompleteAsync();
+
+            return territoryDto.ToResponse();
         }
 
-        public async Task<TerritoryDto> DeleteAsync(string id)
+        public async Task<Response<TerritoryDto>> DeleteAsync(string id)
         {
             var territory = await _unitOfWork.Territories.GetAsync(id);
 
             _unitOfWork.Territories.Remove(territory);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<TerritoryDto>(territory);
+            return _mapper.Map<TerritoryDto>(territory).ToResponse();
         }
 
-        public async Task<IEnumerable<TerritoryDto>> DeleteRangeAsync(string[] ids)
+        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteRangeAsync(string[] ids)
         {
             var territories = await _unitOfWork.Territories.FindAllAsync(t => ids.Contains(t.TerritoryId));
 
             _unitOfWork.Territories.RemoveRange(territories);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<TerritoryDto>>(territories);
+            return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
         }
 
         public async Task<bool> IsExists(string id)

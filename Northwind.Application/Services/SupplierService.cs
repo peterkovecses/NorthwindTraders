@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
+using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Common.Queries;
@@ -12,65 +14,80 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPaginatedUriService _uriService;
 
-        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper)
+        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
-        public async Task<IEnumerable<SupplierDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<PagedResponse<SupplierDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
             var suppliers = await _unitOfWork.Suppliers.GetAllAsync(paginationFilter);
 
-            return _mapper.Map<IEnumerable<SupplierDto>>(suppliers);
+            var response = _mapper.Map<IEnumerable<SupplierDto>>(suppliers).ToPagedResponse();
+
+
+            if (paginationQuery == null)
+            {
+                return response;
+            }
+
+            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+
+            return response.SetPagination(paginationQuery, next, previous);
         }
 
-        public async Task<SupplierDto>? GetAsync(int id)
+        public async Task<Response<SupplierDto>> GetAsync(int id)
         {
             var suppliers = await _unitOfWork.Suppliers.GetAsync(id);
 
-            return _mapper.Map<SupplierDto>(suppliers);
+            return _mapper.Map<SupplierDto>(suppliers).ToResponse();
         }
 
-        public async Task<int> CreateAsync(SupplierDto supplierDto)
+        public async Task<Response<SupplierDto>> CreateAsync(SupplierDto supplierDto)
         {
             var supplier = _mapper.Map<Supplier>(supplierDto);
 
             await _unitOfWork.Suppliers.AddAsync(supplier);
             await _unitOfWork.CompleteAsync();
 
-            return supplier.SupplierId;
+            supplierDto.SupplierId = supplier.SupplierId;
+
+            return supplierDto.ToResponse();
         }
 
-        public async Task UpdateAsync(SupplierDto supplierDto)
+        public async Task<Response<SupplierDto>> UpdateAsync(SupplierDto supplierDto)
         {
             var supplierInDb = await _unitOfWork.Suppliers.GetAsync(supplierDto.SupplierId);
-
             _mapper.Map(supplierDto, supplierInDb);
 
             await _unitOfWork.CompleteAsync();
+
+            return supplierDto.ToResponse();
         }
 
-        public async Task<SupplierDto> DeleteAsync(int id)
+        public async Task<Response<SupplierDto>> DeleteAsync(int id)
         {
             var supplier = await _unitOfWork.Suppliers.GetAsync(id);
 
             _unitOfWork.Suppliers.Remove(supplier);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<SupplierDto>(supplier);
+            return _mapper.Map<SupplierDto>(supplier).ToResponse();
         }
 
-        public async Task<IEnumerable<SupplierDto>> DeleteRangeAsync(int[] ids)
+        public async Task<Response<IEnumerable<SupplierDto>>> DeleteRangeAsync(int[] ids)
         {
             var suppliers = await _unitOfWork.Suppliers.FindAllAsync(s => ids.Contains(s.SupplierId));
 
             _unitOfWork.Suppliers.RemoveRange(suppliers);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<SupplierDto>>(suppliers);
+            return _mapper.Map<IEnumerable<SupplierDto>>(suppliers).ToResponse();
         }
 
         public async Task<bool> IsExists(int id)

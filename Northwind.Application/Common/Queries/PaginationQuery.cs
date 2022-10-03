@@ -2,21 +2,26 @@
 {
     public class PaginationQuery
     {
+        private const int MinPageNumber = 1;
+
+        private const int MinPageSize = 1;
+
         private const int MaxPageSize = 100;
 
         public PaginationQuery()
         {
-            PageNumber = 1;
+            PageNumber = MinPageNumber;
             PageSize = MaxPageSize;
         }
 
-        public PaginationQuery(int pageBumber, int pageSize)
+        public PaginationQuery(int pageNumber, int pageSize)
         {
-            PageNumber = pageBumber;
-            PageSize = pageSize > MaxPageSize ? MaxPageSize : pageSize;
+            PageNumber = pageNumber < MinPageNumber ? MinPageNumber : pageNumber;
+            PageSize = pageSize > MaxPageSize ? MaxPageSize : pageSize < MinPageSize ? MinPageSize : pageSize;
         }
 
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public int PageNumber { get; private set; }
+        public int PageSize { get; private set; }
+
     }
 }

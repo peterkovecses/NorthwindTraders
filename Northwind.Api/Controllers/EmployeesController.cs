@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
@@ -23,29 +21,22 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] PaginationQuery paginationQuery)
         {
-            var employees = await _employeeService.GetAllAsync(paginationQuery);
+            var response = await _employeeService.GetAllAsync(paginationQuery);
 
-            if (paginationQuery == null || paginationQuery.PageNumber < 1 || paginationQuery.PageSize < 1)
-            {
-                return Ok(employees.ToPagedResponse());
-            }
-
-            var (next, previous) = _uriService.GetNavigations(paginationQuery);
-
-            return Ok(employees.ToPagedResponse().SetPagination(paginationQuery, next, previous));
+            return Ok(response);
         }
 
         [HttpGet("{id}", Name = "GetEmployee")]
         public async Task<IActionResult> GetEmployee(int id)
         {
-            var employee = await _employeeService.GetAsync(id);
+            var response = await _employeeService.GetAsync(id);
 
-            if (employee == null)
+            if (response.Data == null)
             {
                 return NotFound();
             }
 
-            return Ok(employee.ToResponse());
+            return Ok(response);
         }
 
         [HttpPost]
@@ -56,9 +47,9 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            employee.EmployeeId = await _employeeService.CreateAsync(employee);
+            var response = await _employeeService.CreateAsync(employee);
 
-            return CreatedAtAction("GetEmployee", new { id = employee.EmployeeId }, employee.ToResponse());
+            return CreatedAtAction("GetEmployee", new { id = response.Data.EmployeeId }, response);
         }
 
         [HttpPut("{id}")]
@@ -74,28 +65,14 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (!_employeeService.IsExists(id).Result)
+            if (!await _employeeService.IsExists(id))
             {
                 return NotFound();
             }
 
-            try
-            {
-                await _employeeService.UpdateAsync(employee);
+            var response = await _employeeService.UpdateAsync(employee);
 
-                return Ok(employee.ToResponse());
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _employeeService.IsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
+            return Ok(response);
         }
 
         [HttpDelete]
@@ -107,9 +84,9 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var employees = await _employeeService.DeleteRangeAsync(ids);
+            var response = await _employeeService.DeleteRangeAsync(ids);
 
-            return Ok(employees.ToResponse());
+            return Ok(response);
         }
     }
 }

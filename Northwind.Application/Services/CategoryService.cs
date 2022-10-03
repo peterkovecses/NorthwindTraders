@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
+using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Common.Queries;
@@ -12,65 +14,79 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPaginatedUriService _uriService;
 
-        public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
+        public CategoryService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
-        public async Task<IEnumerable<CategoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<PagedResponse<CategoryDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
             var categories = await _unitOfWork.Categories.GetAllAsync(paginationFilter);
 
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            var response = _mapper.Map<IEnumerable<CategoryDto>>(categories).ToPagedResponse();
+
+            if (paginationQuery == null)
+            {
+                return response;
+            }
+
+            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+
+            return response.SetPagination(paginationQuery, next, previous);
         }
          
-        public async Task<CategoryDto>? GetAsync(int id)
+        public async Task<Response<CategoryDto>> GetAsync(int id)
         {
             var category = await _unitOfWork.Categories.GetAsync(id);
 
-            return _mapper.Map<CategoryDto>(category);
+            return _mapper.Map<CategoryDto>(category).ToResponse();
         }
 
-        public async Task<int> CreateAsync(CategoryDto categoryDto)
+        public async Task<Response<CategoryDto>> CreateAsync(CategoryDto categoryDto)
         {
             var category = _mapper.Map<Category>(categoryDto);
 
             await _unitOfWork.Categories.AddAsync(category);
             await _unitOfWork.CompleteAsync();
 
-            return category.CategoryId;
+            categoryDto.CategoryId = category.CategoryId;
+
+            return categoryDto.ToResponse();
         }
 
-        public async Task UpdateAsync(CategoryDto categoryDto)
+        public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto)
         {
             var categoryInDb = await _unitOfWork.Categories.GetAsync(categoryDto.CategoryId);
 
             _mapper.Map(categoryDto, categoryInDb);
-
             await _unitOfWork.CompleteAsync();
+
+            return categoryDto.ToResponse();
         }
 
-        public async Task<CategoryDto> DeleteAsync(int id)
+        public async Task<Response<CategoryDto>> DeleteAsync(int id)
         {
             var category = await _unitOfWork.Categories.GetAsync(id);
 
             _unitOfWork.Categories.Remove(category);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<CategoryDto>(category);
+            return _mapper.Map<CategoryDto>(category).ToResponse();
         }
 
-        public async Task<IEnumerable<CategoryDto>> DeleteRangeAsync(int[] ids)
+        public async Task<Response<IEnumerable<CategoryDto>>> DeleteRangeAsync(int[] ids)
         {
             var categories = await _unitOfWork.Categories.FindAllAsync(c => ids.Contains(c.CategoryId));
 
             _unitOfWork.Categories.RemoveRange(categories);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
         }
 
         public async Task<bool> IsExists(int id)

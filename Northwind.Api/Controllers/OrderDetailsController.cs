@@ -24,16 +24,9 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails([FromQuery] PaginationQuery paginationQuery)
         {
-            var orderDetails = await _orderDetailService.GetAllAsync(paginationQuery);
+            var response = await _orderDetailService.GetAllAsync(paginationQuery);
 
-            if (paginationQuery == null || paginationQuery.PageNumber < 1 || paginationQuery.PageSize < 1)
-            {
-                return Ok(orderDetails.ToPagedResponse());
-            }
-
-            var (next, previous) = _uriService.GetNavigations(paginationQuery);
-
-            return Ok(orderDetails.ToPagedResponse().SetPagination(paginationQuery, next, previous));
+            return Ok(response);
         }
 
         [HttpGet("detail", Name = "GetOrderDetail")]
@@ -41,14 +34,14 @@ namespace Northwind.Api.Controllers
         {
             var key = new OrderDetailKey(orderId, productId);
 
-            var orderDetail = await _orderDetailService.GetAsync(key);
+            var response = await _orderDetailService.GetAsync(key);
 
-            if (orderDetail == null)
+            if (response.Data == null)
             {
                 return NotFound();
             }
 
-            return Ok(orderDetail.ToResponse());
+            return Ok(response);
         }
 
         [HttpPost]
@@ -59,11 +52,9 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var key = await _orderDetailService.CreateAsync(orderDetail);
-            orderDetail.OrderId = key.OrderId;
-            orderDetail.ProductId = key.ProductId;
+            var response = await _orderDetailService.CreateAsync(orderDetail);
 
-            return CreatedAtAction("GetOrderDetail", new { id = key }, orderDetail.ToResponse());
+            return CreatedAtAction("GetOrderDetail", new { orderId = response.Data.OrderId, productId = response.Data.ProductId }, response);
         }
 
         [HttpPut]
@@ -86,23 +77,9 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            try
-            {
-                await _orderDetailService.UpdateAsync(orderDetail);
+            var response = await _orderDetailService.UpdateAsync(orderDetail);
 
-                return Ok(orderDetail.ToResponse());
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _orderDetailService.IsExists(key))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
+            return Ok(response);
         }
 
         [HttpDelete]
@@ -114,9 +91,9 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var orderDetails = await _orderDetailService.DeleteRangeAsync(ids);
+            var response = await _orderDetailService.DeleteRangeAsync(ids);
 
-            return Ok(orderDetails.ToResponse());
+            return Ok(response);
         }
     }
 }

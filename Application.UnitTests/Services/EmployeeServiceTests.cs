@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Dtos;
 using Northwind.Application.Services;
 using Northwind.Domain.Common.Interfaces;
@@ -11,14 +12,15 @@ namespace Application.UnitTests.Services
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
+        private readonly Mock<IPaginatedUriService> _uriServiceMock;
         private readonly EmployeeService _sut;
 
         public EmployeeServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-
-            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _uriServiceMock = new Mock<IPaginatedUriService>();
+            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _uriServiceMock.Object);
         }
 
         [Fact]

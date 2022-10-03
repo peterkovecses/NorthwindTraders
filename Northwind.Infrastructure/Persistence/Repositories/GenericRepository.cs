@@ -19,6 +19,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             {
                 return await _context.Set<TEntity>().ToListAsync();
             }
+
             int toSkip = GetNumberOfItemsToSkip(paginationFilter);
 
             return await _context.Set<TEntity>().Skip(toSkip).Take(paginationFilter.PageSize).ToListAsync();

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
+using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Common.Queries;
@@ -12,65 +14,79 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPaginatedUriService _uriService;
 
-        public CustomerDemographicService(IUnitOfWork unitOfWork, IMapper mapper)
+        public CustomerDemographicService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
-        public async Task<IEnumerable<CustomerDemographicDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<PagedResponse<CustomerDemographicDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
             var customerDemographics = await _unitOfWork.CustomerDemographics.GetAllAsync(paginationFilter);
 
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics);
+            var response = _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToPagedResponse();
+
+            if (paginationQuery == null)
+            {
+                return response;
+            }
+
+            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+
+            return response.SetPagination(paginationQuery, next, previous);
         }
 
-        public async Task<CustomerDemographicDto>? GetAsync(string id)
+        public async Task<Response<CustomerDemographicDto>> GetAsync(string id)
         {
             var customerDemographic = await _unitOfWork.CustomerDemographics.GetAsync(id);
 
-            return _mapper.Map<CustomerDemographicDto>(customerDemographic);
+            return _mapper.Map<CustomerDemographicDto>(customerDemographic).ToResponse();
         }
 
-        public async Task<string> CreateAsync(CustomerDemographicDto customerDemographicDto)
+        public async Task<Response<CustomerDemographicDto>> CreateAsync(CustomerDemographicDto customerDemographicDto)
         {
             var customerDemographic = _mapper.Map<CustomerDemographic>(customerDemographicDto);
 
             await _unitOfWork.CustomerDemographics.AddAsync(customerDemographic);
             await _unitOfWork.CompleteAsync();
 
-            return customerDemographic.CustomerTypeId;
+            customerDemographicDto.CustomerTypeId = customerDemographic.CustomerTypeId;
+
+            return customerDemographicDto.ToResponse();
         }
 
-        public async Task UpdateAsync(CustomerDemographicDto customerDemographicDto)
+        public async Task<Response<CustomerDemographicDto>> UpdateAsync(CustomerDemographicDto customerDemographicDto)
         {
             var customerDemographicInDb = await _unitOfWork.CustomerDemographics.GetAsync(customerDemographicDto.CustomerTypeId);
 
             _mapper.Map(customerDemographicDto, customerDemographicInDb);
-
             await _unitOfWork.CompleteAsync();
+
+            return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
         }
 
-        public async Task<CustomerDemographicDto> DeleteAsync(string id)
+        public async Task<Response<CustomerDemographicDto>> DeleteAsync(string id)
         {
             var customerDemographic = await _unitOfWork.CustomerDemographics.GetAsync(id);
 
             _unitOfWork.CustomerDemographics.Remove(customerDemographic);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<CustomerDemographicDto>(customerDemographic);
+            return _mapper.Map<CustomerDemographicDto>(customerDemographic).ToResponse();
         }
 
-        public async Task<IEnumerable<CustomerDemographicDto>> DeleteRangeAsync(string[] ids)
+        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteRangeAsync(string[] ids)
         {
             var customerDemographics = await _unitOfWork.CustomerDemographics.FindAllAsync(x => ids.Contains(x.CustomerTypeId));
 
             _unitOfWork.CustomerDemographics.RemoveRange(customerDemographics);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics);
+            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();
         }
 
         public async Task<bool> IsExists(string id)

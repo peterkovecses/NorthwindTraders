@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Northwind.Application.Common.Extensions;
 using Northwind.Application.Common.Interfaces;
 using Northwind.Application.Common.Queries;
+using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
 using Northwind.Domain.Common.Interfaces;
 using Northwind.Domain.Common.Queries;
@@ -12,65 +14,79 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPaginatedUriService _uriService;
 
-        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper)
+        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _uriService = uriService;
         }
 
-        public async Task<IEnumerable<EmployeeDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
+        public async Task<PagedResponse<EmployeeDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
         {
             var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
             var employees = await _unitOfWork.Employees.GetAllAsync(paginationFilter);
 
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+            var response = _mapper.Map<IEnumerable<EmployeeDto>>(employees).ToPagedResponse();
+
+            if (paginationQuery == null)
+            {
+                return response;
+            }
+
+            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+
+            return response.SetPagination(paginationQuery, next, previous);
         }
 
-        public async Task<EmployeeDto>? GetAsync(int id)
+        public async Task<Response<EmployeeDto>> GetAsync(int id)
         {
             var employee = await _unitOfWork.Employees.GetAsync(id);
 
-            return _mapper.Map<EmployeeDto>(employee);
+            return _mapper.Map<EmployeeDto>(employee).ToResponse();
         }
 
-        public async Task<int> CreateAsync(EmployeeDto employeeDto)
+        public async Task<Response<EmployeeDto>> CreateAsync(EmployeeDto employeeDto)
         {
             var employee = _mapper.Map<Employee>(employeeDto);
 
             await _unitOfWork.Employees.AddAsync(employee);
             await _unitOfWork.CompleteAsync();
 
-            return employee.EmployeeId;
+            employeeDto.EmployeeId = employee.EmployeeId;
+
+            return employeeDto.ToResponse();
         }
 
-        public async Task UpdateAsync(EmployeeDto employeeDto)
+        public async Task<Response<EmployeeDto>> UpdateAsync(EmployeeDto employeeDto)
         {
             var employeeInDb = await _unitOfWork.Employees.GetAsync(employeeDto.EmployeeId);
 
             _mapper.Map(employeeDto, employeeInDb);
-
             await _unitOfWork.CompleteAsync();
+
+            return employeeDto.ToResponse();
         }
 
-        public async Task<EmployeeDto> DeleteAsync(int id)
+        public async Task<Response<EmployeeDto>> DeleteAsync(int id)
         {
             var employee = await _unitOfWork.Employees.GetAsync(id);
 
             _unitOfWork.Employees.Remove(employee);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<EmployeeDto>(employee);
+            return _mapper.Map<EmployeeDto>(employee).ToResponse();
         }
 
-        public async Task<IEnumerable<EmployeeDto>> DeleteRangeAsync(int[] ids)
+        public async Task<Response<IEnumerable<EmployeeDto>>> DeleteRangeAsync(int[] ids)
         {
             var employees = await _unitOfWork.Employees.FindAllAsync(e => ids.Contains(e.EmployeeId));
 
             _unitOfWork.Employees.RemoveRange(employees);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employees);
+            return _mapper.Map<IEnumerable<EmployeeDto>>(employees).ToResponse();
         }
 
         public async Task<bool> IsExists(int id)
