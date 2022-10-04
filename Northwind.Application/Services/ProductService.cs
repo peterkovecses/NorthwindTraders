@@ -36,8 +36,7 @@ namespace Northwind.Application.Services
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<ProductDto>>(products)
-                .ToPagedResponse()
-                .SetPagination(paginationQuery, next, previous, totalItems);
+                .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
         public async Task<Response<ProductDto>> GetAsync(int id)
