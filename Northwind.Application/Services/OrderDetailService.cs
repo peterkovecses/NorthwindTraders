@@ -4,6 +4,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -21,13 +22,14 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<OrderDetailDto>> GetAsync(IPaginationQuery paginationQuery)
+        public async Task<PagedResponse<OrderDetailDto>> GetAsync(QueryParameters queryParameters)
         {
-            var (totalItems, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(paginationQuery);
-            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+            var (totalItems, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(totalItems);
+            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails)
-                .ToPagedResponse(paginationQuery, totalItems, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
         }
 
         public async Task<Response<OrderDetailDto>> FindByIdAsync(OrderDetailKey id)

@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
 
 namespace Northwind.Infrastructure.Strategies
 {
     public class PaginationStrategy<TEntity> : IPaginationStrategy<TEntity> where TEntity : class
     {
         private readonly IQueryable<TEntity> _query;
-        private readonly IPaginationQuery? _paginationQuery;
+        private readonly Pagination? _paginationQuery;
 
-        public PaginationStrategy(IQueryable<TEntity> query, IPaginationQuery? paginationQuery = null)
+        public PaginationStrategy(IQueryable<TEntity> query, Pagination? pagination = null)
         {
             _query = query;
-            _paginationQuery = paginationQuery;
+            _paginationQuery = pagination;
         }
 
         public async Task<(int, IEnumerable<TEntity>)> GetItemsAsync()
@@ -23,15 +24,13 @@ namespace Northwind.Infrastructure.Strategies
             return (totalItems, items);
         }
 
-        private static async Task<IEnumerable<TEntity>> Paginate(IPaginationQuery? paginationFilter, IQueryable<TEntity> query, int totalItems)
+        private static async Task<IEnumerable<TEntity>> Paginate(Pagination? pagination, IQueryable<TEntity> query, int totalItems)
         {
             if (totalItems > 0)
             {
-                paginationFilter.SetValues(totalItems);
-
                 return await query
-                .Skip(paginationFilter.GetItemsToSkip())
-                .Take(paginationFilter.GetItemsToTake(totalItems))
+                .Skip(pagination.GetItemsToSkip())
+                .Take(pagination.GetItemsToTake(totalItems))
                 .ToListAsync();
             }
             else

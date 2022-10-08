@@ -2,6 +2,7 @@
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Repositories;
+using Northwind.Application.Models;
 using System.Linq.Expressions;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
@@ -17,10 +18,10 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             _strategyResolver = strategyResolver;
         }
 
-        public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(IPaginationQuery? paginationQuery = null, Expression<Func<TEntity, bool>>? predicate = null)
+        public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(Pagination? pagination = null, Sorting? sorting = null, Expression<Func<TEntity, bool>>? predicate = null)
         {
-            var query = _context.Set<TEntity>().ApplyFilter<TEntity>(predicate);
-            var strategy = _strategyResolver.GetStrategy(query, paginationQuery);
+            var query = _context.Set<TEntity>().ApplyFilter<TEntity>(predicate).OrderByCustom(sorting);
+            var strategy = _strategyResolver.GetStrategy(query, pagination);
 
             return await strategy.GetItemsAsync();
         }

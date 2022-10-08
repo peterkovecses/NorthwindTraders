@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
 
 namespace Northwind.Infrastructure.Strategies
 {
@@ -7,7 +8,7 @@ namespace Northwind.Infrastructure.Strategies
     {
         private readonly IQueryable<TEntity> _query;
 
-        public NoPaginationStrategy(IQueryable<TEntity> query, IPaginationQuery? paginationQuery = null)
+        public NoPaginationStrategy(IQueryable<TEntity> query, Pagination? pagination = null)
         {
             _query = query;
         }

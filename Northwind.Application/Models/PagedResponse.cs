@@ -6,14 +6,14 @@ namespace Northwind.Application.Models
     {
         public PagedResponse(
             IEnumerable<T> data,
-            IPaginationQuery paginationQuery,
+            Pagination pagination,
             int totalItems,
             string nextPageUri,
             string previousPageUri)
         {
             Data = data;
-            PageNumber = paginationQuery.PageNumber;
-            PageSize = paginationQuery.PageSize;
+            PageNumber = pagination.PageNumber;
+            PageSize = pagination.PageSize;
             TotalItems = totalItems;
             NextPage = TotalPages > PageNumber ? nextPageUri : null;
             PreviousPage = previousPageUri;

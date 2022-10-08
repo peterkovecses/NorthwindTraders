@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
+using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
 using Northwind.Infrastructure.Persistence.Repositories;
 using System.Linq.Expressions;
 
@@ -31,7 +33,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_WhenPaginationQueryParameterNotGiven_ProperMethodsCalled()
+        public async Task Get_WhenPaginationParameterNotGiven_ProperMethodsCalled()
         {
             // Arrange                        
             var query = _contextMock.Object.Set<TestClass>().AsQueryable();
@@ -49,26 +51,41 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_WhenPaginationFilterParameterGiven_ProperMethodsCalled()
+        public async Task Get_WhenPaginationParameterGiven_ProperMethodsCalled()
         {
             // Arrange            
-            var paginationQueryMock = new Mock<IPaginationQuery>();
-            paginationQueryMock.Setup(p => p.PageNumber).Returns(2);
-            paginationQueryMock.Setup(p => p.PageSize).Returns(2);
-
+            var pagination = new Pagination { PageNumber = 2, PageSize = 3 };
             var query = _contextMock.Object.Set<TestClass>().AsQueryable();
             var paginationStrategyMock = new Mock<IPaginationStrategy<TestClass>>();
-
-            _strategyResolverMock.Setup(s => s.GetStrategy(query, paginationQueryMock.Object)).Returns(paginationStrategyMock.Object);
+            _strategyResolverMock.Setup(s => s.GetStrategy(query, pagination)).Returns(paginationStrategyMock.Object);
 
             var sut = new TestGenericRepository(_contextMock.Object, _strategyResolverMock.Object);
 
             // Act
-            var result = await sut.GetAsync(paginationQueryMock.Object);
+            var result = await sut.GetAsync(pagination);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
-            _strategyResolverMock.Verify(s => s.GetStrategy(query, paginationQueryMock.Object));
+            _strategyResolverMock.Verify(s => s.GetStrategy(query, pagination));
+        }
+
+        [Fact]
+        public async Task Get_WhenSortingParameterGiven_ProperMethodsCalled()
+        {
+            // Arrange            
+            var sorting = new Sorting { SortBy = "Id", DescendingOrder = true };
+            var query = _contextMock.Object.Set<TestClass>().AsQueryable().OrderByCustom(sorting);
+            var paginationStrategyMock = new Mock<IPaginationStrategy<TestClass>>();
+            _strategyResolverMock.Setup(s => s.GetStrategy(query, null)).Returns(paginationStrategyMock.Object);
+
+            var sut = new TestGenericRepository(_contextMock.Object, _strategyResolverMock.Object);
+
+            // Act
+            var result = await sut.GetAsync(sorting: sorting);
+
+            //Assert
+            _contextMock.Verify(c => c.Set<TestClass>());
+            _strategyResolverMock.Verify(s => s.GetStrategy(query, null));
         }
 
         [Fact]

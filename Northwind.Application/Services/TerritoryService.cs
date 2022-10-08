@@ -4,6 +4,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -21,13 +22,14 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<TerritoryDto>> GetAsync(IPaginationQuery paginationQuery)
+        public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters queryParameters)
         {
-            var (totalItems, territories) = await _unitOfWork.Territories.GetAsync(paginationQuery);
-            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+            var (totalItems, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(totalItems);
+            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
-                .ToPagedResponse(paginationQuery, totalItems, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
         }
 
         public async Task<Response<TerritoryDto>> FindByIdAsync(string id)

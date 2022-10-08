@@ -2,6 +2,7 @@
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 
 namespace Northwind.Api.Controllers
 {
@@ -17,9 +18,9 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCustomers([FromQuery] PaginationQuery paginationQuery)
+        public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters queryParameters)
         {
-            var response = await _customerService.GetAsync(paginationQuery);
+            var response = await _customerService.GetAsync(queryParameters);
 
             return Ok(response);
         }

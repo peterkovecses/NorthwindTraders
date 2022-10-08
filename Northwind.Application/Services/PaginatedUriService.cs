@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 
@@ -14,25 +13,25 @@ namespace Northwind.Application.Services
             _baseUri = baseUri;
         }
 
-        public (string? next, string? previous) GetNavigations(IPaginationQuery paginationQuery)
+        public (string? next, string? previous) GetNavigations(Pagination pagination)
         {
             string? next = default;
             string? previous = default;
 
-            if (paginationQuery.PageNumber >= 1)
+            if (pagination.PageNumber >= 1)
             {
-                next = GetPaginatedUri(_baseUri, new PaginationQuery { PageNumber = paginationQuery.PageNumber + 1, PageSize = paginationQuery.PageSize });
+                next = GetPaginatedUri(_baseUri, new Pagination { PageNumber = pagination.PageNumber + 1, PageSize = pagination.PageSize });
             }
 
-            if (paginationQuery.PageNumber - 1 >= 1)
+            if (pagination.PageNumber - 1 >= 1)
             {
-                previous = GetPaginatedUri(_baseUri, new PaginationQuery { PageNumber = paginationQuery.PageNumber - 1, PageSize = paginationQuery.PageSize });
+                previous = GetPaginatedUri(_baseUri, new Pagination { PageNumber = pagination.PageNumber - 1, PageSize = pagination.PageSize });
             }
 
             return (next, previous);
         }
 
-        private static string GetPaginatedUri(string baseUri, PaginationQuery paginationQuery)
+        private static string GetPaginatedUri(string baseUri, Pagination paginationQuery)
         {
             var uri = new Uri(baseUri);
 

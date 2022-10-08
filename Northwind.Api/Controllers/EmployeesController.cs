@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
-using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 
 namespace Northwind.Api.Controllers
 {
@@ -17,9 +17,9 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmployees([FromQuery] PaginationQuery paginationQuery)
+        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters queryParameters)
         {
-            var response = await _employeeService.GetAsync(paginationQuery);
+            var response = await _employeeService.GetAsync(queryParameters);
 
             return Ok(response);
         }

@@ -1,7 +1,9 @@
-﻿namespace Northwind.Application.Interfaces.Services
+﻿using Northwind.Application.Models;
+
+namespace Northwind.Application.Interfaces.Services
 {
     public interface IPaginatedUriService
     {
-        (string? next, string? previous) GetNavigations(IPaginationQuery paginationQuery);
+        (string? next, string? previous) GetNavigations(Pagination pagination);
     }
 }

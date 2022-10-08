@@ -1,26 +1,16 @@
-﻿using Northwind.Application.Interfaces;
+﻿using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 
 namespace Northwind.Application.Extensions
 {
     public static class PaginationExtensions
     {
-        public static IPaginationQuery SetValues(this IPaginationQuery paginationQuery, int totalItems)
-        {
-            if (paginationQuery.PageNumber < 1)
-            {
-                paginationQuery.PageNumber = 1;
-                paginationQuery.PageSize = totalItems;
-            }
-
-            return paginationQuery;
-        }
-
-        public static int GetItemsToSkip(this IPaginationQuery paginationQuery)
+        public static int GetItemsToSkip(this Pagination paginationQuery)
         {
             return (paginationQuery.PageNumber - 1) * paginationQuery.PageSize;
         }
 
-        public static int GetItemsToTake(this IPaginationQuery paginationQuery, int totalItems)
+        public static int GetItemsToTake(this Pagination paginationQuery, int totalItems)
         {
             if (paginationQuery.PageSize == 0)
             {
@@ -28,6 +18,20 @@ namespace Northwind.Application.Extensions
             }
 
             return paginationQuery.PageSize;
+        }
+
+        public static QueryParameters SetPaginationIfNull(this QueryParameters queryParameters, int totalItems)
+        {
+            if (queryParameters.Pagination == null)
+            {
+                queryParameters.Pagination = new Pagination
+                {
+                    PageNumber = 1,
+                    PageSize = totalItems
+                };
+            }
+
+            return queryParameters;
         }
     }
 }

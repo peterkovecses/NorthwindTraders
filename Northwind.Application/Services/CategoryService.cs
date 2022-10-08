@@ -4,6 +4,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
+using Northwind.Application.Models.Queries;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -21,13 +22,14 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CategoryDto>> GetAsync(IPaginationQuery paginationQuery)
+        public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters queryParameters)
         {
-            var (totalItems, categories) = await _unitOfWork.Categories.GetAsync(paginationQuery);
-            var (next, previous) = _uriService.GetNavigations(paginationQuery);
+            var (totalItems, categories) = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(totalItems);
+            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<CategoryDto>>(categories)
-                .ToPagedResponse(paginationQuery, totalItems, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
         }
 
         public async Task<Response<CategoryDto>> FindByIdAsync(int id)

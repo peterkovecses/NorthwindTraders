@@ -18,12 +18,12 @@ namespace Northwind.Application.Extensions
 
         public static PagedResponse<T> ToPagedResponse<T>(
             this IEnumerable<T> data,
-            IPaginationQuery paginationQuery,
+            Pagination pagination,
             int totalItems,
             string nextPageUri,
             string previousPageUri)
         {
-            return new PagedResponse<T>(data, paginationQuery, totalItems, nextPageUri, previousPageUri);
+            return new PagedResponse<T>(data, pagination, totalItems, nextPageUri, previousPageUri);
         }
     }
 }
