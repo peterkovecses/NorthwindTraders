@@ -1,23 +1,23 @@
 ﻿using LinqKit;
 using Microsoft.EntityFrameworkCore;
-using Northwind.Domain.Common.Interfaces.Repositories;
-using Northwind.Domain.Common.Models;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
-    public class OrderDetailRepository : GenericRepository<OrderDetail, OrderDetailKey>, IOrderDetailRepository
+    public class OrderDetailRepository : GenericRepository<OrderDetail, IOrderDetailKey>, IOrderDetailRepository
     {
-        public OrderDetailRepository(NorthwindContext context) : base(context)
+        public OrderDetailRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
         {
         }
 
-        public override async Task<OrderDetail>? GetAsync(OrderDetailKey key)
+        public override async Task<OrderDetail>? FindByIdAsync(IOrderDetailKey key)
         {
             return await _context.Set<OrderDetail>().FindAsync(key.OrderId, key.ProductId);
         }
 
-        public async Task<IEnumerable<OrderDetail>> GetAsync(OrderDetailKey[] keys)
+        public async Task<IEnumerable<OrderDetail>> FindByIdsAsync(IOrderDetailKey[] keys)
         {
             var predicate = PredicateBuilder.New<OrderDetail>();
 

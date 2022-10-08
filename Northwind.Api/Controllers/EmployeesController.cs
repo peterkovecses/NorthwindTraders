@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 
 namespace Northwind.Api.Controllers
 {
@@ -10,27 +10,16 @@ namespace Northwind.Api.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IPaginatedUriService _uriService;
 
-        public EmployeesController(IEmployeeService employeeService, IPaginatedUriService uriService)
+        public EmployeesController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
-            _uriService = uriService;
-        }
-
-        [HttpGet]
-        [Route("all")]
-        public async Task<IActionResult> GetEmployees()
-        {
-            var response = await _employeeService.GetAllAsync();
-
-            return Ok(response);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] PaginationQuery paginationQuery)
         {
-            var response = await _employeeService.GetAllAsync(paginationQuery);
+            var response = await _employeeService.GetAsync(paginationQuery);
 
             return Ok(response);
         }
@@ -38,7 +27,7 @@ namespace Northwind.Api.Controllers
         [HttpGet("{id}", Name = "GetEmployee")]
         public async Task<IActionResult> GetEmployee(int id)
         {
-            var response = await _employeeService.GetAsync(id);
+            var response = await _employeeService.FindByIdAsync(id);
 
             if (response.Data == null)
             {
@@ -93,7 +82,7 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var response = await _employeeService.DeleteRangeAsync(ids);
+            var response = await _employeeService.DeleteAsync(ids);
 
             return Ok(response);
         }

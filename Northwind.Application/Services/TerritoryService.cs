@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<TerritoryDto>>> GetAllAsync()
+        public async Task<PagedResponse<TerritoryDto>> GetAsync(IPaginationQuery paginationQuery)
         {
-            var territories = await _unitOfWork.Territories.GetAllAsync();
-            return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
-        }
-
-        public async Task<PagedResponse<TerritoryDto>> GetAllAsync(PaginationQuery paginationQuery)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, territories) = await _unitOfWork.Territories.GetAllAsync(paginationFilter);
+            var (totalItems, territories) = await _unitOfWork.Territories.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
-        public async Task<Response<TerritoryDto>> GetAsync(string id)
+        public async Task<Response<TerritoryDto>> FindByIdAsync(string id)
         {
-            var territory = await _unitOfWork.Territories.GetAsync(id);
+            var territory = await _unitOfWork.Territories.FindByIdAsync(id);
 
             return _mapper.Map<TerritoryDto>(territory).ToResponse();
         }
@@ -60,7 +51,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<TerritoryDto>> UpdateAsync(TerritoryDto territoryDto)
         {
-            var territoryInDb = await _unitOfWork.Territories.GetAsync(territoryDto.TerritoryId);
+            var territoryInDb = await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId);
             _mapper.Map(territoryDto, territoryInDb);
 
             await _unitOfWork.CompleteAsync();
@@ -68,21 +59,11 @@ namespace Northwind.Application.Services
             return territoryDto.ToResponse();
         }
 
-        public async Task<Response<TerritoryDto>> DeleteAsync(string id)
+        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids)
         {
-            var territory = await _unitOfWork.Territories.GetAsync(id);
+            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId))).items;
 
-            _unitOfWork.Territories.Remove(territory);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<TerritoryDto>(territory).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteRangeAsync(string[] ids)
-        {
-            var territories = await _unitOfWork.Territories.FindAllAsync(t => ids.Contains(t.TerritoryId));
-
-            _unitOfWork.Territories.RemoveRange(territories);
+            _unitOfWork.Territories.Remove(territories);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(string id)
         {
-            return await _unitOfWork.Territories.GetAsync(id) != null;
+            return await _unitOfWork.Territories.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(string[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Territories.FindAllAsync(t => ids.Contains(t.TerritoryId))).Count() == ids.Length;
+            return (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId))).items.Count() == ids.Length;
         }
     }
 }

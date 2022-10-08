@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Mappings;
-using Northwind.Application.Common.Services;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Mappings;
 using Northwind.Application.Services;
 
 namespace Microsoft.Extensions.DependencyInjection

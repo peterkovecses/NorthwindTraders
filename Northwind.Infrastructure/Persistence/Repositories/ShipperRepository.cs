@@ -1,11 +1,12 @@
-﻿using Northwind.Domain.Common.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class ShipperRepository : GenericRepository<Shipper, int>, IShipperRepository
     {
-        public ShipperRepository(NorthwindContext context) : base(context)
+        public ShipperRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
         {
         }
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Northwind.Domain.Common.Interfaces;
+using Northwind.Application.Interfaces;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;
 using Northwind.Infrastructure.Services;
@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+            services.AddScoped<IStrategyResolver, StrategyResolver>();
             services.AddScoped<AuditInterceptor>();
 
             return services;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Northwind.Domain.Common.Interfaces;
+using Northwind.Application.Interfaces;
 using Northwind.Domain.Entities;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;

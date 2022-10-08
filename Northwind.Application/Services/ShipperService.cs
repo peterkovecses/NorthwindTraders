@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<ShipperDto>>> GetAllAsync()
+        public async Task<PagedResponse<ShipperDto>> GetAsync(IPaginationQuery? paginationQuery = null)
         {
-            var shippers = await _unitOfWork.Shippers.GetAllAsync();
-            return _mapper.Map<IEnumerable<ShipperDto>>(shippers).ToResponse();
-        }
-
-        public async Task<PagedResponse<ShipperDto>> GetAllAsync(PaginationQuery? paginationQuery = null)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, shippers) = await _unitOfWork.Shippers.GetAllAsync(paginationFilter);
+            var (totalItems, shippers) = await _unitOfWork.Shippers.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<ShipperDto>>(shippers)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
-        public async Task<Response<ShipperDto>> GetAsync(int id)
+        public async Task<Response<ShipperDto>> FindByIdAsync(int id)
         {
-            var shipper = await _unitOfWork.Shippers.GetAsync(id);
+            var shipper = await _unitOfWork.Shippers.FindByIdAsync(id);
 
             return _mapper.Map<ShipperDto>(shipper).ToResponse();
         }
@@ -60,7 +51,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<ShipperDto>> UpdateAsync(ShipperDto shipperDto)
         {
-            var shipperInDb = await _unitOfWork.Regions.GetAsync(shipperDto.ShipperId);
+            var shipperInDb = await _unitOfWork.Regions.FindByIdAsync(shipperDto.ShipperId);
 
             _mapper.Map(shipperDto, shipperInDb);
             await _unitOfWork.CompleteAsync();
@@ -68,21 +59,11 @@ namespace Northwind.Application.Services
             return shipperDto.ToResponse();
         }
 
-        public async Task<Response<ShipperDto>> DeleteAsync(int id)
+        public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids)
         {
-            var shipper = await _unitOfWork.Shippers.GetAsync(id);
+            var shippers = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId))).items;
 
-            _unitOfWork.Shippers.Remove(shipper);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<ShipperDto>(shipper).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<ShipperDto>>> DeleteRangeAsync(int[] ids)
-        {
-            var shippers = await _unitOfWork.Shippers.FindAllAsync(s => ids.Contains(s.ShipperId));
-
-            _unitOfWork.Shippers.RemoveRange(shippers);
+            _unitOfWork.Shippers.Remove(shippers);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<ShipperDto>>(shippers).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(int id)
         {
-            return await _unitOfWork.Shippers.GetAsync(id) != null;
+            return await _unitOfWork.Shippers.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Shippers.FindAllAsync(s => ids.Contains(s.ShipperId))).Count() == ids.Length;
+            return (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId))).items.Count() == ids.Length;
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<OrderDto>>> GetAllAsync()
+        public async Task<PagedResponse<OrderDto>> GetAsync(IPaginationQuery paginationQuery)
         {
-            var orders = await _unitOfWork.Orders.GetAllAsync();
-            return _mapper.Map<IEnumerable<OrderDto>>(orders).ToResponse();
-        }
-
-        public async Task<PagedResponse<OrderDto>> GetAllAsync(PaginationQuery paginationQuery)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, orders) = await _unitOfWork.Orders.GetAllAsync(paginationFilter);
+            var (totalItems, orders) = await _unitOfWork.Orders.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
-        public async Task<Response<OrderDto>> GetAsync(int id)
+        public async Task<Response<OrderDto>> FindByIdAsync(int id)
         {
-            var order = await _unitOfWork.Orders.GetAsync(id);
+            var order = await _unitOfWork.Orders.FindByIdAsync(id);
 
             return _mapper.Map<OrderDto>(order).ToResponse();
         }
@@ -60,7 +51,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<OrderDto>> UpdateAsync(OrderDto orderDto)
         {
-            var orderInDb = await _unitOfWork.Orders.GetAsync(orderDto.OrderId);
+            var orderInDb = await _unitOfWork.Orders.FindByIdAsync(orderDto.OrderId);
 
             _mapper.Map(orderDto, orderInDb);
             await _unitOfWork.CompleteAsync();
@@ -68,21 +59,11 @@ namespace Northwind.Application.Services
             return orderDto.ToResponse();
         }
 
-        public async Task<Response<OrderDto>> DeleteAsync(int id)
+        public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids)
         {
-            var order = await _unitOfWork.Orders.GetAsync(id);
+            var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).items;
 
-            _unitOfWork.Orders.Remove(order);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<OrderDto>(order).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<OrderDto>>> DeleteRangeAsync(int[] ids)
-        {
-            var orders = await _unitOfWork.Orders.FindAllAsync(o => ids.Contains(o.OrderId));
-
-            _unitOfWork.Orders.RemoveRange(orders);
+            _unitOfWork.Orders.Remove(orders);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(int id)
         {
-            return await _unitOfWork.Orders.GetAsync(id) != null;
+            return await _unitOfWork.Orders.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Orders.FindAllAsync(o => ids.Contains(o.OrderId))).Count() == ids.Length;
+            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).items.Count() == ids.Length;
         }
     }
 }

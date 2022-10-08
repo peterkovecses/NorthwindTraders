@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<CustomerDemographicDto>>> GetAllAsync()
+        public async Task<PagedResponse<CustomerDemographicDto>> GetAsync(IPaginationQuery paginationQuery)
         {
-            var customerDemographics = await _unitOfWork.CustomerDemographics.GetAllAsync();
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();
-        }
-
-        public async Task<PagedResponse<CustomerDemographicDto>> GetAllAsync(PaginationQuery paginationQuery)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAllAsync(paginationFilter);
+            var (totalItems, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
-        public async Task<Response<CustomerDemographicDto>> GetAsync(string id)
+        public async Task<Response<CustomerDemographicDto>> FindByIdAsync(string id)
         {
-            var customerDemographic = await _unitOfWork.CustomerDemographics.GetAsync(id);
+            var customerDemographic = await _unitOfWork.CustomerDemographics.FindByIdAsync(id);
 
             return _mapper.Map<CustomerDemographicDto>(customerDemographic).ToResponse();
         }
@@ -60,29 +51,19 @@ namespace Northwind.Application.Services
 
         public async Task<Response<CustomerDemographicDto>> UpdateAsync(CustomerDemographicDto customerDemographicDto)
         {
-            var customerDemographicInDb = await _unitOfWork.CustomerDemographics.GetAsync(customerDemographicDto.CustomerTypeId);
+            var customerDemographicInDb = await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId);
 
-            _mapper.Map(customerDemographicDto, customerDemographicInDb);
+            customerDemographicInDb.CustomerDesc = customerDemographicDto.CustomerDesc;
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
         }
 
-        public async Task<Response<CustomerDemographicDto>> DeleteAsync(string id)
+        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids)
         {
-            var customerDemographic = await _unitOfWork.CustomerDemographics.GetAsync(id);
+            var customerDemographics = (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId))).items;
 
-            _unitOfWork.CustomerDemographics.Remove(customerDemographic);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<CustomerDemographicDto>(customerDemographic).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteRangeAsync(string[] ids)
-        {
-            var customerDemographics = await _unitOfWork.CustomerDemographics.FindAllAsync(x => ids.Contains(x.CustomerTypeId));
-
-            _unitOfWork.CustomerDemographics.RemoveRange(customerDemographics);
+            _unitOfWork.CustomerDemographics.Remove(customerDemographics);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(string id)
         {
-            return await _unitOfWork.CustomerDemographics.GetAsync(id) != null;
+            return await _unitOfWork.CustomerDemographics.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(string[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.CustomerDemographics.FindAllAsync(x => ids.Contains(x.CustomerTypeId))).Count() == ids.Length;
+            return (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId))).items.Count() == ids.Length;
         }
     }
 }

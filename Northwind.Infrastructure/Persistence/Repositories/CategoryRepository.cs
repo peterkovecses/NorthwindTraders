@@ -1,11 +1,12 @@
-﻿using Northwind.Domain.Common.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class CategoryRepository : GenericRepository<Category, int>, ICategoryRepository
     {
-        public CategoryRepository(NorthwindContext context) : base(context)
+        public CategoryRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
         {
         }
 

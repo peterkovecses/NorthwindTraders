@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
-using Northwind.Application.Common.Models;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 
 namespace Northwind.Api.Controllers
 {
@@ -13,18 +10,16 @@ namespace Northwind.Api.Controllers
     public class OrderDetailsController : ControllerBase
     {
         private readonly IOrderDetailService _orderDetailService;
-        private readonly IPaginatedUriService _uriService;
 
-        public OrderDetailsController(IOrderDetailService orderDetailService, IPaginatedUriService uriService)
+        public OrderDetailsController(IOrderDetailService orderDetailService)
         {
             _orderDetailService = orderDetailService;
-            _uriService = uriService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails([FromQuery] PaginationQuery paginationQuery)
         {
-            var response = await _orderDetailService.GetAllAsync(paginationQuery);
+            var response = await _orderDetailService.GetAsync(paginationQuery);
 
             return Ok(response);
         }
@@ -34,7 +29,7 @@ namespace Northwind.Api.Controllers
         {
             var key = new OrderDetailKey(orderId, productId);
 
-            var response = await _orderDetailService.GetAsync(key);
+            var response = await _orderDetailService.FindByIdAsync(key);
 
             if (response.Data == null)
             {
@@ -91,7 +86,7 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var response = await _orderDetailService.DeleteRangeAsync(ids);
+            var response = await _orderDetailService.DeleteAsync(ids);
 
             return Ok(response);
         }

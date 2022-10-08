@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Northwind.Domain.Common.Interfaces;
+using Northwind.Application.Interfaces;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;
 
@@ -16,8 +16,9 @@ namespace Infrastructure.UnitTests.Persistence
             var dateTimeProviderMock = new Mock<IDateTimeProvider>();
             var interceptorMock = new Mock<AuditInterceptor>(dateTimeProviderMock.Object);
             _contextMock = new Mock<NorthwindContext>(options, interceptorMock.Object);
+            var strategyResolverMock = new Mock<IStrategyResolver>();
 
-            _sut = new UnitOfWork(_contextMock.Object);
+            _sut = new UnitOfWork(_contextMock.Object, strategyResolverMock.Object);
         }
 
         [Fact]

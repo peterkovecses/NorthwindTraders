@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using Northwind.Domain.Common;
-using Northwind.Domain.Common.Interfaces;
+using Northwind.Application.Interfaces;
+using Northwind.Domain.Entities;
 using static Microsoft.EntityFrameworkCore.EntityState;
 
 namespace Northwind.Infrastructure.Persistence.Interceptors

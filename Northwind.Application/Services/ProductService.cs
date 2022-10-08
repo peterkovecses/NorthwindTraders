@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<ProductDto>>> GetAllAsync()
+        public async Task<PagedResponse<ProductDto>> GetAsync(IPaginationQuery paginationQuery)
         {
-            var products = await _unitOfWork.Products.GetAllAsync();
-            return _mapper.Map<IEnumerable<ProductDto>>(products).ToResponse();
-        }
-
-        public async Task<PagedResponse<ProductDto>> GetAllAsync(PaginationQuery paginationQuery)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, products) = await _unitOfWork.Products.GetAllAsync(paginationFilter);
+            var (totalItems, products) = await _unitOfWork.Products.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<ProductDto>>(products)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
 
-        public async Task<Response<ProductDto>> GetAsync(int id)
+        public async Task<Response<ProductDto>> FindByIdAsync(int id)
         {
-            var product = await _unitOfWork.Products.GetAsync(id);
+            var product = await _unitOfWork.Products.FindByIdAsync(id);
 
             return _mapper.Map<ProductDto>(product).ToResponse();
         }
@@ -60,7 +51,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<ProductDto>> UpdateAsync(ProductDto productDto)
         {
-            var productInDb = await _unitOfWork.Products.GetAsync(productDto.ProductId);
+            var productInDb = await _unitOfWork.Products.FindByIdAsync(productDto.ProductId);
 
             _mapper.Map(productDto, productInDb);
             await _unitOfWork.CompleteAsync();
@@ -68,21 +59,11 @@ namespace Northwind.Application.Services
             return productDto.ToResponse();
         }
 
-        public async Task<Response<ProductDto>> DeleteAsync(int id)
+        public async Task<Response<IEnumerable<ProductDto>>> DeleteAsync(int[] ids)
         {
-            var product = await _unitOfWork.Products.GetAsync(id);
+            var products = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId))).items;
 
-            _unitOfWork.Products.Remove(product);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<ProductDto>(product).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<ProductDto>>> DeleteRangeAsync(int[] ids)
-        {
-            var products = await _unitOfWork.Products.FindAllAsync(p => ids.Contains(p.ProductId));
-
-            _unitOfWork.Products.RemoveRange(products);
+            _unitOfWork.Products.Remove(products);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<ProductDto>>(products).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(int id)
         {
-            return await _unitOfWork.Products.GetAsync(id) != null;
+            return await _unitOfWork.Products.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Products.FindAllAsync(p => ids.Contains(p.ProductId))).Count() == ids.Length;
+            return (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId))).items.Count() == ids.Length;
         }
     }
 }

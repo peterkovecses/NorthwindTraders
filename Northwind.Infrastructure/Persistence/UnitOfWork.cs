@@ -1,5 +1,5 @@
-﻿using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Infrastructure.Persistence.Repositories;
 
 namespace Northwind.Infrastructure.Persistence
@@ -7,21 +7,23 @@ namespace Northwind.Infrastructure.Persistence
     public class UnitOfWork : IUnitOfWork
     {
         private readonly NorthwindContext _context;
+        private readonly IStrategyResolver _strategyResolver;
 
-        public UnitOfWork(NorthwindContext context)
+        public UnitOfWork(NorthwindContext context, IStrategyResolver strategyResolver)
         {
             _context = context;
-            Categories = new CategoryRepository(_context);
-            CustomerDemographics = new CustomerDemographicRepository(_context);
-            Customers = new CustomerRepository(_context);
-            Employees = new EmployeeRepository(_context);
-            OrderDetails = new OrderDetailRepository(_context);
-            Orders = new OrderRepository(_context);
-            Products = new ProductRepository(_context);
-            Regions = new RegionRepository(_context);
-            Shippers = new ShipperRepository(_context);
-            Suppliers = new SupplierRepository(_context);
-            Territories = new TerritoryRepository(_context);
+            _strategyResolver = strategyResolver;
+            Categories = new CategoryRepository(_context, _strategyResolver);
+            CustomerDemographics = new CustomerDemographicRepository(_context, _strategyResolver);
+            Customers = new CustomerRepository(_context, _strategyResolver);
+            Employees = new EmployeeRepository(_context, _strategyResolver);
+            OrderDetails = new OrderDetailRepository(_context, _strategyResolver);
+            Orders = new OrderRepository(_context, _strategyResolver);
+            Products = new ProductRepository(_context, _strategyResolver);
+            Regions = new RegionRepository(_context, _strategyResolver);
+            Shippers = new ShipperRepository(_context, _strategyResolver);
+            Suppliers = new SupplierRepository(_context, _strategyResolver);
+            Territories = new TerritoryRepository(_context, _strategyResolver);
         }
 
         public ICategoryRepository Categories { get; private set; }

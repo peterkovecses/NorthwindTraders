@@ -1,11 +1,12 @@
-﻿using Northwind.Domain.Common.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class CustomerDemographicRepository : GenericRepository<CustomerDemographic, string>, ICustomerDemographicRepository
     {
-        public CustomerDemographicRepository(NorthwindContext context) : base(context)
+        public CustomerDemographicRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
         {
 
         }

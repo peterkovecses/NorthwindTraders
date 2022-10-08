@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using Northwind.Application.Common.Extensions;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
-using Northwind.Application.Common.Responses;
 using Northwind.Application.Dtos;
-using Northwind.Domain.Common.Interfaces;
-using Northwind.Domain.Common.Queries;
+using Northwind.Application.Extensions;
+using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -23,25 +21,18 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<Response<IEnumerable<CategoryDto>>> GetAllAsync()
+        public async Task<PagedResponse<CategoryDto>> GetAsync(IPaginationQuery paginationQuery)
         {
-            var categories = await _unitOfWork.Categories.GetAllAsync();
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
-        }
-
-        public async Task<PagedResponse<CategoryDto>> GetAllAsync(PaginationQuery paginationQuery)
-        {
-            var paginationFilter = _mapper.Map<PaginationFilter>(paginationQuery);
-            var (totalItems, categories) = await _unitOfWork.Categories.GetAllAsync(paginationFilter);
+            var (totalItems, categories) = await _unitOfWork.Categories.GetAsync(paginationQuery);
             var (next, previous) = _uriService.GetNavigations(paginationQuery);
 
             return _mapper.Map<IEnumerable<CategoryDto>>(categories)
                 .ToPagedResponse(paginationQuery, totalItems, next, previous);
         }
-         
-        public async Task<Response<CategoryDto>> GetAsync(int id)
+
+        public async Task<Response<CategoryDto>> FindByIdAsync(int id)
         {
-            var category = await _unitOfWork.Categories.GetAsync(id);
+            var category = await _unitOfWork.Categories.FindByIdAsync(id);
 
             return _mapper.Map<CategoryDto>(category).ToResponse();
         }
@@ -60,7 +51,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto)
         {
-            var categoryInDb = await _unitOfWork.Categories.GetAsync(categoryDto.CategoryId);
+            var categoryInDb = await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId);
 
             _mapper.Map(categoryDto, categoryInDb);
             await _unitOfWork.CompleteAsync();
@@ -68,21 +59,11 @@ namespace Northwind.Application.Services
             return categoryDto.ToResponse();
         }
 
-        public async Task<Response<CategoryDto>> DeleteAsync(int id)
+        public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids)
         {
-            var category = await _unitOfWork.Categories.GetAsync(id);
+            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).items;
 
-            _unitOfWork.Categories.Remove(category);
-            await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<CategoryDto>(category).ToResponse();
-        }
-
-        public async Task<Response<IEnumerable<CategoryDto>>> DeleteRangeAsync(int[] ids)
-        {
-            var categories = await _unitOfWork.Categories.FindAllAsync(c => ids.Contains(c.CategoryId));
-
-            _unitOfWork.Categories.RemoveRange(categories);
+            _unitOfWork.Categories.Remove(categories);
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
@@ -90,13 +71,13 @@ namespace Northwind.Application.Services
 
         public async Task<bool> IsExists(int id)
         {
-            return await _unitOfWork.Categories.GetAsync(id) != null;
+            return await _unitOfWork.Categories.FindByIdAsync(id) != null;
         }
 
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Categories.FindAllAsync(c => ids.Contains(c.CategoryId))).Count() == ids.Length;
+            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).items.Count() == ids.Length;
         }
     }
 }

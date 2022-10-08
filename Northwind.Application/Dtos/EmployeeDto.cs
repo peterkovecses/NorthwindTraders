@@ -1,6 +1,4 @@
-﻿using Northwind.Application.Common;
-
-namespace Northwind.Application.Dtos
+﻿namespace Northwind.Application.Dtos
 {
     public class EmployeeDto
     {

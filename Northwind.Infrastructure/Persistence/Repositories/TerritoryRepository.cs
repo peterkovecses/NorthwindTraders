@@ -1,11 +1,12 @@
-﻿using Northwind.Domain.Common.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class TerritoryRepository : GenericRepository<Territory, string>, ITerritoryRepository
     {
-        public TerritoryRepository(NorthwindContext context) : base(context)
+        public TerritoryRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
         {
         }
 

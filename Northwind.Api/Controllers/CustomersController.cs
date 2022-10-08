@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Northwind.Application.Common.Interfaces;
-using Northwind.Application.Common.Queries;
 using Northwind.Application.Dtos;
+using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Models;
 
 namespace Northwind.Api.Controllers
 {
@@ -20,7 +19,7 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomers([FromQuery] PaginationQuery paginationQuery)
         {
-            var response = await _customerService.GetAllAsync(paginationQuery);
+            var response = await _customerService.GetAsync(paginationQuery);
 
             return Ok(response);
         }
@@ -28,7 +27,7 @@ namespace Northwind.Api.Controllers
         [HttpGet("{id}", Name = "GetCustomer")]
         public async Task<IActionResult> GetCustomer(string id)
         {
-            var response = await _customerService.GetAsync(id);
+            var response = await _customerService.FindByIdAsync(id);
 
             if (response.Data == null)
             {
@@ -83,7 +82,7 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var response = await _customerService.DeleteRangeAsync(ids);
+            var response = await _customerService.DeleteAsync(ids);
 
             return Ok(response);
         }
