@@ -15,6 +15,12 @@ namespace Northwind.Application.Extensions
             var type = typeof(T);
             var expression2 = Expression.Parameter(type, "t");
             var property = type.GetProperty(sorting.SortBy);
+
+            if (property == null)
+            {
+                return items;
+            }
+
             var expression1 = Expression.MakeMemberAccess(expression2, property);
             var lambda = Expression.Lambda(expression1, expression2);
             var result = Expression.Call(
