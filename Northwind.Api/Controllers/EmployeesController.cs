@@ -18,17 +18,17 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters)
+        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {
-            var response = await _employeeService.GetAsync(queryParameters);
+            var response = await _employeeService.GetAsync(queryParameters, token);
 
             return Ok(response);
         }
 
         [HttpGet("{id}", Name = "GetEmployee")]
-        public async Task<IActionResult> GetEmployee(int id)
+        public async Task<IActionResult> GetEmployee(int id, CancellationToken token)
         {
-            var response = await _employeeService.FindByIdAsync(id);
+            var response = await _employeeService.FindByIdAsync(id, token);
 
             if (response.Data == null)
             {
@@ -39,20 +39,20 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateEmployee(EmployeeDto employee)
+        public async Task<IActionResult> CreateEmployee(EmployeeDto employee, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var response = await _employeeService.CreateAsync(employee);
+            var response = await _employeeService.CreateAsync(employee, token);
 
             return CreatedAtAction("GetEmployee", new { id = response.Data.EmployeeId }, response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEmployee(int id, EmployeeDto employee)
+        public async Task<IActionResult> UpdateEmployee(int id, EmployeeDto employee, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
@@ -64,26 +64,26 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (!await _employeeService.IsExists(id))
+            if (!await _employeeService.IsExists(id, token))
             {
                 return NotFound();
             }
 
-            var response = await _employeeService.UpdateAsync(employee);
+            var response = await _employeeService.UpdateAsync(employee, token);
 
             return Ok(response);
         }
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteEmployees([FromQuery] int[] ids)
+        public async Task<IActionResult> DeleteEmployees([FromQuery] int[] ids, CancellationToken token)
         {
-            if (!await _employeeService.AreExists(ids))
+            if (!await _employeeService.AreExists(ids, token))
             {
                 return NotFound();
             }
 
-            var response = await _employeeService.DeleteAsync(ids);
+            var response = await _employeeService.DeleteAsync(ids, token);
 
             return Ok(response);
         }

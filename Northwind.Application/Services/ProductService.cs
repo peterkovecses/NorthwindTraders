@@ -22,9 +22,9 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter> queryParameters)
+        public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -32,18 +32,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<ProductDto>> FindByIdAsync(int id)
+        public async Task<Response<ProductDto>> FindByIdAsync(int id, CancellationToken token = default)
         {
-            var product = await _unitOfWork.Products.FindByIdAsync(id);
+            var product = await _unitOfWork.Products.FindByIdAsync(id, token);
 
             return _mapper.Map<ProductDto>(product).ToResponse();
         }
 
-        public async Task<Response<ProductDto>> CreateAsync(ProductDto productDto)
+        public async Task<Response<ProductDto>> CreateAsync(ProductDto productDto, CancellationToken token = default)
         {
             var product = _mapper.Map<Product>(productDto);
 
-            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.Products.AddAsync(product, token);
             await _unitOfWork.CompleteAsync();
 
             productDto.ProductId = product.ProductId;
@@ -51,9 +51,9 @@ namespace Northwind.Application.Services
             return productDto.ToResponse();
         }
 
-        public async Task<Response<ProductDto>> UpdateAsync(ProductDto productDto)
+        public async Task<Response<ProductDto>> UpdateAsync(ProductDto productDto, CancellationToken token = default)
         {
-            var productInDb = await _unitOfWork.Products.FindByIdAsync(productDto.ProductId);
+            var productInDb = await _unitOfWork.Products.FindByIdAsync(productDto.ProductId, token);
 
             _mapper.Map(productDto, productInDb);
             await _unitOfWork.CompleteAsync();
@@ -61,9 +61,9 @@ namespace Northwind.Application.Services
             return productDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<ProductDto>>> DeleteAsync(int[] ids)
+        public async Task<Response<IEnumerable<ProductDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var products = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId))).Items;
+            var products = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId), token: token)).Items;
 
             _unitOfWork.Products.Remove(products);
             await _unitOfWork.CompleteAsync();
@@ -71,15 +71,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<ProductDto>>(products).ToResponse();
         }
 
-        public async Task<bool> IsExists(int id)
+        public async Task<bool> IsExists(int id, CancellationToken token = default)
         {
-            return await _unitOfWork.Products.FindByIdAsync(id) != null;
+            return await _unitOfWork.Products.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(int[] ids)
+        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId), token: token)).Items.Count() == ids.Length;
         }
     }
 }

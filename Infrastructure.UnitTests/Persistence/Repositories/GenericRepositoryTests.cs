@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
+using Newtonsoft.Json.Linq;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
@@ -97,7 +98,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             query = query.Where(predicate);
 
             var noPaginationStrategyMock = new Mock<IPaginationStrategy<TestClass>>();
-            noPaginationStrategyMock.Setup(strategy => strategy.GetItemsAsync());
+            noPaginationStrategyMock.Setup(strategy => strategy.GetItemsAsync(new CancellationToken()));
             _strategyResolverMock.Setup(s => s.GetStrategy(query, null)).Returns(noPaginationStrategyMock.Object);
 
             var sut = new TestGenericRepository(_contextMock.Object, _strategyResolverMock.Object);
@@ -114,9 +115,9 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         public async Task FindById_WhenValidIdPassed_EntryIsReturnedWithTheSameId()
         {
             // Arrange
-            var testObject = new TestClass { Id = 3 };
+            var testObject = new TestClass { Id = 6 };
             TestEntities.Add(testObject);
-            _dbSetMock.Setup(d => d.FindAsync(testObject.Id)).ReturnsAsync(testObject);
+            _dbSetMock.Setup(d => d.FindAsync(new object?[] { testObject.Id }, new CancellationToken())).ReturnsAsync(testObject);
             var sut = new TestGenericRepository(_contextMock.Object, _strategyResolverMock.Object);
 
             // Act

@@ -16,22 +16,22 @@ namespace Northwind.Infrastructure.Persistence.Strategies
             _paginationQuery = pagination;
         }
 
-        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync()
+        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync(CancellationToken token)
         {
-            var totalItems = await _query.CountAsync();
-            var items = await Paginate(_paginationQuery, _query, totalItems);
+            var totalItems = await _query.CountAsync(token);
+            var items = await Paginate(_paginationQuery, _query, totalItems, token);
 
             return new RepositoryCollectionResult<TEntity>(totalItems, items);
         }
 
-        private static async Task<IEnumerable<TEntity>> Paginate(Pagination? pagination, IQueryable<TEntity> query, int totalItems)
+        private static async Task<IEnumerable<TEntity>> Paginate(Pagination? pagination, IQueryable<TEntity> query, int totalItems, CancellationToken token)
         {
             if (totalItems > 0)
             {
                 return await query
                 .Skip(pagination.GetItemsToSkip())
                 .Take(pagination.GetItemsToTake(totalItems))
-                .ToListAsync();
+                .ToListAsync(token);
             }
             else
             {

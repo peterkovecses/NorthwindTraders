@@ -21,9 +21,9 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters)
+        public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -31,18 +31,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<OrderDto>> FindByIdAsync(int id)
+        public async Task<Response<OrderDto>> FindByIdAsync(int id, CancellationToken token = default)
         {
-            var order = await _unitOfWork.Orders.FindByIdAsync(id);
+            var order = await _unitOfWork.Orders.FindByIdAsync(id, token);
 
             return _mapper.Map<OrderDto>(order).ToResponse();
         }
 
-        public async Task<Response<OrderDto>> CreateAsync(OrderDto orderDto)
+        public async Task<Response<OrderDto>> CreateAsync(OrderDto orderDto, CancellationToken token = default)
         {
             var order = _mapper.Map<Order>(orderDto);
 
-            await _unitOfWork.Orders.AddAsync(order);
+            await _unitOfWork.Orders.AddAsync(order, token);
             await _unitOfWork.CompleteAsync();
 
             orderDto.OrderId = order.OrderId;
@@ -50,9 +50,9 @@ namespace Northwind.Application.Services
             return orderDto.ToResponse();
         }
 
-        public async Task<Response<OrderDto>> UpdateAsync(OrderDto orderDto)
+        public async Task<Response<OrderDto>> UpdateAsync(OrderDto orderDto, CancellationToken token = default)
         {
-            var orderInDb = await _unitOfWork.Orders.FindByIdAsync(orderDto.OrderId);
+            var orderInDb = await _unitOfWork.Orders.FindByIdAsync(orderDto.OrderId, token);
 
             _mapper.Map(orderDto, orderInDb);
             await _unitOfWork.CompleteAsync();
@@ -60,9 +60,9 @@ namespace Northwind.Application.Services
             return orderDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids)
+        public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).Items;
+            var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId), token: token)).Items;
 
             _unitOfWork.Orders.Remove(orders);
             await _unitOfWork.CompleteAsync();
@@ -70,15 +70,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<OrderDto>>(orders).ToResponse();
         }
 
-        public async Task<bool> IsExists(int id)
+        public async Task<bool> IsExists(int id, CancellationToken token = default)
         {
-            return await _unitOfWork.Orders.FindByIdAsync(id) != null;
+            return await _unitOfWork.Orders.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(int[] ids)
+        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId), token: token)).Items.Count() == ids.Length;
         }
     }
 }

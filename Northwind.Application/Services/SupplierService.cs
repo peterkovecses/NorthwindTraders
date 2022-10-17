@@ -22,9 +22,9 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<SupplierDto>> GetAsync(QueryParameters<SupplierFilter> queryParameters)
+        public async Task<PagedResponse<SupplierDto>> GetAsync(QueryParameters<SupplierFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -32,18 +32,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<SupplierDto>> FindByIdAsync(int id)
+        public async Task<Response<SupplierDto>> FindByIdAsync(int id, CancellationToken token = default)
         {
-            var suppliers = await _unitOfWork.Suppliers.FindByIdAsync(id);
+            var suppliers = await _unitOfWork.Suppliers.FindByIdAsync(id, token);
 
             return _mapper.Map<SupplierDto>(suppliers).ToResponse();
         }
 
-        public async Task<Response<SupplierDto>> CreateAsync(SupplierDto supplierDto)
+        public async Task<Response<SupplierDto>> CreateAsync(SupplierDto supplierDto, CancellationToken token = default)
         {
             var supplier = _mapper.Map<Supplier>(supplierDto);
 
-            await _unitOfWork.Suppliers.AddAsync(supplier);
+            await _unitOfWork.Suppliers.AddAsync(supplier, token);
             await _unitOfWork.CompleteAsync();
 
             supplierDto.SupplierId = supplier.SupplierId;
@@ -51,9 +51,9 @@ namespace Northwind.Application.Services
             return supplierDto.ToResponse();
         }
 
-        public async Task<Response<SupplierDto>> UpdateAsync(SupplierDto supplierDto)
+        public async Task<Response<SupplierDto>> UpdateAsync(SupplierDto supplierDto, CancellationToken token = default)
         {
-            var supplierInDb = await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId);
+            var supplierInDb = await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId, token);
             _mapper.Map(supplierDto, supplierInDb);
 
             await _unitOfWork.CompleteAsync();
@@ -61,9 +61,9 @@ namespace Northwind.Application.Services
             return supplierDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<SupplierDto>>> DeleteAsync(int[] ids)
+        public async Task<Response<IEnumerable<SupplierDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId))).Items;
+            var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).Items;
 
             _unitOfWork.Suppliers.Remove(suppliers);
             await _unitOfWork.CompleteAsync();
@@ -71,15 +71,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<SupplierDto>>(suppliers).ToResponse();
         }
 
-        public async Task<bool> IsExists(int id)
+        public async Task<bool> IsExists(int id, CancellationToken token = default)
         {
-            return await _unitOfWork.Suppliers.FindByIdAsync(id) != null;
+            return await _unitOfWork.Suppliers.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(int[] ids)
+        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).Items.Count() == ids.Length;
         }
     }
 }

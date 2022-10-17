@@ -18,17 +18,19 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCustomerDemographic([FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters)
+        public async Task<IActionResult> GetCustomerDemographic(
+            [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
+            CancellationToken token)
         {
-            var response = await _customerDemographicService.GetAsync(queryParameters);
+            var response = await _customerDemographicService.GetAsync(queryParameters, token);
 
             return Ok(response);
         }
 
         [HttpGet("{id}", Name = "GetCustomerDemographic")]
-        public async Task<IActionResult> GetCustomerDemographic(string id)
+        public async Task<IActionResult> GetCustomerDemographic(string id, CancellationToken token)
         {
-            var response = await _customerDemographicService.FindByIdAsync(id);
+            var response = await _customerDemographicService.FindByIdAsync(id, token);
 
             if (response.Data == null)
             {
@@ -39,20 +41,23 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCustomerDemographic(CustomerDemographicDto customerDemographicDto)
+        public async Task<IActionResult> CreateCustomerDemographic(CustomerDemographicDto customerDemographicDto, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var response = await _customerDemographicService.CreateAsync(customerDemographicDto);
+            var response = await _customerDemographicService.CreateAsync(customerDemographicDto, token);
 
             return CreatedAtAction("GetCustomerDemographic", new { id = response.Data.CustomerTypeId }, response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomerDemographic(string id, CustomerDemographicDto customerDemographicDto)
+        public async Task<IActionResult> UpdateCustomerDemographic(
+            string id, 
+            CustomerDemographicDto customerDemographicDto, 
+            CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
@@ -69,21 +74,21 @@ namespace Northwind.Api.Controllers
                 return NotFound();
             }
 
-            var response = await _customerDemographicService.UpdateAsync(customerDemographicDto);
+            var response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
 
             return Ok(response);
         }
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteCustomerDemographics([FromQuery] string[] ids)
+        public async Task<IActionResult> DeleteCustomerDemographics([FromQuery] string[] ids, CancellationToken token)
         {
-            if (!await _customerDemographicService.AreExists(ids))
+            if (!await _customerDemographicService.AreExists(ids, token))
             {
                 return NotFound();
             }
 
-            var response = await _customerDemographicService.DeleteAsync(ids);
+            var response = await _customerDemographicService.DeleteAsync(ids, token);
 
             return Ok(response);
         }

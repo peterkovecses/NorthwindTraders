@@ -13,9 +13,9 @@ namespace Northwind.Infrastructure.Persistence.Strategies
             _query = query;
         }
 
-        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync()
+        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync(CancellationToken token)
         {
-            var nonPaginatedItems = await _query.ToListAsync();
+            var nonPaginatedItems = await _query.ToListAsync(token);
             return new RepositoryCollectionResult<TEntity>(nonPaginatedItems.Count, nonPaginatedItems);
         }
     }

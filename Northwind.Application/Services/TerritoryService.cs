@@ -22,9 +22,9 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters)
+        public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -32,18 +32,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<TerritoryDto>> FindByIdAsync(string id)
+        public async Task<Response<TerritoryDto>> FindByIdAsync(string id, CancellationToken token = default)
         {
-            var territory = await _unitOfWork.Territories.FindByIdAsync(id);
+            var territory = await _unitOfWork.Territories.FindByIdAsync(id, token);
 
             return _mapper.Map<TerritoryDto>(territory).ToResponse();
         }
 
-        public async Task<Response<TerritoryDto>> CreateAsync(TerritoryDto territoryDto)
+        public async Task<Response<TerritoryDto>> CreateAsync(TerritoryDto territoryDto, CancellationToken token = default)
         {
             var territory = _mapper.Map<Territory>(territoryDto);
 
-            await _unitOfWork.Territories.AddAsync(territory);
+            await _unitOfWork.Territories.AddAsync(territory, token);
             await _unitOfWork.CompleteAsync();
 
             territoryDto.TerritoryId = territory.TerritoryId;
@@ -51,9 +51,9 @@ namespace Northwind.Application.Services
             return territoryDto.ToResponse();
         }
 
-        public async Task<Response<TerritoryDto>> UpdateAsync(TerritoryDto territoryDto)
+        public async Task<Response<TerritoryDto>> UpdateAsync(TerritoryDto territoryDto, CancellationToken token = default)
         {
-            var territoryInDb = await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId);
+            var territoryInDb = await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId, token);
             _mapper.Map(territoryDto, territoryInDb);
 
             await _unitOfWork.CompleteAsync();
@@ -61,9 +61,9 @@ namespace Northwind.Application.Services
             return territoryDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids)
+        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId))).Items;
+            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).Items;
 
             _unitOfWork.Territories.Remove(territories);
             await _unitOfWork.CompleteAsync();
@@ -71,15 +71,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
         }
 
-        public async Task<bool> IsExists(string id)
+        public async Task<bool> IsExists(string id, CancellationToken token = default)
         {
-            return await _unitOfWork.Territories.FindByIdAsync(id) != null;
+            return await _unitOfWork.Territories.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(string[] ids)
+        public async Task<bool> AreExists(string[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).Items.Count() == ids.Length;
         }
     }
 }

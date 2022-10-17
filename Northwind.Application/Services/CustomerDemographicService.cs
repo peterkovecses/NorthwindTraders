@@ -22,9 +22,11 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CustomerDemographicDto>> GetAsync(QueryParameters<CustomerDemographicFilter> queryParameters)
+        public async Task<PagedResponse<CustomerDemographicDto>> GetAsync(
+            QueryParameters<CustomerDemographicFilter> queryParameters, 
+            CancellationToken token = default)
         {
-            var result = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -32,18 +34,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<CustomerDemographicDto>> FindByIdAsync(string id)
+        public async Task<Response<CustomerDemographicDto>> FindByIdAsync(string id, CancellationToken token = default)
         {
-            var customerDemographic = await _unitOfWork.CustomerDemographics.FindByIdAsync(id);
+            var customerDemographic = await _unitOfWork.CustomerDemographics.FindByIdAsync(id, token);
 
             return _mapper.Map<CustomerDemographicDto>(customerDemographic).ToResponse();
         }
 
-        public async Task<Response<CustomerDemographicDto>> CreateAsync(CustomerDemographicDto customerDemographicDto)
+        public async Task<Response<CustomerDemographicDto>> CreateAsync(CustomerDemographicDto customerDemographicDto, CancellationToken token = default)
         {
             var customerDemographic = _mapper.Map<CustomerDemographic>(customerDemographicDto);
 
-            await _unitOfWork.CustomerDemographics.AddAsync(customerDemographic);
+            await _unitOfWork.CustomerDemographics.AddAsync(customerDemographic, token);
             await _unitOfWork.CompleteAsync();
 
             customerDemographicDto.CustomerTypeId = customerDemographic.CustomerTypeId;
@@ -51,9 +53,9 @@ namespace Northwind.Application.Services
             return customerDemographicDto.ToResponse();
         }
 
-        public async Task<Response<CustomerDemographicDto>> UpdateAsync(CustomerDemographicDto customerDemographicDto)
+        public async Task<Response<CustomerDemographicDto>> UpdateAsync(CustomerDemographicDto customerDemographicDto, CancellationToken token = default)
         {
-            var customerDemographicInDb = await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId);
+            var customerDemographicInDb = await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId, token);
 
             customerDemographicInDb.CustomerDesc = customerDemographicDto.CustomerDesc;
             await _unitOfWork.CompleteAsync();
@@ -61,9 +63,11 @@ namespace Northwind.Application.Services
             return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
         }
 
-        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids)
+        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var customerDemographics = (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId))).Items;
+            var customerDemographics = 
+                (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
+                .Items;
 
             _unitOfWork.CustomerDemographics.Remove(customerDemographics);
             await _unitOfWork.CompleteAsync();
@@ -71,15 +75,16 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();
         }
 
-        public async Task<bool> IsExists(string id)
+        public async Task<bool> IsExists(string id, CancellationToken token = default)
         {
-            return await _unitOfWork.CustomerDemographics.FindByIdAsync(id) != null;
+            return await _unitOfWork.CustomerDemographics.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(string[] ids)
+        public async Task<bool> AreExists(string[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
+                .Items.Count() == ids.Length;
         }
     }
 }

@@ -18,17 +18,17 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter> queryParameters)
+        public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter> queryParameters, CancellationToken token)
         {
-            var response = await _customerService.GetAsync(queryParameters);
+            var response = await _customerService.GetAsync(queryParameters, token);
 
             return Ok(response);
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
-        public async Task<IActionResult> GetCustomer(string id)
+        public async Task<IActionResult> GetCustomer(string id, CancellationToken token)
         {
-            var response = await _customerService.FindByIdAsync(id);
+            var response = await _customerService.FindByIdAsync(id, token);
 
             if (response.Data == null)
             {
@@ -39,20 +39,20 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCustomer(CustomerDto customer)
+        public async Task<IActionResult> CreateCustomer(CustomerDto customer, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var response = await _customerService.CreateAsync(customer);
+            var response = await _customerService.CreateAsync(customer, token);
 
             return CreatedAtAction("GetCustomer", new { id = customer.CustomerId }, response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(string id, CustomerDto customer)
+        public async Task<IActionResult> UpdateCustomer(string id, CustomerDto customer, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
@@ -64,26 +64,26 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (! await _customerService.IsExists(id))
+            if (! await _customerService.IsExists(id, token))
             {
                 return NotFound();
             }
 
-            var response = await _customerService.UpdateAsync(customer);
+            var response = await _customerService.UpdateAsync(customer, token);
 
             return Ok(response);
         }
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids)
+        public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids, CancellationToken token)
         {
-            if (!await _customerService.AreExists(ids))
+            if (!await _customerService.AreExists(ids, token))
             {
                 return NotFound();
             }
 
-            var response = await _customerService.DeleteAsync(ids);
+            var response = await _customerService.DeleteAsync(ids, token);
 
             return Ok(response);
         }

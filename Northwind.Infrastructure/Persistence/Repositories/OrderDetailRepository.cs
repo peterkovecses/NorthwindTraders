@@ -12,12 +12,12 @@ namespace Northwind.Infrastructure.Persistence.Repositories
         {
         }
 
-        public override async Task<OrderDetail>? FindByIdAsync(IOrderDetailKey key)
+        public override async Task<OrderDetail>? FindByIdAsync(IOrderDetailKey key, CancellationToken token = default)
         {
-            return await _context.Set<OrderDetail>().FindAsync(key.OrderId, key.ProductId);
+            return await _context.Set<OrderDetail>().FindAsync(key.OrderId, key.ProductId, token);
         }
 
-        public async Task<IEnumerable<OrderDetail>> FindByIdsAsync(IOrderDetailKey[] keys)
+        public async Task<IEnumerable<OrderDetail>> FindByIdsAsync(IOrderDetailKey[] keys, CancellationToken token)
         {
             var predicate = PredicateBuilder.New<OrderDetail>();
 
@@ -26,7 +26,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
                 predicate = predicate.Or(orderDetail => orderDetail.OrderId == key.OrderId && orderDetail.ProductId == key.ProductId);
             }
 
-            return await NorthwindContext.OrderDetails.AsExpandable().Where(predicate).ToListAsync();
+            return await NorthwindContext.OrderDetails.AsExpandable().Where(predicate).ToListAsync(token);
         }
 
         public NorthwindContext NorthwindContext

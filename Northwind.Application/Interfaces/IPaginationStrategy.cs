@@ -4,6 +4,6 @@ namespace Northwind.Application.Interfaces
 {
     public interface IPaginationStrategy<TEntity> where TEntity : class
     {
-        Task<RepositoryCollectionResult<TEntity>> GetItemsAsync();
+        Task<RepositoryCollectionResult<TEntity>> GetItemsAsync(CancellationToken token);
     }
 }

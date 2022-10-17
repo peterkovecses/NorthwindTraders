@@ -22,9 +22,11 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<OrderDetailDto>> GetAsync(QueryParameters<OrderDetailFilter> queryParameters)
+        public async Task<PagedResponse<OrderDetailDto>> GetAsync(
+            QueryParameters<OrderDetailFilter> queryParameters, 
+            CancellationToken token = default)
         {
-            var result = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -32,18 +34,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<OrderDetailDto>> FindByIdAsync(OrderDetailKey id)
+        public async Task<Response<OrderDetailDto>> FindByIdAsync(OrderDetailKey id, CancellationToken token = default)
         {
-            var orderDetail = await _unitOfWork.OrderDetails.FindByIdAsync(id);
+            var orderDetail = await _unitOfWork.OrderDetails.FindByIdAsync(id, token);
 
             return _mapper.Map<OrderDetailDto>(orderDetail).ToResponse();
         }
 
-        public async Task<Response<OrderDetailDto>> CreateAsync(OrderDetailDto orderDetailDto)
+        public async Task<Response<OrderDetailDto>> CreateAsync(OrderDetailDto orderDetailDto, CancellationToken token = default)
         {
             var orderDetail = _mapper.Map<OrderDetail>(orderDetailDto);
 
-            await _unitOfWork.OrderDetails.AddAsync(orderDetail);
+            await _unitOfWork.OrderDetails.AddAsync(orderDetail, token);
             await _unitOfWork.CompleteAsync();
 
             orderDetailDto.OrderId = orderDetail.OrderId;
@@ -52,10 +54,10 @@ namespace Northwind.Application.Services
             return orderDetailDto.ToResponse();
         }
 
-        public async Task<Response<OrderDetailDto>> UpdateAsync(OrderDetailDto orderDetailDto)
+        public async Task<Response<OrderDetailDto>> UpdateAsync(OrderDetailDto orderDetailDto, CancellationToken token = default)
         {
             var key = new OrderDetailKey(orderDetailDto.OrderId, orderDetailDto.ProductId);
-            var orderDetailInDb = await _unitOfWork.OrderDetails.FindByIdAsync(key);
+            var orderDetailInDb = await _unitOfWork.OrderDetails.FindByIdAsync(key, token);
 
             _mapper.Map(orderDetailDto, orderDetailInDb);
             await _unitOfWork.CompleteAsync();
@@ -63,9 +65,9 @@ namespace Northwind.Application.Services
             return orderDetailDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<OrderDetailDto>>> DeleteAsync(OrderDetailKey[] ids)
+        public async Task<Response<IEnumerable<OrderDetailDto>>> DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
         {
-            var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids);
+            var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
 
             _unitOfWork.OrderDetails.Remove(orderDetailsToRemove);
             await _unitOfWork.CompleteAsync();
@@ -73,14 +75,14 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetailsToRemove).ToResponse();
         }
 
-        public async Task<bool> IsExists(OrderDetailKey id)
+        public async Task<bool> IsExists(OrderDetailKey id, CancellationToken token = default)
         {
-            return await _unitOfWork.OrderDetails.FindByIdAsync(id) != null;
+            return await _unitOfWork.OrderDetails.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(OrderDetailKey[] ids)
+        public async Task<bool> AreExists(OrderDetailKey[] ids, CancellationToken token = default)
         {
-            var orderDetails = await _unitOfWork.OrderDetails.FindByIdsAsync(ids);
+            var orderDetails = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
 
             return orderDetails.Count() == ids.Length;
         }

@@ -17,7 +17,11 @@ namespace Northwind.Application.Services
         private readonly IPaginatedUriService _uriService;
         private readonly IEmployeePredicateBuilder _predicateBuilder;
 
-        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService, IEmployeePredicateBuilder predicateBuilder)
+        public EmployeeService(
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            IPaginatedUriService uriService, 
+            IEmployeePredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -25,7 +29,7 @@ namespace Northwind.Application.Services
             _predicateBuilder = predicateBuilder;
         }
 
-        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters)
+        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token = default)
         {
             RepositoryCollectionResult<Employee> result;
 
@@ -33,11 +37,11 @@ namespace Northwind.Application.Services
             {
                 var predicate = _predicateBuilder.GetPredicate(queryParameters);
 
-                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate);
+                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
             }
             else
             {
-                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             }
 
             queryParameters.SetPaginationIfNull(result.TotalItems);
@@ -47,18 +51,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<EmployeeDto>> FindByIdAsync(int id)
+        public async Task<Response<EmployeeDto>> FindByIdAsync(int id, CancellationToken token)
         {
-            var employee = await _unitOfWork.Employees.FindByIdAsync(id);
+            var employee = await _unitOfWork.Employees.FindByIdAsync(id, token);
 
             return _mapper.Map<EmployeeDto>(employee).ToResponse();
         }
 
-        public async Task<Response<EmployeeDto>> CreateAsync(EmployeeDto employeeDto)
+        public async Task<Response<EmployeeDto>> CreateAsync(EmployeeDto employeeDto, CancellationToken token = default)
         {
             var employee = _mapper.Map<Employee>(employeeDto);
 
-            await _unitOfWork.Employees.AddAsync(employee);
+            await _unitOfWork.Employees.AddAsync(employee, token);
             await _unitOfWork.CompleteAsync();
 
             employeeDto.EmployeeId = employee.EmployeeId;
@@ -66,9 +70,9 @@ namespace Northwind.Application.Services
             return employeeDto.ToResponse();
         }
 
-        public async Task<Response<EmployeeDto>> UpdateAsync(EmployeeDto employeeDto)
+        public async Task<Response<EmployeeDto>> UpdateAsync(EmployeeDto employeeDto, CancellationToken token)
         {
-            var employeeInDb = await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId);
+            var employeeInDb = await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId, token);
 
             _mapper.Map(employeeDto, employeeInDb);
             await _unitOfWork.CompleteAsync();
@@ -76,9 +80,9 @@ namespace Northwind.Application.Services
             return employeeDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids)
+        public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids, CancellationToken token)
         {
-            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).Items;
+            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).Items;
 
             _unitOfWork.Employees.Remove(employees);
             await _unitOfWork.CompleteAsync();
@@ -86,15 +90,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees).ToResponse();
         }
 
-        public async Task<bool> IsExists(int id)
+        public async Task<bool> IsExists(int id, CancellationToken token = default)
         {
-            return await _unitOfWork.Employees.FindByIdAsync(id) != null;
+            return await _unitOfWork.Employees.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(int[] ids)
+        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).Items.Count() == ids.Length;
         }        
     }
 }

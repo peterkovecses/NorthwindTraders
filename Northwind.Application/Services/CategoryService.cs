@@ -22,18 +22,9 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters<CategoryFilter> queryParameters)
+        public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters<CategoryFilter> queryParameters, CancellationToken token = default)
         {
-            if (queryParameters.Filter != null)
-            {
-
-            }
-
-            else
-            {
-
-            }
-            var result = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            var result = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
@@ -41,18 +32,18 @@ namespace Northwind.Application.Services
                 .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
-        public async Task<Response<CategoryDto>> FindByIdAsync(int id)
+        public async Task<Response<CategoryDto>> FindByIdAsync(int id, CancellationToken token = default)
         {
-            var category = await _unitOfWork.Categories.FindByIdAsync(id);
+            var category = await _unitOfWork.Categories.FindByIdAsync(id, token);
 
             return _mapper.Map<CategoryDto>(category).ToResponse();
         }
 
-        public async Task<Response<CategoryDto>> CreateAsync(CategoryDto categoryDto)
+        public async Task<Response<CategoryDto>> CreateAsync(CategoryDto categoryDto, CancellationToken token = default)
         {
             var category = _mapper.Map<Category>(categoryDto);
 
-            await _unitOfWork.Categories.AddAsync(category);
+            await _unitOfWork.Categories.AddAsync(category, token);
             await _unitOfWork.CompleteAsync();
 
             categoryDto.CategoryId = category.CategoryId;
@@ -60,9 +51,9 @@ namespace Northwind.Application.Services
             return categoryDto.ToResponse();
         }
 
-        public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto)
+        public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto, CancellationToken token = default)
         {
-            var categoryInDb = await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId);
+            var categoryInDb = await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId, token);
 
             _mapper.Map(categoryDto, categoryInDb);
             await _unitOfWork.CompleteAsync();
@@ -70,9 +61,9 @@ namespace Northwind.Application.Services
             return categoryDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids)
+        public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids, CancellationToken token = default )
         {
-            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).Items;
+            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).Items;
 
             _unitOfWork.Categories.Remove(categories);
             await _unitOfWork.CompleteAsync();
@@ -80,15 +71,15 @@ namespace Northwind.Application.Services
             return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
         }
 
-        public async Task<bool> IsExists(int id)
+        public async Task<bool> IsExists(int id, CancellationToken token = default)
         {
-            return await _unitOfWork.Categories.FindByIdAsync(id) != null;
+            return await _unitOfWork.Categories.FindByIdAsync(id, token) != null;
         }
 
-        public async Task<bool> AreExists(int[] ids)
+        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).Items.Count() == ids.Length;
+            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).Items.Count() == ids.Length;
         }
     }
 }

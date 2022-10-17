@@ -18,19 +18,19 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters)
+        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters, CancellationToken token)
         {
-            var response = await _orderDetailService.GetAsync(queryParameters);
+            var response = await _orderDetailService.GetAsync(queryParameters, token);
 
             return Ok(response);
         }
 
         [HttpGet("detail", Name = "GetOrderDetail")]
-        public async Task<IActionResult> GetOrderDetail(int orderId, int productId)
+        public async Task<IActionResult> GetOrderDetail(int orderId, int productId, CancellationToken token)
         {
             var key = new OrderDetailKey(orderId, productId);
 
-            var response = await _orderDetailService.FindByIdAsync(key);
+            var response = await _orderDetailService.FindByIdAsync(key, token);
 
             if (response.Data == null)
             {
@@ -41,20 +41,20 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrderDetail(OrderDetailDto orderDetail)
+        public async Task<IActionResult> CreateOrderDetail(OrderDetailDto orderDetail, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var response = await _orderDetailService.CreateAsync(orderDetail);
+            var response = await _orderDetailService.CreateAsync(orderDetail, token);
 
             return CreatedAtAction("GetOrderDetail", new { orderId = response.Data.OrderId, productId = response.Data.ProductId }, response);
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateOrderDetail(int orderId, int productId, OrderDetailDto orderDetail)
+        public async Task<IActionResult> UpdateOrderDetail(int orderId, int productId, OrderDetailDto orderDetail, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
@@ -68,26 +68,26 @@ namespace Northwind.Api.Controllers
 
             var key = new OrderDetailKey(orderId, productId);
 
-            if (!_orderDetailService.IsExists(key).Result)
+            if (!_orderDetailService.IsExists(key, token).Result)
             {
                 return NotFound();
             }
 
-            var response = await _orderDetailService.UpdateAsync(orderDetail);
+            var response = await _orderDetailService.UpdateAsync(orderDetail, token);
 
             return Ok(response);
         }
 
         [HttpDelete]
         [Route("delete")]
-        public async Task<IActionResult> DeleteOrderDetail(OrderDetailKey[] ids)
+        public async Task<IActionResult> DeleteOrderDetail(OrderDetailKey[] ids, CancellationToken token)
         {
-            if (!await _orderDetailService.AreExists(ids))
+            if (!await _orderDetailService.AreExists(ids, token))
             {
                 return NotFound();
             }
 
-            var response = await _orderDetailService.DeleteAsync(ids);
+            var response = await _orderDetailService.DeleteAsync(ids, token);
 
             return Ok(response);
         }

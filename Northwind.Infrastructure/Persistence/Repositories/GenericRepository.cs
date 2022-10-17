@@ -18,22 +18,26 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             _strategyResolver = strategyResolver;
         }
 
-        public async Task<RepositoryCollectionResult<TEntity>> GetAsync(Pagination? pagination = null, Sorting? sorting = null, Expression<Func<TEntity, bool>>? predicate = null)
+        public async Task<RepositoryCollectionResult<TEntity>> GetAsync(
+            Pagination? pagination = null, 
+            Sorting? sorting = null, 
+            Expression<Func<TEntity, bool>>? predicate = null, 
+            CancellationToken token = default)
         {
             var query = _context.Set<TEntity>().ApplyFilter<TEntity>(predicate).OrderByCustom(sorting);
             var strategy = _strategyResolver.GetStrategy(query, pagination);
 
-            return await strategy.GetItemsAsync();
+            return await strategy.GetItemsAsync(token);
         }
 
-        public virtual async Task<TEntity>? FindByIdAsync(TId id)
+        public virtual async Task<TEntity>? FindByIdAsync(TId id, CancellationToken token = default)
         {
-            return await _context.Set<TEntity>().FindAsync(id);
+            return await _context.Set<TEntity>().FindAsync(new object?[] { id }, cancellationToken: token);
         }
 
-        public async Task AddAsync(TEntity entity)
+        public async Task AddAsync(TEntity entity, CancellationToken token = default)
         {
-            await _context.Set<TEntity>().AddAsync(entity);
+            await _context.Set<TEntity>().AddAsync(entity, token);
         }
 
         public void Remove(IEnumerable<TEntity> entities)
