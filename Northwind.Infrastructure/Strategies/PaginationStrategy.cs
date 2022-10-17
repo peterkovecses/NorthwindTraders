@@ -16,12 +16,12 @@ namespace Northwind.Infrastructure.Strategies
             _paginationQuery = pagination;
         }
 
-        public async Task<(int, IEnumerable<TEntity>)> GetItemsAsync()
+        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync()
         {
             var totalItems = await _query.CountAsync();
             var items = await Paginate(_paginationQuery, _query, totalItems);
 
-            return (totalItems, items);
+            return new RepositoryCollectionResult<TEntity>(totalItems, items);
         }
 
         private static async Task<IEnumerable<TEntity>> Paginate(Pagination? pagination, IQueryable<TEntity> query, int totalItems)

@@ -4,7 +4,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -22,14 +22,14 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CustomerDto>> GetAsync(QueryParameters queryParameters)
+        public async Task<PagedResponse<CustomerDto>> GetAsync(QueryParameters<CustomerFilter> queryParameters)
         {
-            var (totalItems, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
-            queryParameters.SetPaginationIfNull(totalItems);
+            var result = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<CustomerDto>>(customers)
-                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
+            return _mapper.Map<IEnumerable<CustomerDto>>(result.Items)
+                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
         public async Task<Response<CustomerDto>> FindByIdAsync(string id)
@@ -73,7 +73,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CustomerDto>>> DeleteAsync(string[] ids)
         {
-            var customers = (await _unitOfWork.Customers.GetAsync(predicate: c => ids.Contains(c.CustomerId))).items;
+            var customers = (await _unitOfWork.Customers.GetAsync(predicate: c => ids.Contains(c.CustomerId))).Items;
 
             _unitOfWork.Customers.Remove(customers);
             await _unitOfWork.CompleteAsync();
@@ -89,7 +89,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(string[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Customers.GetAsync(predicate: c => ids.Contains(c.CustomerId))).items.Count() == ids.Length;
+            return (await _unitOfWork.Customers.GetAsync(predicate: c => ids.Contains(c.CustomerId))).Items.Count() == ids.Length;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Northwind.Application.Interfaces.Services
 {
-    public interface IOrderService : IGenericService<OrderDto, int>
+    public interface IOrderService : IGenericService<OrderDto, int, OrderFilter>
     {
     }
 }

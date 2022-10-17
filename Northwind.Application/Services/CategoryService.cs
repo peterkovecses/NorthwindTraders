@@ -4,7 +4,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -22,14 +22,23 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters queryParameters)
+        public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters<CategoryFilter> queryParameters)
         {
-            var (totalItems, categories) = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
-            queryParameters.SetPaginationIfNull(totalItems);
+            if (queryParameters.Filter != null)
+            {
+
+            }
+
+            else
+            {
+
+            }
+            var result = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories)
-                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
+            return _mapper.Map<IEnumerable<CategoryDto>>(result.Items)
+                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
         public async Task<Response<CategoryDto>> FindByIdAsync(int id)
@@ -63,7 +72,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids)
         {
-            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).items;
+            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).Items;
 
             _unitOfWork.Categories.Remove(categories);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +88,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).items.Count() == ids.Length;
+            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId))).Items.Count() == ids.Length;
         }
     }
 }

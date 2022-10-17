@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models;
+using Northwind.Application.Models.Filters;
 
 namespace Northwind.Api.Controllers
 {
@@ -17,7 +18,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters queryParameters)
+        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters)
         {
             var response = await _employeeService.GetAsync(queryParameters);
 

@@ -3,7 +3,7 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models.Filters;
 using Northwind.Application.Services;
 using Northwind.Domain.Entities;
 using System.Linq.Expressions;
@@ -31,7 +31,7 @@ namespace Application.UnitTests.Services
             // Arrange
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
-            var queryParameters = new QueryParameters { Pagination = new Pagination() };
+            var queryParameters = new QueryParameters<EmployeeFilter> { Pagination = new Pagination() };
             var next = "next";
             var previous = "previous";
 

@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -22,14 +23,26 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters queryParameters)
+        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters)
         {
-            var (totalItems, employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
-            queryParameters.SetPaginationIfNull(totalItems);
+            RepositoryCollectionResult<Employee> result;
+
+            if (queryParameters.Filter != null)
+            {
+                var predicate = GetPredicate(queryParameters);
+
+                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate);
+            }
+            else
+            {
+                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            }
+
+            queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employees)
-                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
+            return _mapper.Map<IEnumerable<EmployeeDto>>(result.Items)
+                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
         public async Task<Response<EmployeeDto>> FindByIdAsync(int id)
@@ -63,7 +76,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids)
         {
-            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).items;
+            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).Items;
 
             _unitOfWork.Employees.Remove(employees);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +92,75 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).items.Count() == ids.Length;
+            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).Items.Count() == ids.Length;
+        }
+
+        private static ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
+        {
+            var predicate = PredicateBuilder.New<Employee>();
+            var filter = queryParameters.Filter;
+
+            if (filter.SearchTerm != null)
+            {
+                predicate = predicate.And(e => e.FirstName.Contains(filter.SearchTerm) || e.LastName.Contains(filter.SearchTerm));
+            }
+
+            if (filter.MinHireDate != null)
+            {
+                predicate = predicate.And(e => e.HireDate >= filter.MinHireDate);
+            }
+
+            if (filter.MinBirthDate != null)
+            {
+                predicate = predicate.And(e => e.BirthDate >= filter.MinBirthDate);
+            }
+
+            if (filter.MaxHireDate != null)
+            {
+                predicate = predicate.And(e => e.HireDate <= filter.MaxHireDate);
+            }
+
+            if (filter.MaxBirthDate != null)
+            {
+                predicate = predicate.And(e => e.BirthDate <= filter.MaxBirthDate);
+            }
+
+            if (filter.City != null)
+            {
+                predicate = predicate.And(e => e.City == filter.City);
+            }
+
+            if (filter.Country != null)
+            {
+                predicate = predicate.And(e => e.Country == filter.Country);
+            }
+
+            if (filter.PostalCode != null)
+            {
+                predicate = predicate.And(e => e.PostalCode == filter.PostalCode);
+            }
+
+            if (filter.Region != null)
+            {
+                predicate = predicate.And(e => e.Region == filter.Region);
+            }
+
+            if (filter.ReportsTo != null)
+            {
+                predicate = predicate.And(e => e.ReportsTo == filter.ReportsTo);
+            }
+
+            if (filter.Title != null)
+            {
+                predicate = predicate.And(e => e.Title == filter.Title);
+            }
+
+            if (filter.TitleOfCourtesy != null)
+            {
+                predicate = predicate.And(e => e.TitleOfCourtesy == filter.TitleOfCourtesy);
+            }
+
+            return predicate;
         }
     }
 }

@@ -1,7 +1,9 @@
-﻿namespace Northwind.Application.Interfaces
+﻿using Northwind.Application.Models;
+
+namespace Northwind.Application.Interfaces
 {
     public interface IPaginationStrategy<TEntity> where TEntity : class
     {
-        Task<(int, IEnumerable<TEntity>)> GetItemsAsync();
+        Task<RepositoryCollectionResult<TEntity>> GetItemsAsync();
     }
 }

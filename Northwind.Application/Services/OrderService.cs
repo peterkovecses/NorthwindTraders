@@ -4,7 +4,6 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -22,14 +21,14 @@ namespace Northwind.Application.Services
             _uriService = uriService;
         }
 
-        public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters queryParameters)
+        public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters)
         {
-            var (totalItems, orders) = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
-            queryParameters.SetPaginationIfNull(totalItems);
+            var result = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting);
+            queryParameters.SetPaginationIfNull(result.TotalItems);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<OrderDto>>(orders)
-                .ToPagedResponse(queryParameters.Pagination, totalItems, next, previous);
+            return _mapper.Map<IEnumerable<OrderDto>>(result.Items)
+                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
         }
 
         public async Task<Response<OrderDto>> FindByIdAsync(int id)
@@ -63,7 +62,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids)
         {
-            var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).items;
+            var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).Items;
 
             _unitOfWork.Orders.Remove(orders);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +78,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).items.Count() == ids.Length;
+            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId))).Items.Count() == ids.Length;
         }
     }
 }

@@ -1,5 +1,6 @@
-﻿using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
+using Northwind.Application.Models.Filters;
 
 namespace Northwind.Application.Extensions
 {
@@ -20,7 +21,7 @@ namespace Northwind.Application.Extensions
             return paginationQuery.PageSize;
         }
 
-        public static QueryParameters SetPaginationIfNull(this QueryParameters queryParameters, int totalItems)
+        public static QueryParameters<TFilter> SetPaginationIfNull<TFilter>(this QueryParameters<TFilter> queryParameters, int totalItems) where TFilter : IFilter
         {
             if (queryParameters.Pagination == null)
             {

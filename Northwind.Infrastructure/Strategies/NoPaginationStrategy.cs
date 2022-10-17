@@ -13,10 +13,10 @@ namespace Northwind.Infrastructure.Strategies
             _query = query;
         }
 
-        public async Task<(int, IEnumerable<TEntity>)> GetItemsAsync()
+        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync()
         {
             var nonPaginatedItems = await _query.ToListAsync();
-            return (nonPaginatedItems.Count, nonPaginatedItems);
+            return new RepositoryCollectionResult<TEntity>(nonPaginatedItems.Count, nonPaginatedItems);
         }
     }
 }

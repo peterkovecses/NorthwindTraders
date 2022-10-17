@@ -2,7 +2,7 @@
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Queries;
+using Northwind.Application.Models.Filters;
 
 namespace Northwind.Api.Controllers
 {
@@ -18,7 +18,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters queryParameters)
+        public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter> queryParameters)
         {
             var response = await _customerService.GetAsync(queryParameters);
 
