@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Interfaces.Services.PredicateBuilders;
 using Northwind.Application.Mappings;
 using Northwind.Application.Services;
+using Northwind.Application.Services.PredicateBuilders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IOrderDetailService, OrderDetailService>();
+
+            services.AddScoped<IEmployeePredicateBuilder, EmployeePredicateBuilder>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

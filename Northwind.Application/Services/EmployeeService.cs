@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Interfaces.Services.PredicateBuilders;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
@@ -15,12 +15,14 @@ namespace Northwind.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPaginatedUriService _uriService;
+        private readonly IEmployeePredicateBuilder _predicateBuilder;
 
-        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
+        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService, IEmployeePredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _uriService = uriService;
+            _predicateBuilder = predicateBuilder;
         }
 
         public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters)
@@ -29,7 +31,7 @@ namespace Northwind.Application.Services
 
             if (queryParameters.Filter != null)
             {
-                var predicate = GetPredicate(queryParameters);
+                var predicate = _predicateBuilder.GetPredicate(queryParameters);
 
                 result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate);
             }
@@ -93,74 +95,6 @@ namespace Northwind.Application.Services
         {
             ids = ids.Distinct().ToArray();
             return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId))).Items.Count() == ids.Length;
-        }
-
-        private static ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
-        {
-            var predicate = PredicateBuilder.New<Employee>();
-            var filter = queryParameters.Filter;
-
-            if (filter.SearchTerm != null)
-            {
-                predicate = predicate.And(e => e.FirstName.Contains(filter.SearchTerm) || e.LastName.Contains(filter.SearchTerm));
-            }
-
-            if (filter.MinHireDate != null)
-            {
-                predicate = predicate.And(e => e.HireDate >= filter.MinHireDate);
-            }
-
-            if (filter.MinBirthDate != null)
-            {
-                predicate = predicate.And(e => e.BirthDate >= filter.MinBirthDate);
-            }
-
-            if (filter.MaxHireDate != null)
-            {
-                predicate = predicate.And(e => e.HireDate <= filter.MaxHireDate);
-            }
-
-            if (filter.MaxBirthDate != null)
-            {
-                predicate = predicate.And(e => e.BirthDate <= filter.MaxBirthDate);
-            }
-
-            if (filter.City != null)
-            {
-                predicate = predicate.And(e => e.City == filter.City);
-            }
-
-            if (filter.Country != null)
-            {
-                predicate = predicate.And(e => e.Country == filter.Country);
-            }
-
-            if (filter.PostalCode != null)
-            {
-                predicate = predicate.And(e => e.PostalCode == filter.PostalCode);
-            }
-
-            if (filter.Region != null)
-            {
-                predicate = predicate.And(e => e.Region == filter.Region);
-            }
-
-            if (filter.ReportsTo != null)
-            {
-                predicate = predicate.And(e => e.ReportsTo == filter.ReportsTo);
-            }
-
-            if (filter.Title != null)
-            {
-                predicate = predicate.And(e => e.Title == filter.Title);
-            }
-
-            if (filter.TitleOfCourtesy != null)
-            {
-                predicate = predicate.And(e => e.TitleOfCourtesy == filter.TitleOfCourtesy);
-            }
-
-            return predicate;
-        }
+        }        
     }
 }

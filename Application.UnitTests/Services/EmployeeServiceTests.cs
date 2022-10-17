@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
+using Northwind.Application.Interfaces.Services.PredicateBuilders;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Application.Services;
@@ -15,6 +17,7 @@ namespace Application.UnitTests.Services
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IPaginatedUriService> _uriServiceMock;
+        private readonly Mock<IEmployeePredicateBuilder> _predicateBuilderMock;
         private readonly EmployeeService _sut;
 
         public EmployeeServiceTests()
@@ -22,7 +25,8 @@ namespace Application.UnitTests.Services
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
             _uriServiceMock = new Mock<IPaginatedUriService>();
-            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _uriServiceMock.Object);
+            _predicateBuilderMock = new Mock<IEmployeePredicateBuilder>();
+            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _uriServiceMock.Object, _predicateBuilderMock.Object);
         }
 
         [Fact]
@@ -35,7 +39,7 @@ namespace Application.UnitTests.Services
             var next = "next";
             var previous = "previous";
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
             _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
@@ -46,6 +50,54 @@ namespace Application.UnitTests.Services
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, null));
             _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
+        }
+
+        [Fact]
+        public async Task Get_WhenSortingParameterPassed_ProperMethodsCalled()
+        {
+            // Arrange
+            var employeesMock = new Mock<IEnumerable<Employee>>();
+            var totalEmployees = 10;
+            var queryParameters = new QueryParameters<EmployeeFilter> { Sorting = new Sorting { SortBy = "LastName" } };
+            var next = "next";
+            var previous = "previous";
+
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, null)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
+            _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
+            _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
+
+            // Act
+            await _sut.GetAsync(queryParameters);
+
+            // Assert
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, queryParameters.Sorting, null));
+            _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
+            _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
+        }
+
+        [Fact]
+        public async Task Get_WhenFilterParameterPassed_ProperMethodsCalled()
+        {
+            // Arrange
+            var city = "London";
+            var employees = new List<Employee> { new Employee { City = city } };
+            var queryParameters = new QueryParameters<EmployeeFilter> { Filter = new EmployeeFilter { City = city } };
+            var predicate = PredicateBuilder.New<Employee>(e => e.City == queryParameters.Filter.City);
+            var next = "next";
+            var previous = "previous";
+
+            _predicateBuilderMock.Setup(builder => builder.GetPredicate(queryParameters)).Returns(predicate);
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, predicate)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(1, employees)));
+            _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
+            _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employees)).Returns(new List<EmployeeDto>());
+
+            // Act
+            await _sut.GetAsync(queryParameters);
+
+            // Assert
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, null, predicate));
+            _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
+            _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employees));
         }
 
         [Fact]
@@ -108,7 +160,7 @@ namespace Application.UnitTests.Services
             var ids = new int[] { 9, 12, 17 };
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
@@ -147,7 +199,7 @@ namespace Application.UnitTests.Services
                 new Employee { EmployeeId = ids[2] }
             }.AsEnumerable();
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult<(int, IEnumerable<Employee>)>((employees.Count(), employees)));           
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>())).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(employees.Count(), employees)));           
 
             // Act
             await _sut.AreExists(ids);

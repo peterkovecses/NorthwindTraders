@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Northwind.Application.Interfaces;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;
+using Northwind.Infrastructure.Persistence.Services;
 using Northwind.Infrastructure.Services;
 
 namespace Microsoft.Extensions.DependencyInjection

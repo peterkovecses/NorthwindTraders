@@ -1,8 +1,8 @@
 ﻿using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
-using Northwind.Infrastructure.Strategies;
+using Northwind.Infrastructure.Persistence.Strategies;
 
-namespace Northwind.Infrastructure.Services
+namespace Northwind.Infrastructure.Persistence.Services
 {
     public class StrategyResolver : IStrategyResolver
     {

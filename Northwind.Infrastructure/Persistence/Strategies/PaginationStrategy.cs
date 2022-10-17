@@ -3,7 +3,7 @@ using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
 
-namespace Northwind.Infrastructure.Strategies
+namespace Northwind.Infrastructure.Persistence.Strategies
 {
     public class PaginationStrategy<TEntity> : IPaginationStrategy<TEntity> where TEntity : class
     {
