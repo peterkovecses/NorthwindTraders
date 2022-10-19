@@ -1,4 +1,5 @@
-﻿using Northwind.Application.Models;
+﻿using Northwind.Application.Exceptions;
+using Northwind.Application.Models;
 using System.Linq.Expressions;
 
 namespace Northwind.Application.Extensions
@@ -13,24 +14,24 @@ namespace Northwind.Application.Extensions
             }
 
             var type = typeof(T);
-            var expression2 = Expression.Parameter(type, "t");
+            var parameterExpression = Expression.Parameter(type, "t");
+            
             var property = type.GetProperty(sorting.SortBy);
-
             if (property == null)
             {
-                return items;
+                throw new PropertyNotFoundException(sorting.SortBy);
             }
 
-            var expression1 = Expression.MakeMemberAccess(expression2, property);
-            var lambda = Expression.Lambda(expression1, expression2);
-            var result = Expression.Call(
+            var memberExpression = Expression.MakeMemberAccess(parameterExpression, property);
+            var lambdaExpression = Expression.Lambda(memberExpression, parameterExpression);
+            var resultExpression = Expression.Call(
                 typeof(Queryable),
                 sorting.DescendingOrder ? "OrderByDescending" : "OrderBy",
                 new Type[] { type, property.PropertyType },
                 items.Expression,
-                Expression.Quote(lambda));
+                Expression.Quote(lambdaExpression));
 
-            return items.Provider.CreateQuery<T>(result);
+            return items.Provider.CreateQuery<T>(resultExpression);
         }
-    }
+    } 
 }

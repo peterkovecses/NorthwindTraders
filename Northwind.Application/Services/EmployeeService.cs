@@ -3,9 +3,9 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
-using Northwind.Application.Interfaces.Services.PredicateBuilders;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -15,13 +15,13 @@ namespace Northwind.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IPaginatedUriService _uriService;
-        private readonly IEmployeePredicateBuilder _predicateBuilder;
+        private readonly EmployeePredicateBuilder _predicateBuilder;
 
         public EmployeeService(
             IUnitOfWork unitOfWork, 
             IMapper mapper, 
             IPaginatedUriService uriService, 
-            IEmployeePredicateBuilder predicateBuilder)
+            EmployeePredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

@@ -27,7 +27,7 @@ namespace Northwind.Api.Controllers
 
         [HttpGet("{id}", Name = "GetEmployee")]
         public async Task<IActionResult> GetEmployee(int id, CancellationToken token)
-        {
+        {                      
             var response = await _employeeService.FindByIdAsync(id, token);
 
             if (response.Data == null)

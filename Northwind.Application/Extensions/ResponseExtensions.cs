@@ -1,5 +1,4 @@
-﻿using Northwind.Application.Interfaces;
-using Northwind.Application.Models;
+﻿using Northwind.Application.Models;
 
 namespace Northwind.Application.Extensions
 {
@@ -9,12 +8,6 @@ namespace Northwind.Application.Extensions
         {
             return new Response<T>(data);
         }
-
-        public static Response<IEnumerable<T>> ToResponse<T>(this IEnumerable<T> data)
-        {
-            return new Response<IEnumerable<T>>(data);
-        }
-
 
         public static PagedResponse<T> ToPagedResponse<T>(
             this IEnumerable<T> data,

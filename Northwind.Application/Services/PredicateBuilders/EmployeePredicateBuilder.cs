@@ -1,14 +1,13 @@
 ﻿using LinqKit;
-using Northwind.Application.Models.Filters;
 using Northwind.Application.Models;
+using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
-using Northwind.Application.Interfaces.Services.PredicateBuilders;
 
 namespace Northwind.Application.Services.PredicateBuilders
 {
-    public class EmployeePredicateBuilder : IEmployeePredicateBuilder
+    public class EmployeePredicateBuilder
     {
-        public ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
+        public virtual ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
         {
             var predicate = PredicateBuilder.New<Employee>();
             var filter = queryParameters.Filter;

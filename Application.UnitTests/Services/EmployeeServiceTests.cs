@@ -3,10 +3,10 @@ using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
-using Northwind.Application.Interfaces.Services.PredicateBuilders;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Application.Services;
+using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 using System.Linq.Expressions;
 
@@ -17,7 +17,7 @@ namespace Application.UnitTests.Services
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<IPaginatedUriService> _uriServiceMock;
-        private readonly Mock<IEmployeePredicateBuilder> _predicateBuilderMock;
+        private readonly Mock<EmployeePredicateBuilder> _predicateBuilderMock;
         private readonly CancellationToken _token;
         private readonly EmployeeService _sut;
 
@@ -26,7 +26,7 @@ namespace Application.UnitTests.Services
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
             _uriServiceMock = new Mock<IPaginatedUriService>();
-            _predicateBuilderMock = new Mock<IEmployeePredicateBuilder>();
+            _predicateBuilderMock = new Mock<EmployeePredicateBuilder>();
             _token = new CancellationToken();
             _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _uriServiceMock.Object, _predicateBuilderMock.Object);
         }
