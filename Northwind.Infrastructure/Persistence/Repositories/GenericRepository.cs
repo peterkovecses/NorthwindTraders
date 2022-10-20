@@ -18,7 +18,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             _strategyResolver = strategyResolver;
         }
 
-        public async Task<RepositoryCollectionResult<TEntity>> GetAsync(
+        public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(
             Pagination? pagination = null, 
             Sorting? sorting = null, 
             Expression<Func<TEntity, bool>>? predicate = null, 

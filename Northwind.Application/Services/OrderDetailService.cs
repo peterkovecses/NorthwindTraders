@@ -26,12 +26,12 @@ namespace Northwind.Application.Services
             QueryParameters<OrderDetailFilter> queryParameters, 
             CancellationToken token = default)
         {
-            var result = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalOrderDetails, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalOrderDetails);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<OrderDetailDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails)
+                .ToPagedResponse(queryParameters.Pagination, totalOrderDetails, next, previous);
         }
 
         public async Task<Response<OrderDetailDto>> FindByIdAsync(OrderDetailKey id, CancellationToken token = default)

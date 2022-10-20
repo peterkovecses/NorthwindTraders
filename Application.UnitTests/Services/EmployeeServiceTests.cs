@@ -41,7 +41,7 @@ namespace Application.UnitTests.Services
             var next = "next";
             var previous = "previous";
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null, _token)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
             _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
@@ -64,7 +64,7 @@ namespace Application.UnitTests.Services
             var next = "next";
             var previous = "previous";
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
             _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
@@ -81,14 +81,14 @@ namespace Application.UnitTests.Services
         public async Task Get_WhenFilterParameterPassed_ProperMethodsCalled()
         {
             // Arrange
-            var employees = new List<Employee>();
+            IEnumerable<Employee> employees = new List<Employee>();
             var queryParameters = new QueryParameters<EmployeeFilter> { Filter = new EmployeeFilter() };
             var predicate = PredicateBuilder.New<Employee>(true);
             var next = "next";
             var previous = "previous";
 
             _predicateBuilderMock.Setup(builder => builder.GetPredicate(queryParameters)).Returns(predicate);
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, predicate, _token)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(1, employees)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, predicate, _token)).Returns(Task.FromResult((1, employees)));
             _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employees)).Returns(new List<EmployeeDto>());
 
@@ -161,7 +161,7 @@ namespace Application.UnitTests.Services
             var ids = new int[] { 9, 12, 17 };
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(totalEmployees, employeesMock.Object)));
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
@@ -200,7 +200,7 @@ namespace Application.UnitTests.Services
                 new Employee { EmployeeId = ids[2] }
             }.AsEnumerable();
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult(new RepositoryCollectionResult<Employee>(employees.Count(), employees)));           
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult((employees.Count(), employees)));           
 
             // Act
             await _sut.AreExists(ids);

@@ -24,12 +24,12 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalTerritories);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<TerritoryDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
+                .ToPagedResponse(queryParameters.Pagination, totalTerritories, next, previous);
         }
 
         public async Task<Response<TerritoryDto>> FindByIdAsync(string id, CancellationToken token = default)
@@ -63,7 +63,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).Items;
+            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
 
             _unitOfWork.Territories.Remove(territories);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +79,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(string[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items.Count() == ids.Length;
         }
     }
 }

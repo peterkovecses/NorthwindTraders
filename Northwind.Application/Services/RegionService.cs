@@ -24,12 +24,12 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalRegions);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<RegionDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<RegionDto>>(regions)
+                .ToPagedResponse(queryParameters.Pagination, totalRegions, next, previous);
         }
 
         public async Task<Response<RegionDto>> FindByIdAsync(int id, CancellationToken token = default)
@@ -63,7 +63,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var regions = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).Items;
+            var regions = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items;
 
             _unitOfWork.Regions.Remove(regions);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +79,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items.Count() == ids.Length;
         }
     }
 }

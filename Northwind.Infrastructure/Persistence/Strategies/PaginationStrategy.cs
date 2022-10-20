@@ -16,12 +16,12 @@ namespace Northwind.Infrastructure.Persistence.Strategies
             _paginationQuery = pagination;
         }
 
-        public async Task<RepositoryCollectionResult<TEntity>> GetItemsAsync(CancellationToken token)
+        public async Task<(int totalItems, IEnumerable<TEntity> items)> GetItemsAsync(CancellationToken token)
         {
             var totalItems = await _query.CountAsync(token);
             var items = await Paginate(_paginationQuery, _query, totalItems, token);
 
-            return new RepositoryCollectionResult<TEntity>(totalItems, items);
+            return (totalItems, items);
         }
 
         private static async Task<IEnumerable<TEntity>> Paginate(Pagination? pagination, IQueryable<TEntity> query, int totalItems, CancellationToken token)

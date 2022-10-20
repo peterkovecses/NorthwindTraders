@@ -1,9 +1,7 @@
-﻿using Northwind.Application.Models;
-
-namespace Northwind.Application.Interfaces
+﻿namespace Northwind.Application.Interfaces
 {
     public interface IPaginationStrategy<TEntity> where TEntity : class
     {
-        Task<RepositoryCollectionResult<TEntity>> GetItemsAsync(CancellationToken token);
+        Task<(int totalItems, IEnumerable<TEntity> items)> GetItemsAsync(CancellationToken token);
     }
 }

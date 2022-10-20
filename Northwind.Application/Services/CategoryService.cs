@@ -24,12 +24,12 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<CategoryDto>> GetAsync(QueryParameters<CategoryFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalCategories, categories) = await _unitOfWork.Categories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalCategories);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<CategoryDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<CategoryDto>>(categories)
+                .ToPagedResponse(queryParameters.Pagination, totalCategories, next, previous);
         }
 
         public async Task<Response<CategoryDto>> FindByIdAsync(int id, CancellationToken token = default)
@@ -63,7 +63,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids, CancellationToken token = default )
         {
-            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).Items;
+            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items;
 
             _unitOfWork.Categories.Remove(categories);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +79,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items.Count() == ids.Length;
         }
     }
 }

@@ -24,12 +24,12 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<SupplierDto>> GetAsync(QueryParameters<SupplierFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalShippers, shippers) = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalShippers);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<SupplierDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<SupplierDto>>(shippers)
+                .ToPagedResponse(queryParameters.Pagination, totalShippers, next, previous);
         }
 
         public async Task<Response<SupplierDto>> FindByIdAsync(int id, CancellationToken token = default)
@@ -63,7 +63,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<SupplierDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).Items;
+            var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items;
 
             _unitOfWork.Suppliers.Remove(suppliers);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +79,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items.Count() == ids.Length;
         }
     }
 }

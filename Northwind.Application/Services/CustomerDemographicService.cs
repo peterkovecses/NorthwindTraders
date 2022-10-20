@@ -26,12 +26,12 @@ namespace Northwind.Application.Services
             QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token = default)
         {
-            var result = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalCustomerDemographics);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
+                .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics, next, previous);
         }
 
         public async Task<Response<CustomerDemographicDto>> FindByIdAsync(string id, CancellationToken token = default)
@@ -67,7 +67,7 @@ namespace Northwind.Application.Services
         {
             var customerDemographics = 
                 (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
-                .Items;
+                .items;
 
             _unitOfWork.CustomerDemographics.Remove(customerDemographics);
             await _unitOfWork.CompleteAsync();
@@ -84,7 +84,7 @@ namespace Northwind.Application.Services
         {
             ids = ids.Distinct().ToArray();
             return (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
-                .Items.Count() == ids.Length;
+                .items.Count() == ids.Length;
         }
     }
 }

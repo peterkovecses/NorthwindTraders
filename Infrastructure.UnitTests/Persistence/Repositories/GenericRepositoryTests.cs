@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
-using Newtonsoft.Json.Linq;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;

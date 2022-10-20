@@ -1,4 +1,6 @@
-﻿namespace Northwind.Domain.Entities
+﻿using Northwind.Domain.Common;
+
+namespace Northwind.Domain.Entities
 {
     public partial class OrderDetail : EntityBase
     {

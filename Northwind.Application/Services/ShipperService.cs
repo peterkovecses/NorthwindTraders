@@ -24,12 +24,12 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<ShipperDto>> GetAsync(QueryParameters<ShipperFilter> queryParameters, CancellationToken token = default)
         {
-            var result = await _unitOfWork.Shippers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            var (totalShippers, shippers) = await _unitOfWork.Shippers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            queryParameters.SetPaginationIfNull(totalShippers);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<ShipperDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<ShipperDto>>(shippers)
+                .ToPagedResponse(queryParameters.Pagination, totalShippers, next, previous);
         }
 
         public async Task<Response<ShipperDto>> FindByIdAsync(int id, CancellationToken token = default)
@@ -63,7 +63,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var shippers = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).Items;
+            var shippers = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).items;
 
             _unitOfWork.Shippers.Remove(shippers);
             await _unitOfWork.CompleteAsync();
@@ -79,7 +79,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).items.Count() == ids.Length;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token = default)
         {
-            RepositoryCollectionResult<Employee> result;
+            (int totalEmployees, IEnumerable<Employee> employees) result;
 
             if (queryParameters.Filter != null)
             {
@@ -44,11 +44,11 @@ namespace Northwind.Application.Services
                 result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             }
 
-            queryParameters.SetPaginationIfNull(result.TotalItems);
+            queryParameters.SetPaginationIfNull(result.totalEmployees);
             var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
-            return _mapper.Map<IEnumerable<EmployeeDto>>(result.Items)
-                .ToPagedResponse(queryParameters.Pagination, result.TotalItems, next, previous);
+            return _mapper.Map<IEnumerable<EmployeeDto>>(result.employees)
+                .ToPagedResponse(queryParameters.Pagination, result.totalEmployees, next, previous);
         }
 
         public async Task<Response<EmployeeDto>> FindByIdAsync(int id, CancellationToken token)
@@ -82,7 +82,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids, CancellationToken token)
         {
-            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).Items;
+            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items;
 
             _unitOfWork.Employees.Remove(employees);
             await _unitOfWork.CompleteAsync();
@@ -98,7 +98,7 @@ namespace Northwind.Application.Services
         public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
         {
             ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).Items.Count() == ids.Length;
+            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items.Count() == ids.Length;
         }        
     }
 }
