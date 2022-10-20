@@ -1,22 +1,18 @@
-﻿using Northwind.Application.Interfaces;
-
-namespace Northwind.Application.Models
+﻿namespace Northwind.Application.Models
 {
     public class PagedResponse<T>
     {
+        private string? _nextPage;
+
         public PagedResponse(
-            IEnumerable<T> data,
-            Pagination pagination,
-            int totalItems,
-            string nextPageUri,
-            string previousPageUri)
+                    IEnumerable<T> data,
+                    Pagination pagination,
+                    int totalItems)
         {
             Data = data;
             PageNumber = pagination.PageNumber;
             PageSize = pagination.PageSize;
             TotalItems = totalItems;
-            NextPage = TotalPages > PageNumber ? nextPageUri : null;
-            PreviousPage = previousPageUri;
         }
 
         public IEnumerable<T> Data { get; }
@@ -30,7 +26,7 @@ namespace Northwind.Application.Models
                 return TotalItems == 0 ? 1 : (int)Math.Ceiling((double)TotalItems / PageSize);
             }
         }
-        public string? NextPage { get; }
-        public string? PreviousPage { get; }
+        public string? NextPage { get => _nextPage; set => _nextPage = TotalPages > PageNumber ? value : null; }
+        public string? PreviousPage { get; set; }
     }
 }

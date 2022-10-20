@@ -11,16 +11,19 @@ namespace Northwind.Api.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        private readonly IPaginatedUriService _uriService;
 
-        public EmployeesController(IEmployeeService employeeService)
+        public EmployeesController(IEmployeeService employeeService, IPaginatedUriService uriService)
         {
             _employeeService = employeeService;
+            _uriService = uriService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {
             var response = await _employeeService.GetAsync(queryParameters, token);
+            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return Ok(response);
         }

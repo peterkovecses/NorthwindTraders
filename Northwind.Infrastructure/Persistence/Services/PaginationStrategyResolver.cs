@@ -4,7 +4,7 @@ using Northwind.Infrastructure.Persistence.Strategies;
 
 namespace Northwind.Infrastructure.Persistence.Services
 {
-    public class StrategyResolver : IStrategyResolver
+    public class PaginationStrategyResolver : IStrategyResolver
     {
         public IPaginationStrategy<TEntity> GetStrategy<TEntity>(IQueryable<TEntity> query, Pagination? paginationQuery) where TEntity : class
         {

@@ -13,13 +13,11 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPaginatedUriService _uriService;
 
-        public CustomerDemographicService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
+        public CustomerDemographicService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _uriService = uriService;
         }
 
         public async Task<PagedResponse<CustomerDemographicDto>> GetAsync(
@@ -28,10 +26,9 @@ namespace Northwind.Application.Services
         {
             var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(totalCustomerDemographics);
-            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
-                .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics);
         }
 
         public async Task<Response<CustomerDemographicDto>> FindByIdAsync(string id, CancellationToken token = default)

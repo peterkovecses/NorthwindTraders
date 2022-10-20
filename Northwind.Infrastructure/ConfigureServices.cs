@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-            services.AddScoped<IStrategyResolver, StrategyResolver>();
+            services.AddScoped<IStrategyResolver, PaginationStrategyResolver>();
             services.AddScoped<AuditInterceptor>();
 
             return services;

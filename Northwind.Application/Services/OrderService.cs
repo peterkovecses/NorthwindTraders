@@ -12,23 +12,20 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPaginatedUriService _uriService;
 
-        public OrderService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _uriService = uriService;
         }
 
         public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters, CancellationToken token = default)
         {
             var (totalOrders, orders) = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(totalOrders);
-            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders)
-                .ToPagedResponse(queryParameters.Pagination, totalOrders, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalOrders);
         }
 
         public async Task<Response<OrderDto>> FindByIdAsync(int id, CancellationToken token = default)

@@ -11,16 +11,19 @@ namespace Northwind.Api.Controllers
     public class OrderDetailsController : ControllerBase
     {
         private readonly IOrderDetailService _orderDetailService;
+        private readonly IPaginatedUriService _uriService;
 
-        public OrderDetailsController(IOrderDetailService orderDetailService)
+        public OrderDetailsController(IOrderDetailService orderDetailService, IPaginatedUriService uriService)
         {
             _orderDetailService = orderDetailService;
+            _uriService = uriService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters, CancellationToken token)
         {
             var response = await _orderDetailService.GetAsync(queryParameters, token);
+            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return Ok(response);
         }

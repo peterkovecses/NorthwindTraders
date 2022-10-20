@@ -11,10 +11,12 @@ namespace Northwind.Api.Controllers
     public class CustomerDemographicsController : ControllerBase
     {
         private readonly ICustomerDemographicService _customerDemographicService;
+        private readonly IPaginatedUriService _uriService;
 
-        public CustomerDemographicsController(ICustomerDemographicService customerDemographicService)
+        public CustomerDemographicsController(ICustomerDemographicService customerDemographicService, IPaginatedUriService uriService)
         {
             _customerDemographicService = customerDemographicService;
+            _uriService = uriService;
         }
 
         [HttpGet]
@@ -23,6 +25,7 @@ namespace Northwind.Api.Controllers
             CancellationToken token)
         {
             var response = await _customerDemographicService.GetAsync(queryParameters, token);
+            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return Ok(response);
         }

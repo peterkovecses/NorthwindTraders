@@ -16,7 +16,6 @@ namespace Application.UnitTests.Services
     {
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
-        private readonly Mock<IPaginatedUriService> _uriServiceMock;
         private readonly Mock<EmployeePredicateBuilder> _predicateBuilderMock;
         private readonly CancellationToken _token;
         private readonly EmployeeService _sut;
@@ -25,10 +24,9 @@ namespace Application.UnitTests.Services
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _uriServiceMock = new Mock<IPaginatedUriService>();
             _predicateBuilderMock = new Mock<EmployeePredicateBuilder>();
             _token = new CancellationToken();
-            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _uriServiceMock.Object, _predicateBuilderMock.Object);
+            _sut = new EmployeeService(_unitOfWorkMock.Object, _mapperMock.Object, _predicateBuilderMock.Object);
         }
 
         [Fact]
@@ -38,11 +36,8 @@ namespace Application.UnitTests.Services
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
             var queryParameters = new QueryParameters<EmployeeFilter> { Pagination = new Pagination() };
-            var next = "next";
-            var previous = "previous";
 
             _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
-            _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
@@ -50,7 +45,6 @@ namespace Application.UnitTests.Services
 
             // Assert
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, null, _token));
-            _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
         }
 
@@ -61,11 +55,8 @@ namespace Application.UnitTests.Services
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
             var queryParameters = new QueryParameters<EmployeeFilter> { Sorting = new Sorting { SortBy = "LastName" } };
-            var next = "next";
-            var previous = "previous";
 
             _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
-            _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
@@ -73,7 +64,6 @@ namespace Application.UnitTests.Services
 
             // Assert
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token));
-            _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
         }
 
@@ -84,12 +74,9 @@ namespace Application.UnitTests.Services
             IEnumerable<Employee> employees = new List<Employee>();
             var queryParameters = new QueryParameters<EmployeeFilter> { Filter = new EmployeeFilter() };
             var predicate = PredicateBuilder.New<Employee>(true);
-            var next = "next";
-            var previous = "previous";
 
             _predicateBuilderMock.Setup(builder => builder.GetPredicate(queryParameters)).Returns(predicate);
             _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, predicate, _token)).Returns(Task.FromResult((1, employees)));
-            _uriServiceMock.Setup(u => u.GetNavigations(queryParameters.Pagination)).Returns((next, previous));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employees)).Returns(new List<EmployeeDto>());
 
             // Act
@@ -97,7 +84,6 @@ namespace Application.UnitTests.Services
 
             // Assert
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, null, predicate, _token));
-            _uriServiceMock.Verify(u => u.GetNavigations(queryParameters.Pagination));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employees));
         }
 

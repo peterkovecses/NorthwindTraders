@@ -13,23 +13,20 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPaginatedUriService _uriService;
 
-        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper, IPaginatedUriService uriService)
+        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _uriService = uriService;
         }
 
         public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
             var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
             queryParameters.SetPaginationIfNull(totalTerritories);
-            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
-                .ToPagedResponse(queryParameters.Pagination, totalTerritories, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, totalTerritories);
         }
 
         public async Task<Response<TerritoryDto>> FindByIdAsync(string id, CancellationToken token = default)

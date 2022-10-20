@@ -14,18 +14,15 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IPaginatedUriService _uriService;
         private readonly EmployeePredicateBuilder _predicateBuilder;
 
         public EmployeeService(
             IUnitOfWork unitOfWork, 
             IMapper mapper, 
-            IPaginatedUriService uriService, 
             EmployeePredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _uriService = uriService;
             _predicateBuilder = predicateBuilder;
         }
 
@@ -45,10 +42,9 @@ namespace Northwind.Application.Services
             }
 
             queryParameters.SetPaginationIfNull(result.totalEmployees);
-            var (next, previous) = _uriService.GetNavigations(queryParameters.Pagination);
 
             return _mapper.Map<IEnumerable<EmployeeDto>>(result.employees)
-                .ToPagedResponse(queryParameters.Pagination, result.totalEmployees, next, previous);
+                .ToPagedResponse(queryParameters.Pagination, result.totalEmployees);
         }
 
         public async Task<Response<EmployeeDto>> FindByIdAsync(int id, CancellationToken token)
