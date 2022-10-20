@@ -81,10 +81,9 @@ namespace Application.UnitTests.Services
         public async Task Get_WhenFilterParameterPassed_ProperMethodsCalled()
         {
             // Arrange
-            var city = "London";
-            var employees = new List<Employee> { new Employee { City = city } };
-            var queryParameters = new QueryParameters<EmployeeFilter> { Filter = new EmployeeFilter { City = city } };
-            var predicate = PredicateBuilder.New<Employee>(e => e.City == queryParameters.Filter.City);
+            var employees = new List<Employee>();
+            var queryParameters = new QueryParameters<EmployeeFilter> { Filter = new EmployeeFilter() };
+            var predicate = PredicateBuilder.New<Employee>(true);
             var next = "next";
             var previous = "previous";
 
