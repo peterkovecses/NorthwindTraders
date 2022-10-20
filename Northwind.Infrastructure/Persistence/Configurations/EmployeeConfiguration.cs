@@ -32,6 +32,8 @@ namespace Northwind.Infrastructure.Persistence.Configurations
 
             builder.Property(e => e.LastName).HasMaxLength(20);
 
+            builder.Property(e => e.FullName).HasComputedColumnSql("[LastName] + ', ' + [FirstName]");
+
             builder.Property(e => e.Notes).HasColumnType("ntext");
 
             builder.Property(e => e.Photo).HasColumnType("image");

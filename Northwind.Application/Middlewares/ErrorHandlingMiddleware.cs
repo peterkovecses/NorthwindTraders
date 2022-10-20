@@ -19,8 +19,9 @@ namespace Northwind.Application.Middlewares
             {
                 await _next(context);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 await HandleExceptionAsync(context);
             }
         }

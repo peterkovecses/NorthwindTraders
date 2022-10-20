@@ -9,12 +9,21 @@ namespace Northwind.Application.Services.PredicateBuilders
     {
         public virtual ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
         {
+            if (queryParameters.Filter == null)
+            {
+                return PredicateBuilder.New<Employee>(true);
+            }
+
             var predicate = PredicateBuilder.New<Employee>();
             var filter = queryParameters.Filter;
 
-            if (filter.SearchTerm != null)
+            if (!string.IsNullOrEmpty(filter.FullNameFraction))
             {
-                predicate = predicate.And(e => e.FirstName.Contains(filter.SearchTerm) || e.LastName.Contains(filter.SearchTerm));
+                var fragments  = filter.FullNameFraction.Split(' ');
+                foreach (var fragment in fragments)
+                {                    
+                    predicate = predicate.And(e => e.FullName.ToLower().Contains(fragment.Trim().ToLower()));
+                }
             }
 
             if (filter.MinHireDate != null)

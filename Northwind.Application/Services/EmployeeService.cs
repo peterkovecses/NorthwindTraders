@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
@@ -7,6 +8,7 @@ using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
+using System;
 
 namespace Northwind.Application.Services
 {
@@ -27,24 +29,13 @@ namespace Northwind.Application.Services
         }
 
         public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token = default)
-        {
-            (int totalEmployees, IEnumerable<Employee> employees) result;
+        {            
+            var predicate = _predicateBuilder.GetPredicate(queryParameters);
+            (int totalEmployees, IEnumerable<Employee> employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            queryParameters.SetPaginationIfNull(totalEmployees);
 
-            if (queryParameters.Filter != null)
-            {
-                var predicate = _predicateBuilder.GetPredicate(queryParameters);
-
-                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
-            }
-            else
-            {
-                result = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            }
-
-            queryParameters.SetPaginationIfNull(result.totalEmployees);
-
-            return _mapper.Map<IEnumerable<EmployeeDto>>(result.employees)
-                .ToPagedResponse(queryParameters.Pagination, result.totalEmployees);
+            return _mapper.Map<IEnumerable<EmployeeDto>>(employees)
+                .ToPagedResponse(queryParameters.Pagination, totalEmployees);
         }
 
         public async Task<Response<EmployeeDto>> FindByIdAsync(int id, CancellationToken token)

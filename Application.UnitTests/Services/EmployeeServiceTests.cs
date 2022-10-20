@@ -2,7 +2,6 @@
 using LinqKit;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces;
-using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Application.Services;
@@ -30,45 +29,50 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task Get_WhenPaginationParameterPassed_ProperMethodsCalled()
+        public async Task Get_WhenPaginationParameterGiven_ProperMethodsCalled()
         {
             // Arrange
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
             var queryParameters = new QueryParameters<EmployeeFilter> { Pagination = new Pagination() };
+            var predicate = PredicateBuilder.New<Employee>(true);
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
+            _predicateBuilderMock.Setup(builder => builder.GetPredicate(queryParameters)).Returns(predicate);
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(queryParameters.Pagination, null, predicate, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
             await _sut.GetAsync(queryParameters);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, null, _token));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, _token));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
         }
 
         [Fact]
-        public async Task Get_WhenSortingParameterPassed_ProperMethodsCalled()
+        public async Task Get_WhenSortingParameterGiven_ProperMethodsCalled()
         {
             // Arrange
             var employeesMock = new Mock<IEnumerable<Employee>>();
             var totalEmployees = 10;
             var queryParameters = new QueryParameters<EmployeeFilter> { Sorting = new Sorting { SortBy = "LastName" } };
+            var predicate = PredicateBuilder.New<Employee>(true);
 
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
+            _predicateBuilderMock.Setup(builder => builder.GetPredicate(queryParameters)).Returns(predicate);
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, queryParameters.Sorting, predicate, _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
             _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
 
             // Act
             await _sut.GetAsync(queryParameters);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, queryParameters.Sorting, null, _token));
+            _predicateBuilderMock.Verify(builder => builder.GetPredicate(queryParameters));
+            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, queryParameters.Sorting, predicate, _token));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
         }
 
         [Fact]
-        public async Task Get_WhenFilterParameterPassed_ProperMethodsCalled()
+        public async Task Get_WhenFilterParameterGiven_ProperMethodsCalled()
         {
             // Arrange
             IEnumerable<Employee> employees = new List<Employee>();
@@ -83,12 +87,13 @@ namespace Application.UnitTests.Services
             await _sut.GetAsync(queryParameters);
 
             // Assert
+            _predicateBuilderMock.Verify(builder => builder.GetPredicate(queryParameters));
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, null, predicate, _token));
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employees));
         }
 
         [Fact]
-        public async Task FindById_WhenIdPassed_ProperMethodsCalled()
+        public async Task FindById_WhenIdGiven_ProperMethodsCalled()
         {
             // Arrange
             var id = 12;
@@ -141,7 +146,7 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task Delete_WhenIdsArePassed_ProperMethodsCalled()
+        public async Task Delete_WhenIdsAreGiven_ProperMethodsCalled()
         {
             // Arrange
             var ids = new int[] { 9, 12, 17 };
@@ -161,7 +166,7 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task IsExists_WhenIdPassed_ProperMethodsCalled()
+        public async Task IsExists_WhenIdGiven_ProperMethodsCalled()
         {
             // Arrange
             var id = 20;
@@ -175,7 +180,7 @@ namespace Application.UnitTests.Services
         }
 
         [Fact]
-        public async Task AreExists_WhenIdsArePassed_ProperMethodCalled()
+        public async Task AreExists_WhenIdsAreGiven_ProperMethodCalled()
         {
             // Arrange
             var ids = new int[] { 9, 12, 17 };

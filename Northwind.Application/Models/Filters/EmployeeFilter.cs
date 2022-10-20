@@ -4,7 +4,7 @@ namespace Northwind.Application.Models.Filters
 {
     public class EmployeeFilter : IFilter
     {
-        public string? SearchTerm { get; set; }
+        public string? FullNameFraction { get; set; }
         public string? Title { get; set; }
         public string? TitleOfCourtesy { get; set; }
         public DateTime? MinBirthDate { get; set; }
