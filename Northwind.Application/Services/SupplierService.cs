@@ -62,7 +62,10 @@ namespace Northwind.Application.Services
         {
             var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items;
 
-            _unitOfWork.Suppliers.Remove(suppliers);
+            foreach (var supplier in suppliers)
+            {
+            _unitOfWork.Suppliers.Remove(supplier);
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<SupplierDto>>(suppliers).ToResponse();

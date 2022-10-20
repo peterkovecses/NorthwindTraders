@@ -61,7 +61,11 @@ namespace Northwind.Application.Services
         {
             var orders = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId), token: token)).items;
 
-            _unitOfWork.Orders.Remove(orders);
+            foreach (var order in orders)
+            {
+                _unitOfWork.Orders.Remove(order);
+
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders).ToResponse();

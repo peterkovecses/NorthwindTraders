@@ -71,7 +71,10 @@ namespace Northwind.Application.Services
         {
             var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items;
 
-            _unitOfWork.Employees.Remove(employees);
+            foreach (var employee in employees)
+            {
+                _unitOfWork.Employees.Remove(employee);
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees).ToResponse();

@@ -64,12 +64,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<OrderDetailDto>>> DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
         {
-            var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
+            var orderDetails = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
 
-            _unitOfWork.OrderDetails.Remove(orderDetailsToRemove);
+            foreach (var orderDetail in orderDetails)
+            {
+                _unitOfWork.OrderDetails.Remove(orderDetail);
+            }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetailsToRemove).ToResponse();
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails).ToResponse();
         }
 
         public async Task<bool> IsExists(OrderDetailKey id, CancellationToken token = default)

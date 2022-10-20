@@ -15,6 +15,6 @@ namespace Northwind.Application.Interfaces.Repositories
 
         Task AddAsync(TEntity entity, CancellationToken token = default);
 
-        void Remove(IEnumerable<TEntity> entities);
+        void Remove(TEntity entity);
     }
 }

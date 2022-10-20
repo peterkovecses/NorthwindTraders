@@ -62,7 +62,10 @@ namespace Northwind.Application.Services
         {
             var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
 
-            _unitOfWork.Territories.Remove(territories);
+            foreach (var territory in territories)
+            {
+            _unitOfWork.Territories.Remove(territory);
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();

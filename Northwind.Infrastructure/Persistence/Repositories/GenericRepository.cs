@@ -40,9 +40,9 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             await _context.Set<TEntity>().AddAsync(entity, token);
         }
 
-        public void Remove(IEnumerable<TEntity> entities)
+        public void Remove(TEntity entity)
         {
-            _context.Set<TEntity>().RemoveRange(entities);
+            _context.Set<TEntity>().Remove(entity);
         }
     }
 }

@@ -66,7 +66,11 @@ namespace Northwind.Application.Services
                 (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
                 .items;
 
-            _unitOfWork.CustomerDemographics.Remove(customerDemographics);
+            foreach (var customerDemographic in customerDemographics)
+            {
+                _unitOfWork.CustomerDemographics.Remove(customerDemographic);
+
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();

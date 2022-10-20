@@ -160,13 +160,13 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             // Arrange            
             var dbSetMock = TestEntities.AsQueryable().BuildMockDbSet();
             var sut = new TestGenericRepository(_contextMock.Object, _strategyResolverMock.Object);
-            var objectsToRemove = new List<TestClass> { new TestClass { Id = 1 }, new TestClass { Id = 2 } };
+            var objectToRemove = new TestClass { Id = 1 };
 
             // Act
-            sut.Remove(objectsToRemove);
+            sut.Remove(objectToRemove);
 
             //Assert
-            _contextMock.Verify(x => x.Set<TestClass>().RemoveRange(objectsToRemove));
+            _contextMock.Verify(x => x.Set<TestClass>().Remove(objectToRemove));
         }
     }
 

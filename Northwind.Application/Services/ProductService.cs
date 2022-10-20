@@ -62,7 +62,10 @@ namespace Northwind.Application.Services
         {
             var products = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId), token: token)).items;
 
-            _unitOfWork.Products.Remove(products);
+            foreach (var product in products)
+            {
+                _unitOfWork.Products.Remove(product);
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<ProductDto>>(products).ToResponse();

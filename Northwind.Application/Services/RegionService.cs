@@ -62,7 +62,10 @@ namespace Northwind.Application.Services
         {
             var regions = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items;
 
-            _unitOfWork.Regions.Remove(regions);
+            foreach (var region in regions)
+            {
+                _unitOfWork.Regions.Remove(region);
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<RegionDto>>(regions).ToResponse();

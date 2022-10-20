@@ -62,7 +62,11 @@ namespace Northwind.Application.Services
         {
             var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items;
 
-            _unitOfWork.Categories.Remove(categories);
+            foreach (var category in categories)
+            {
+                _unitOfWork.Categories.Remove(category);
+
+            }
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
