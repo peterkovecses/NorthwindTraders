@@ -72,16 +72,5 @@ namespace Northwind.Application.Services
 
             return _mapper.Map<IEnumerable<CategoryDto>>(categoriesToRemove).ToResponse();
         }
-
-        public async Task<bool> IsExists(int id, CancellationToken token = default)
-        {
-            return await _unitOfWork.Categories.FindByIdAsync(id, token) != null;
-        }
-
-        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
-        {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items.Count() == ids.Length;
-        }
     }
 }

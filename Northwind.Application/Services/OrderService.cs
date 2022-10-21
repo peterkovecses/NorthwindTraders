@@ -71,16 +71,5 @@ namespace Northwind.Application.Services
 
             return _mapper.Map<IEnumerable<OrderDto>>(ordersToRemove).ToResponse();
         }
-
-        public async Task<bool> IsExists(int id, CancellationToken token = default)
-        {
-            return await _unitOfWork.Orders.FindByIdAsync(id, token) != null;
-        }
-
-        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
-        {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId), token: token)).items.Count() == ids.Length;
-        }
     }
 }

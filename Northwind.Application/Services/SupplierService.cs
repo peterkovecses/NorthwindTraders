@@ -71,16 +71,5 @@ namespace Northwind.Application.Services
 
             return _mapper.Map<IEnumerable<SupplierDto>>(suppliersToRemove).ToResponse();
         }
-
-        public async Task<bool> IsExists(int id, CancellationToken token = default)
-        {
-            return await _unitOfWork.Suppliers.FindByIdAsync(id, token) != null;
-        }
-
-        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
-        {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items.Count() == ids.Length;
-        }
     }
 }

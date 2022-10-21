@@ -77,17 +77,6 @@ namespace Northwind.Application.Services
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<IEnumerable<EmployeeDto>>(employeesToRemove).ToResponse();
-        }
-
-        public async Task<bool> IsExists(int id, CancellationToken token = default)
-        {
-            return await _unitOfWork.Employees.FindByIdAsync(id, token) != null;
-        }
-
-        public async Task<bool> AreExists(int[] ids, CancellationToken token = default)
-        {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items.Count() == ids.Length;
-        }        
+        }       
     }
 }

@@ -77,17 +77,5 @@ namespace Northwind.Application.Services
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographicsToRemove).ToResponse();
         }
-
-        public async Task<bool> IsExists(string id, CancellationToken token = default)
-        {
-            return await _unitOfWork.CustomerDemographics.FindByIdAsync(id, token) != null;
-        }
-
-        public async Task<bool> AreExists(string[] ids, CancellationToken token = default)
-        {
-            ids = ids.Distinct().ToArray();
-            return (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
-                .items.Count() == ids.Length;
-        }
     }
 }

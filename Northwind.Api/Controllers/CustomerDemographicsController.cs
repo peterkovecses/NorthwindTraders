@@ -90,11 +90,6 @@ namespace Northwind.Api.Controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteCustomerDemographics([FromQuery] string[] ids, CancellationToken token)
         {
-            if (!await _customerDemographicService.AreExists(ids, token))
-            {
-                return NotFound();
-            }
-
             var response = await _customerDemographicService.DeleteAsync(ids, token);
 
             return Ok(response);

@@ -9,7 +9,5 @@ namespace Northwind.Application.Interfaces.Services
         Task<Response<TEntity>> CreateAsync(TEntity obj, CancellationToken token = default );
         Task<Response<TEntity>> UpdateAsync(TEntity obj, CancellationToken token = default);
         Task<Response<IEnumerable<TEntity>>> DeleteAsync(TId[] ids, CancellationToken token = default);
-        Task<bool> IsExists(TId id, CancellationToken token = default);
-        Task<bool> AreExists(TId[] id, CancellationToken token = default);
     }
 }

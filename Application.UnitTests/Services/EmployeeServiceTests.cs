@@ -164,40 +164,5 @@ namespace Application.UnitTests.Services
             _unitOfWorkMock.Verify(u => u.CompleteAsync());
             _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employees));
         }
-
-        [Fact]
-        public async Task IsExists_WhenIdGiven_ProperMethodsCalled()
-        {
-            // Arrange
-            var id = 20;
-            _unitOfWorkMock.Setup(u => u.Employees.FindByIdAsync(id, _token)).Returns(Task.FromResult(new Employee()));
-
-            // Act
-            await _sut.IsExists(id);
-
-            // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.FindByIdAsync(id, _token));
-        }
-
-        [Fact]
-        public async Task AreExists_WhenIdsAreGiven_ProperMethodCalled()
-        {
-            // Arrange
-            var ids = new int[] { 9, 12, 17 };
-            var employees = new List<Employee>
-            {
-                new Employee { EmployeeId = ids[0] },
-                new Employee { EmployeeId = ids[1] },
-                new Employee { EmployeeId = ids[2] }
-            }.AsEnumerable();
-
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult((employees.Count(), employees)));           
-
-            // Act
-            await _sut.AreExists(ids);
-
-            // Assert
-            _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token));
-        }
     }
 }

@@ -34,12 +34,12 @@ namespace Northwind.Api.Controllers
         {
             var response = await _customerService.FindByIdAsync(id, token);
 
-            if (response.Data == null)
+            if (response.HasData)
             {
-                return NotFound();
+                return Ok(response);
             }
 
-            return Ok(response);
+            return NotFound();
         }
 
         [HttpPost]
@@ -86,11 +86,6 @@ namespace Northwind.Api.Controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids, CancellationToken token)
         {
-            if (!await _customerService.AreExists(ids, token))
-            {
-                return NotFound();
-            }
-
             var response = await _customerService.DeleteAsync(ids, token);
 
             return Ok(response);
