@@ -1,12 +1,11 @@
-﻿using Northwind.Application.Interfaces;
-using Northwind.Application.Interfaces.Repositories;
+﻿using Northwind.Application.Interfaces.Repositories;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class EmployeeRepository : GenericRepository<Employee, int>, IEmployeeRepository
     {
-        public EmployeeRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
+        public EmployeeRepository(NorthwindContext context) : base(context)
         {
         }
 

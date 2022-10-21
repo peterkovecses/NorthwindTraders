@@ -26,7 +26,6 @@ namespace Northwind.Application.Services
             CancellationToken token = default)
         {
             var (totalOrderDetails, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalOrderDetails);
 
             return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails)
                 .ToPagedResponse(queryParameters.Pagination, totalOrderDetails);

@@ -24,7 +24,6 @@ namespace Northwind.Application.Services
         public async Task<PagedResponse<CustomerDto>> GetAsync(QueryParameters<CustomerFilter> queryParameters, CancellationToken token = default)
         {
             var (totalCustomers, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalCustomers);
 
             return _mapper.Map<IEnumerable<CustomerDto>>(customers)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomers);
@@ -72,7 +71,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CustomerDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var customersToRemove = (await _unitOfWork.Customers.GetAsync(predicate: c => ids.Contains(c.CustomerId), token: token)).items;
+            var customersToRemove = (await _unitOfWork.Customers.GetAsync(new NoPagination(), predicate: c => ids.Contains(c.CustomerId), token: token)).items;
             
             foreach (var customer in customersToRemove)
             {

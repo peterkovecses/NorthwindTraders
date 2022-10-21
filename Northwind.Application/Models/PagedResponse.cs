@@ -1,4 +1,6 @@
-﻿namespace Northwind.Application.Models
+﻿using Northwind.Application.Interfaces;
+
+namespace Northwind.Application.Models
 {
     public class PagedResponse<T>
     {
@@ -6,7 +8,7 @@
 
         public PagedResponse(
                     IEnumerable<T> data,
-                    Pagination pagination,
+                    IPagination pagination,
                     int totalItems)
         {
             Data = data;

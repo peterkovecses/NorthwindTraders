@@ -10,24 +10,23 @@ namespace Northwind.Infrastructure.Persistence.Repositories
     public abstract class GenericRepository<TEntity, TId> : IGenericRepository<TEntity, TId> where TEntity : class
     {
         protected readonly DbContext _context;
-        private readonly IStrategyResolver _strategyResolver;
 
-        public GenericRepository(DbContext context, IStrategyResolver strategyResolver)
+        public GenericRepository(DbContext context)
         {
             _context = context;
-            _strategyResolver = strategyResolver;
         }
 
         public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(
-            Pagination? pagination = null, 
+            IPagination pagination, 
             Sorting? sorting = null, 
             Expression<Func<TEntity, bool>>? predicate = null, 
             CancellationToken token = default)
         {
             var query = _context.Set<TEntity>().ApplyFilter<TEntity>(predicate).OrderByCustom(sorting);
-            var strategy = _strategyResolver.GetStrategy(query, pagination);
+            var totalItems = await query.CountAsync(token);
+            var items = await query.Paginate(pagination, totalItems, token);
 
-            return await strategy.GetItemsAsync(token);
+            return (totalItems, items);
         }
 
         public virtual async Task<TEntity>? FindByIdAsync(TId id, CancellationToken token = default)

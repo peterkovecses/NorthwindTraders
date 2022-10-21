@@ -1,6 +1,4 @@
-﻿using Northwind.Application.Interfaces;
-
-namespace Northwind.Application.Models
+﻿namespace Northwind.Application.Models
 {
     public class Sorting
     {

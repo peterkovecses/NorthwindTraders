@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Northwind.Application.Interfaces;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;
-using Northwind.Infrastructure.Persistence.Services;
 using Northwind.Infrastructure.Services;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -16,7 +15,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDateTimeProvider, DateTimeProvider>();
-            services.AddScoped<IStrategyResolver, PaginationStrategyResolver>();
             services.AddScoped<AuditInterceptor>();
 
             return services;

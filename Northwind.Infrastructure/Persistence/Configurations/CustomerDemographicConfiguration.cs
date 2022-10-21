@@ -9,7 +9,7 @@ namespace Northwind.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<CustomerDemographic> builder)
         {
             builder.HasKey(e => e.CustomerTypeId)
-    .IsClustered(false);
+                .IsClustered(false);
 
             builder.Property(e => e.CustomerTypeId)
                 .HasMaxLength(10)

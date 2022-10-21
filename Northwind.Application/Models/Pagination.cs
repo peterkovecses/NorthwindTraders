@@ -1,21 +1,22 @@
-﻿namespace Northwind.Application.Models
+﻿using Northwind.Application.Interfaces;
+using static Northwind.Application.Common.PaginationConstants;
+
+namespace Northwind.Application.Models
 {
-    public class Pagination
+    public class Pagination : IPagination
     {
-        private const int MinPageNumber = 1;
-        private const int MinPageSize = 1;
         private int _pageNumber = MinPageNumber;
         private int _pageSize = MinPageSize;
 
-        public int PageNumber 
-        { 
-            get => _pageNumber; 
-            set => _pageNumber = value < MinPageNumber ? MinPageNumber : value; 
+        public virtual int PageNumber
+        {
+            get => _pageNumber;
+            init => _pageNumber = value < MinPageNumber ? MinPageNumber : value;
         }
-        public int PageSize 
-        { 
-            get => _pageSize; 
-            set => _pageSize = value < MinPageSize ? MinPageSize : value; 
+        public virtual int PageSize
+        {
+            get => _pageSize;
+            init => _pageSize = value < MinPageSize ? MinPageSize : value > MaxPageSize ? MaxPageSize : value;
         }
     }
 }

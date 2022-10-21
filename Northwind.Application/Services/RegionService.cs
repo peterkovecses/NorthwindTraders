@@ -24,7 +24,6 @@ namespace Northwind.Application.Services
         public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
         {
             var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalRegions);
 
             return _mapper.Map<IEnumerable<RegionDto>>(regions)
                 .ToPagedResponse(queryParameters.Pagination, totalRegions);
@@ -61,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items;
+            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(new NoPagination(), predicate: r => ids.Contains(r.RegionId), token: token)).items;
 
             foreach (var region in regionsToRemove)
             {

@@ -24,7 +24,6 @@ namespace Northwind.Application.Services
         public async Task<PagedResponse<ShipperDto>> GetAsync(QueryParameters<ShipperFilter> queryParameters, CancellationToken token = default)
         {
             var (totalShippers, shippers) = await _unitOfWork.Shippers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalShippers);
 
             return _mapper.Map<IEnumerable<ShipperDto>>(shippers)
                 .ToPagedResponse(queryParameters.Pagination, totalShippers);
@@ -61,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).items;
+            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(new NoPagination(), predicate: s => ids.Contains(s.ShipperId), token: token)).items;
 
             foreach (var shipper in shippersToRemove)
             {

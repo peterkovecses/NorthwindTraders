@@ -8,7 +8,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
 {
     public class OrderDetailRepository : GenericRepository<OrderDetail, IOrderDetailKey>, IOrderDetailRepository
     {
-        public OrderDetailRepository(NorthwindContext context, IStrategyResolver strategyResolver) : base(context, strategyResolver)
+        public OrderDetailRepository(NorthwindContext context) : base(context)
         {
         }
 

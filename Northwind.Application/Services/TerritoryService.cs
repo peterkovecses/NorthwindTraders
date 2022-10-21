@@ -24,7 +24,6 @@ namespace Northwind.Application.Services
         public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
             var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalTerritories);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
                 .ToPagedResponse(queryParameters.Pagination, totalTerritories);
@@ -61,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
+            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(new NoPagination(), predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
 
             foreach (var territory in territoriesToRemove)
             {

@@ -1,38 +1,38 @@
-﻿using Northwind.Application.Interfaces;
-using Northwind.Application.Models;
-using Northwind.Application.Models.Filters;
+﻿using Microsoft.EntityFrameworkCore;
+using Northwind.Application.Interfaces;
 
 namespace Northwind.Application.Extensions
 {
     public static class PaginationExtensions
     {
-        public static int GetItemsToSkip(this Pagination paginationQuery)
+        public static async Task<IEnumerable<TEntity>> Paginate<TEntity>(this IQueryable<TEntity> query, IPagination pagination, int totalItems, CancellationToken token) where TEntity : class
         {
-            return (paginationQuery.PageNumber - 1) * paginationQuery.PageSize;
+            if (totalItems > 0)
+            {
+                return await query
+                .Skip(pagination.GetItemsToSkip())
+                .Take(pagination.GetItemsToTake(totalItems))
+                .ToListAsync(token);
+            }
+            else
+            {
+                return new List<TEntity>();
+            }
         }
 
-        public static int GetItemsToTake(this Pagination paginationQuery, int totalItems)
+        private static int GetItemsToSkip(this IPagination pagination)
         {
-            if (paginationQuery.PageSize == 0)
+            return (pagination.PageNumber - 1) * pagination.PageSize;
+        }
+
+        private static int GetItemsToTake(this IPagination pagination, int totalItems)
+        {
+            if (pagination.PageSize == 0)
             {
                 return totalItems;
             }
 
-            return paginationQuery.PageSize;
-        }
-
-        public static QueryParameters<TFilter> SetPaginationIfNull<TFilter>(this QueryParameters<TFilter> queryParameters, int totalItems) where TFilter : IFilter
-        {
-            if (queryParameters.Pagination == null)
-            {
-                queryParameters.Pagination = new Pagination
-                {
-                    PageNumber = 1,
-                    PageSize = totalItems
-                };
-            }
-
-            return queryParameters;
+            return pagination.PageSize;
         }
     }
 }

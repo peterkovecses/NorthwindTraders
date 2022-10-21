@@ -23,7 +23,6 @@ namespace Northwind.Application.Services
         public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters, CancellationToken token = default)
         {
             var (totalOrders, orders) = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalOrders);
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders)
                 .ToPagedResponse(queryParameters.Pagination, totalOrders);
@@ -60,7 +59,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var ordersToRemove = (await _unitOfWork.Orders.GetAsync(predicate: o => ids.Contains(o.OrderId), token: token)).items;
+            var ordersToRemove = (await _unitOfWork.Orders.GetAsync(new NoPagination(), predicate: o => ids.Contains(o.OrderId), token: token)).items;
 
             foreach (var order in ordersToRemove)
             {

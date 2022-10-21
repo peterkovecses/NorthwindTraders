@@ -26,7 +26,6 @@ namespace Northwind.Application.Services
             CancellationToken token = default)
         {
             var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
-            queryParameters.SetPaginationIfNull(totalCustomerDemographics);
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics);
@@ -65,7 +64,7 @@ namespace Northwind.Application.Services
         public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
             var customerDemographicsToRemove = 
-                (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
+                (await _unitOfWork.CustomerDemographics.GetAsync(new NoPagination(), predicate: x => ids.Contains(x.CustomerTypeId), token: token))
                 .items;
 
             foreach (var customerDemographic in customerDemographicsToRemove)

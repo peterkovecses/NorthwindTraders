@@ -8,11 +8,6 @@ namespace Northwind.Application.Extensions
     {
         public static IQueryable<T> OrderByCustom<T>(this IQueryable<T> items, Sorting sorting)
         {
-            if (sorting == null || sorting.SortBy == null)
-            {
-                return items;
-            }
-
             var type = typeof(T);
             var parameterExpression = Expression.Parameter(type, "t");
             

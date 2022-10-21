@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
+using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
@@ -25,6 +26,7 @@ namespace Northwind.Api.Controllers
             [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token)
         {
+            queryParameters.SetParameters(nameof(CustomerDemographicDto.CustomerTypeId));
             var response = await _customerDemographicService.GetAsync(queryParameters, token);
             (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 

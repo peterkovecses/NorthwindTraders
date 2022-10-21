@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 
@@ -6,14 +7,14 @@ namespace Northwind.Application.Services
 {
     public class PaginatedUriService : IPaginatedUriService
     {
-        private string _baseUri;
+        private readonly string _baseUri;
 
         public PaginatedUriService(string baseUri)
         {
             _baseUri = baseUri;
         }
 
-        public (string? next, string? previous) GetNavigations(Pagination pagination)
+        public (string? next, string? previous) GetNavigations(IPagination pagination)
         {
             string? next = default;
             string? previous = default;
@@ -31,7 +32,7 @@ namespace Northwind.Application.Services
             return (next, previous);
         }
 
-        private static string GetPaginatedUri(string baseUri, Pagination paginationQuery)
+        private static string GetPaginatedUri(string baseUri, IPagination paginationQuery)
         {
             var uri = new Uri(baseUri);
 

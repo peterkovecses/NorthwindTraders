@@ -1,4 +1,5 @@
-﻿using Northwind.Application.Models;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
 
 namespace Northwind.Application.Extensions
 {
@@ -11,7 +12,7 @@ namespace Northwind.Application.Extensions
 
         public static PagedResponse<T> ToPagedResponse<T>(
             this IEnumerable<T> data,
-            Pagination pagination,
+            IPagination pagination,
             int totalItems)
         {
             return new PagedResponse<T>(data, pagination, totalItems);
