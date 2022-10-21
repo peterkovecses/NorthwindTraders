@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,9 +51,9 @@ namespace Northwind.Application.Services
 
         public async Task<Response<SupplierDto>> UpdateAsync(SupplierDto supplierDto, CancellationToken token = default)
         {
-            var supplierInDb = await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId, token);
+            var supplierInDb = 
+                await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId, token) ?? throw new ItemNotFoundException(supplierDto.SupplierId);
             _mapper.Map(supplierDto, supplierInDb);
-
             await _unitOfWork.CompleteAsync();
 
             return supplierDto.ToResponse();
@@ -60,15 +61,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<SupplierDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var suppliers = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items;
+            var suppliersToRemove = (await _unitOfWork.Suppliers.GetAsync(predicate: s => ids.Contains(s.SupplierId), token: token)).items;
 
-            foreach (var supplier in suppliers)
+            foreach (var supplier in suppliersToRemove)
             {
             _unitOfWork.Suppliers.Remove(supplier);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<SupplierDto>>(suppliers).ToResponse();
+            return _mapper.Map<IEnumerable<SupplierDto>>(suppliersToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)

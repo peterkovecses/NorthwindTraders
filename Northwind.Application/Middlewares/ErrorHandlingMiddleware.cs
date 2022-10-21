@@ -21,6 +21,7 @@ namespace Northwind.Application.Middlewares
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Console.WriteLine(ex.Message);
                 await HandleExceptionAsync(context);
             }

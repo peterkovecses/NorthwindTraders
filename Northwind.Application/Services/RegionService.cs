@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,8 +51,8 @@ namespace Northwind.Application.Services
 
         public async Task<Response<RegionDto>> UpdateAsync(RegionDto regionDto, CancellationToken token = default)
         {
-            var regionInDb = await _unitOfWork.Regions.FindByIdAsync(regionDto.RegionId, token);
-
+            var regionInDb = 
+                await _unitOfWork.Regions.FindByIdAsync(regionDto.RegionId, token) ?? throw new ItemNotFoundException(regionDto.RegionId);
             _mapper.Map(regionDto, regionInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -60,15 +61,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var regions = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items;
+            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(predicate: r => ids.Contains(r.RegionId), token: token)).items;
 
-            foreach (var region in regions)
+            foreach (var region in regionsToRemove)
             {
                 _unitOfWork.Regions.Remove(region);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<RegionDto>>(regions).ToResponse();
+            return _mapper.Map<IEnumerable<RegionDto>>(regionsToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)

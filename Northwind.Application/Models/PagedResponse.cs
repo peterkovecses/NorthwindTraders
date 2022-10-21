@@ -28,5 +28,6 @@
         }
         public string? NextPage { get => _nextPage; set => _nextPage = TotalPages > PageNumber ? value : null; }
         public string? PreviousPage { get; set; }
+        public bool HasData => Data != null && Data.Any();
     }
 }

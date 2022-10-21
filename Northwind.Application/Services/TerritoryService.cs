@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,9 +51,9 @@ namespace Northwind.Application.Services
 
         public async Task<Response<TerritoryDto>> UpdateAsync(TerritoryDto territoryDto, CancellationToken token = default)
         {
-            var territoryInDb = await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId, token);
+            var territoryInDb = 
+                await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId, token) ?? throw new ItemNotFoundException(territoryDto.TerritoryId);
             _mapper.Map(territoryDto, territoryInDb);
-
             await _unitOfWork.CompleteAsync();
 
             return territoryDto.ToResponse();
@@ -60,15 +61,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var territories = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
+            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
 
-            foreach (var territory in territories)
+            foreach (var territory in territoriesToRemove)
             {
             _unitOfWork.Territories.Remove(territory);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<TerritoryDto>>(territories).ToResponse();
+            return _mapper.Map<IEnumerable<TerritoryDto>>(territoriesToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(string id, CancellationToken token = default)

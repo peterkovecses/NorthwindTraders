@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
@@ -69,14 +70,15 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var key = new OrderDetailKey(orderId, productId);
-
-            if (!_orderDetailService.IsExists(key, token).Result)
+            Response<OrderDetailDto> response;
+            try
+            {
+            response = await _orderDetailService.UpdateAsync(orderDetail, token);
+            }
+            catch (ItemNotFoundException)
             {
                 return NotFound();
             }
-
-            var response = await _orderDetailService.UpdateAsync(orderDetail, token);
 
             return Ok(response);
         }

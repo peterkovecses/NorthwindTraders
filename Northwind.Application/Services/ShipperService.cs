@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,8 +51,8 @@ namespace Northwind.Application.Services
 
         public async Task<Response<ShipperDto>> UpdateAsync(ShipperDto shipperDto, CancellationToken token = default)
         {
-            var shipperInDb = await _unitOfWork.Regions.FindByIdAsync(shipperDto.ShipperId, token);
-
+            var shipperInDb = 
+                await _unitOfWork.Regions.FindByIdAsync(shipperDto.ShipperId, token) ?? throw new ItemNotFoundException(shipperDto.ShipperId);
             _mapper.Map(shipperDto, shipperInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -60,15 +61,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var shippers = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).items;
+            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(predicate: s => ids.Contains(s.ShipperId), token: token)).items;
 
-            foreach (var shipper in shippers)
+            foreach (var shipper in shippersToRemove)
             {
             _unitOfWork.Shippers.Remove(shipper);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<ShipperDto>>(shippers).ToResponse();
+            return _mapper.Map<IEnumerable<ShipperDto>>(shippersToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)

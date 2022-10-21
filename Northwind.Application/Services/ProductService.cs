@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,8 +51,8 @@ namespace Northwind.Application.Services
 
         public async Task<Response<ProductDto>> UpdateAsync(ProductDto productDto, CancellationToken token = default)
         {
-            var productInDb = await _unitOfWork.Products.FindByIdAsync(productDto.ProductId, token);
-
+            var productInDb = 
+                await _unitOfWork.Products.FindByIdAsync(productDto.ProductId, token) ?? throw new ItemNotFoundException(productDto.ProductId);
             _mapper.Map(productDto, productInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -60,15 +61,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ProductDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var products = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId), token: token)).items;
+            var productsToRemove = (await _unitOfWork.Products.GetAsync(predicate: p => ids.Contains(p.ProductId), token: token)).items;
 
-            foreach (var product in products)
+            foreach (var product in productsToRemove)
             {
                 _unitOfWork.Products.Remove(product);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<ProductDto>>(products).ToResponse();
+            return _mapper.Map<IEnumerable<ProductDto>>(productsToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)

@@ -150,19 +150,19 @@ namespace Application.UnitTests.Services
         {
             // Arrange
             var ids = new int[] { 9, 12, 17 };
-            var employeesMock = new Mock<IEnumerable<Employee>>();
+            var employees = new List<Employee> { new Employee() };
             var totalEmployees = 10;
-            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult((totalEmployees, employeesMock.Object)));
-            _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object)).Returns(new List<EmployeeDto>());
+            _unitOfWorkMock.Setup(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token)).Returns(Task.FromResult((totalEmployees, employees.AsEnumerable())));
+            _mapperMock.Setup(m => m.Map<IEnumerable<EmployeeDto>>(employees)).Returns(new List<EmployeeDto>());
 
             // Act
             await _sut.DeleteAsync(ids, _token);
 
             // Assert
             _unitOfWorkMock.Verify(u => u.Employees.GetAsync(null, null, It.IsAny<Expression<Func<Employee, bool>>>(), _token));
-            _unitOfWorkMock.Verify(u => u.Employees.Remove(employeesMock.Object));
+            _unitOfWorkMock.Verify(u => u.Employees.Remove(employees.First()));
             _unitOfWorkMock.Verify(u => u.CompleteAsync());
-            _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employeesMock.Object));
+            _mapperMock.Verify(m => m.Map<IEnumerable<EmployeeDto>>(employees));
         }
 
         [Fact]

@@ -13,5 +13,6 @@
         }
 
         public T? Data { get; }
+        public bool HasData => Data != null;
     }
 }

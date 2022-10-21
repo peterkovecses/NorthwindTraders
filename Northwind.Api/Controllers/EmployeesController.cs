@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
@@ -67,12 +68,15 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (!await _employeeService.IsExists(id, token))
+            Response<EmployeeDto> response;
+            try
+            {
+                response = await _employeeService.UpdateAsync(employee, token);
+            }
+            catch (ItemNotFoundException)
             {
                 return NotFound();
             }
-
-            var response = await _employeeService.UpdateAsync(employee, token);
 
             return Ok(response);
         }

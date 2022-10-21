@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using LinqKit;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -8,7 +8,6 @@ using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
-using System;
 
 namespace Northwind.Application.Services
 {
@@ -59,8 +58,8 @@ namespace Northwind.Application.Services
 
         public async Task<Response<EmployeeDto>> UpdateAsync(EmployeeDto employeeDto, CancellationToken token)
         {
-            var employeeInDb = await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId, token);
-
+            var employeeInDb = 
+                await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId, token) ?? throw new ItemNotFoundException(employeeDto.EmployeeId);
             _mapper.Map(employeeDto, employeeInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -69,15 +68,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids, CancellationToken token)
         {
-            var employees = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items;
+            var employeesToRemove = (await _unitOfWork.Employees.GetAsync(predicate: e => ids.Contains(e.EmployeeId), token: token)).items;
 
-            foreach (var employee in employees)
+            foreach (var employee in employeesToRemove)
             {
                 _unitOfWork.Employees.Remove(employee);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employees).ToResponse();
+            return _mapper.Map<IEnumerable<EmployeeDto>>(employeesToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)

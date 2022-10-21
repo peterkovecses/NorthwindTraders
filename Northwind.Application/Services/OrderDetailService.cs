@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -54,8 +55,8 @@ namespace Northwind.Application.Services
         public async Task<Response<OrderDetailDto>> UpdateAsync(OrderDetailDto orderDetailDto, CancellationToken token = default)
         {
             var key = new OrderDetailKey(orderDetailDto.OrderId, orderDetailDto.ProductId);
-            var orderDetailInDb = await _unitOfWork.OrderDetails.FindByIdAsync(key, token);
-
+            var orderDetailInDb = 
+                await _unitOfWork.OrderDetails.FindByIdAsync(key, token) ?? throw new ItemNotFoundException((key.OrderId, key.ProductId));
             _mapper.Map(orderDetailDto, orderDetailInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -64,15 +65,15 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<OrderDetailDto>>> DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
         {
-            var orderDetails = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
+            var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
 
-            foreach (var orderDetail in orderDetails)
+            foreach (var orderDetail in orderDetailsToRemove)
             {
                 _unitOfWork.OrderDetails.Remove(orderDetail);
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails).ToResponse();
+            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetailsToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(OrderDetailKey id, CancellationToken token = default)

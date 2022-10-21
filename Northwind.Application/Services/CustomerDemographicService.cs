@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -52,9 +53,10 @@ namespace Northwind.Application.Services
 
         public async Task<Response<CustomerDemographicDto>> UpdateAsync(CustomerDemographicDto customerDemographicDto, CancellationToken token = default)
         {
-            var customerDemographicInDb = await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId, token);
-
-            customerDemographicInDb.CustomerDesc = customerDemographicDto.CustomerDesc;
+            var customerDemographicInDb = 
+                await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId, token) 
+                    ?? throw new ItemNotFoundException(customerDemographicDto.CustomerTypeId);
+            customerDemographicInDb.CustomerDesc = customerDemographicDto.CustomerDesc;             
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
@@ -62,18 +64,18 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var customerDemographics = 
+            var customerDemographicsToRemove = 
                 (await _unitOfWork.CustomerDemographics.GetAsync(predicate: x => ids.Contains(x.CustomerTypeId), token: token))
                 .items;
 
-            foreach (var customerDemographic in customerDemographics)
+            foreach (var customerDemographic in customerDemographicsToRemove)
             {
                 _unitOfWork.CustomerDemographics.Remove(customerDemographic);
 
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics).ToResponse();
+            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographicsToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(string id, CancellationToken token = default)

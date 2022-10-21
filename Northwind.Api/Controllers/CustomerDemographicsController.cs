@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
@@ -35,12 +36,12 @@ namespace Northwind.Api.Controllers
         {
             var response = await _customerDemographicService.FindByIdAsync(id, token);
 
-            if (response.Data == null)
+            if (response.HasData)
             {
-                return NotFound();
+                return Ok(response);
             }
 
-            return Ok(response);
+            return NotFound();
         }
 
         [HttpPost]
@@ -72,12 +73,15 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (!await _customerDemographicService.IsExists(id))
+            Response<CustomerDemographicDto> response;
+            try
+            {
+                response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
+            }
+            catch (ItemNotFoundException)
             {
                 return NotFound();
             }
-
-            var response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
 
             return Ok(response);
         }

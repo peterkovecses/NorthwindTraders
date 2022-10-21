@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Northwind.Application.Dtos;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
@@ -50,8 +51,8 @@ namespace Northwind.Application.Services
 
         public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto, CancellationToken token = default)
         {
-            var categoryInDb = await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId, token);
-
+            var categoryInDb = 
+                await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId, token) ?? throw new ItemNotFoundException(categoryDto.CategoryId);
             _mapper.Map(categoryDto, categoryInDb);
             await _unitOfWork.CompleteAsync();
 
@@ -60,16 +61,16 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids, CancellationToken token = default )
         {
-            var categories = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items;
+            var categoriesToRemove = (await _unitOfWork.Categories.GetAsync(predicate: c => ids.Contains(c.CategoryId), token: token)).items;
 
-            foreach (var category in categories)
+            foreach (var category in categoriesToRemove)
             {
                 _unitOfWork.Categories.Remove(category);
 
             }
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories).ToResponse();
+            return _mapper.Map<IEnumerable<CategoryDto>>(categoriesToRemove).ToResponse();
         }
 
         public async Task<bool> IsExists(int id, CancellationToken token = default)
