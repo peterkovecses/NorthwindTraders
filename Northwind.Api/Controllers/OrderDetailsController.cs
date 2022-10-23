@@ -14,11 +14,13 @@ namespace Northwind.Api.Controllers
     {
         private readonly IOrderDetailService _orderDetailService;
         private readonly IPaginatedUriService _uriService;
+        private readonly ILogger<OrderDetailsController> _logger;
 
-        public OrderDetailsController(IOrderDetailService orderDetailService, IPaginatedUriService uriService)
+        public OrderDetailsController(IOrderDetailService orderDetailService, IPaginatedUriService uriService, ILogger<OrderDetailsController> logger)
         {
             _orderDetailService = orderDetailService;
             _uriService = uriService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -77,8 +79,9 @@ namespace Northwind.Api.Controllers
             {
             response = await _orderDetailService.UpdateAsync(orderDetail, token);
             }
-            catch (ItemNotFoundException)
+            catch (ItemNotFoundException ex)
             {
+                _logger.LogError(ex);
                 return NotFound();
             }
 

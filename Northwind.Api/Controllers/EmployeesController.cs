@@ -14,11 +14,13 @@ namespace Northwind.Api.Controllers
     {
         private readonly IEmployeeService _employeeService;
         private readonly IPaginatedUriService _uriService;
+        private readonly ILogger<EmployeesController> _logger;
 
-        public EmployeesController(IEmployeeService employeeService, IPaginatedUriService uriService)
+        public EmployeesController(IEmployeeService employeeService, IPaginatedUriService uriService, ILogger<EmployeesController> logger)
         {
             _employeeService = employeeService;
             _uriService = uriService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -75,8 +77,9 @@ namespace Northwind.Api.Controllers
             {
                 response = await _employeeService.UpdateAsync(employee, token);
             }
-            catch (ItemNotFoundException)
+            catch (ItemNotFoundException ex)
             {
+                _logger.LogError(ex);
                 return NotFound();
             }
 

@@ -14,11 +14,13 @@ namespace Northwind.Api.Controllers
     {
         private readonly ICustomerDemographicService _customerDemographicService;
         private readonly IPaginatedUriService _uriService;
+        private readonly ILogger<CustomerDemographicsController> _logger;
 
-        public CustomerDemographicsController(ICustomerDemographicService customerDemographicService, IPaginatedUriService uriService)
+        public CustomerDemographicsController(ICustomerDemographicService customerDemographicService, IPaginatedUriService uriService, ILogger<CustomerDemographicsController> logger)
         {
             _customerDemographicService = customerDemographicService;
             _uriService = uriService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -80,8 +82,9 @@ namespace Northwind.Api.Controllers
             {
                 response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
             }
-            catch (ItemNotFoundException)
+            catch (ItemNotFoundException ex)
             {
+                _logger.LogError(ex);
                 return NotFound();
             }
 

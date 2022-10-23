@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Northwind.Application.Extensions;
 using System.Net;
 using System.Text.Json;
 
@@ -24,7 +25,7 @@ namespace Northwind.Application.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.GetType()} occurred: {ex.Message}");
+                _logger.LogError(ex);
                 await HandleExceptionAsync(context);
             }
         }
