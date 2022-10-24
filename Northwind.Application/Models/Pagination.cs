@@ -6,7 +6,7 @@ namespace Northwind.Application.Models
     public class Pagination : IPagination
     {
         private int _pageNumber = MinPageNumber;
-        private int _pageSize = MinPageSize;
+        private int _pageSize = MaxPageSize;
 
         public virtual int PageNumber
         {

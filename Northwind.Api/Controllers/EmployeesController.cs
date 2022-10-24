@@ -26,7 +26,6 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {
-            queryParameters.SetParameters(nameof(EmployeeDto.EmployeeId));
             var response = await _employeeService.GetAsync(queryParameters, token);
             (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 

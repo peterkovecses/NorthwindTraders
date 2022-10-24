@@ -2,10 +2,10 @@
 
 namespace Northwind.Application.Models
 {
-    public class QueryParameters<T> where T : IFilter
+    public class QueryParameters<T> where T : IFilter, new()
     {
-        public Pagination? Pagination { get; set; }
-        public Sorting? Sorting { get; set; }
-        public T? Filter { get; set; }
+        public Pagination Pagination { get; set; } = new Pagination();
+        public Sorting Sorting { get; set; } = new Sorting();
+        public T Filter { get; set; } = new T();
     }
 }

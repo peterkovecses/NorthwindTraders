@@ -60,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(new NoPagination(), predicate: r => ids.Contains(r.RegionId), token: token)).items;
+            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(new Pagination(), predicate: r => ids.Contains(r.RegionId), token: token)).items;
 
             foreach (var region in regionsToRemove)
             {

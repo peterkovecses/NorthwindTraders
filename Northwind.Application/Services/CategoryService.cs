@@ -60,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids, CancellationToken token = default )
         {
-            var categoriesToRemove = (await _unitOfWork.Categories.GetAsync(new NoPagination(), predicate: c => ids.Contains(c.CategoryId), token: token)).items;
+            var categoriesToRemove = (await _unitOfWork.Categories.GetAsync(new Pagination(), predicate: c => ids.Contains(c.CategoryId), token: token)).items;
 
             foreach (var category in categoriesToRemove)
             {

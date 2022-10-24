@@ -28,7 +28,6 @@ namespace Northwind.Api.Controllers
             [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token)
         {
-            queryParameters.SetParameters(nameof(CustomerDemographicDto.CustomerTypeId));
             var response = await _customerDemographicService.GetAsync(queryParameters, token);
             (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 

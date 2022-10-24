@@ -9,12 +9,7 @@ namespace Northwind.Application.Services.PredicateBuilders
     {
         public virtual ExpressionStarter<Employee> GetPredicate(QueryParameters<EmployeeFilter> queryParameters)
         {
-            if (queryParameters.Filter == null)
-            {
-                return PredicateBuilder.New<Employee>(true);
-            }
-
-            var predicate = PredicateBuilder.New<Employee>();
+            var predicate = PredicateBuilder.New<Employee>(true);
             var filter = queryParameters.Filter;
 
             if (!string.IsNullOrEmpty(filter.FullNameFraction))

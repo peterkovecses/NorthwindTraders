@@ -2,7 +2,7 @@
 
 namespace Northwind.Application.Interfaces.Services
 {
-    public interface IGenericService<TEntity, TId, TFilter> where TEntity : class where TFilter : IFilter
+    public interface IGenericService<TEntity, TId, TFilter> where TEntity : class where TFilter : IFilter, new()
     {
         Task<PagedResponse<TEntity>> GetAsync(QueryParameters<TFilter> queryParameters, CancellationToken token = default);
         Task<Response<TEntity>> FindByIdAsync(TId id, CancellationToken token = default);

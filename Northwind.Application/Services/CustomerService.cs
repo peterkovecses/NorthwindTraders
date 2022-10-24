@@ -71,7 +71,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CustomerDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var customersToRemove = (await _unitOfWork.Customers.GetAsync(new NoPagination(), predicate: c => ids.Contains(c.CustomerId), token: token)).items;
+            var customersToRemove = (await _unitOfWork.Customers.GetAsync(new Pagination(), predicate: c => ids.Contains(c.CustomerId), token: token)).items;
             
             foreach (var customer in customersToRemove)
             {

@@ -26,7 +26,6 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter> queryParameters, CancellationToken token)
         {
-            queryParameters.SetParameters(nameof(CustomerDto.CustomerId));
             var response = await _customerService.GetAsync(queryParameters, token);
             (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
 

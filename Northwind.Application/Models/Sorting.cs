@@ -2,7 +2,7 @@
 {
     public class Sorting
     {
-        public string? SortBy { get; set; }
+        public string? SortBy { get; set; } = "Created";
         public bool DescendingOrder { get; set; }
     }
 }
