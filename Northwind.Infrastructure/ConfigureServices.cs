@@ -11,7 +11,10 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<NorthwindContext>(options => options.UseSqlServer(configuration.GetConnectionString("NorthwindDatabase")));
+            services.AddDbContext<NorthwindContext>(options =>
+                options
+                    .UseLazyLoadingProxies()
+                    .UseSqlServer(configuration.GetConnectionString("NorthwindDatabase")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDateTimeProvider, DateTimeProvider>();
