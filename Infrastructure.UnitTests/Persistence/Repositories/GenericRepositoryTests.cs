@@ -37,7 +37,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(new NoPagination());
+            var result = await sut.GetAsync(new Pagination());
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
@@ -67,7 +67,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(new NoPagination(), sorting: sorting);
+            var result = await sut.GetAsync(new Pagination(), sorting: sorting);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
@@ -83,7 +83,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(new NoPagination(), predicate: predicate);
+            var result = await sut.GetAsync(new Pagination(), predicate: predicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
