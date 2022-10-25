@@ -1,10 +1,13 @@
 ﻿using Northwind.Application.Interfaces;
-using static Northwind.Application.Common.PaginationConstants;
 
 namespace Northwind.Application.Models
 {
     public class Pagination : IPagination
     {
+        public const int MinPageNumber = 1;
+        public const int MinPageSize = 1;
+        public const int MaxPageSize = 5000;
+
         private int _pageNumber = MinPageNumber;
         private int _pageSize = MaxPageSize;
 
