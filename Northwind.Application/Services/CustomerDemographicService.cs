@@ -7,7 +7,6 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -26,8 +25,7 @@ namespace Northwind.Application.Services
             QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token = default)
         {
-            Expression<Func<CustomerDemographic, bool>> predicate = x => true;
-            var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics);

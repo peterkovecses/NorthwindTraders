@@ -7,7 +7,6 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -24,8 +23,7 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<SupplierDto>> GetAsync(QueryParameters<SupplierFilter> queryParameters, CancellationToken token = default)
         {
-            Expression<Func<Supplier, bool>> predicate = x => true;
-            var (totalShippers, shippers) = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            var (totalShippers, shippers) = await _unitOfWork.Suppliers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
 
             return _mapper.Map<IEnumerable<SupplierDto>>(shippers)
                 .ToPagedResponse(queryParameters.Pagination, totalShippers);

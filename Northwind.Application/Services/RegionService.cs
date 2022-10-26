@@ -7,7 +7,6 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -24,8 +23,7 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
         {
-            Expression<Func<Region, bool>> predicate = x => true;
-            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
 
             return _mapper.Map<IEnumerable<RegionDto>>(regions)
                 .ToPagedResponse(queryParameters.Pagination, totalRegions);

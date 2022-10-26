@@ -12,7 +12,6 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         private readonly Mock<DbSet<TestClass>> _dbSetMock;
         private readonly Pagination DefaultPagination = new Pagination();
         private readonly Sorting DefaultSorting= new Sorting();
-        private readonly Expression<Func<TestClass, bool>> TruePredicate = x => true;
         private readonly List<TestClass> TestEntities = new List<TestClass>
             {
                 new TestClass { Id = 1 },
@@ -31,14 +30,14 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_ParametersGiven_ProperMethodsCalled()
+        public async Task Get_WhenParametersGiven_ProperMethodsCalled()
         {
             // Arrange                        
             var query = _contextMock.Object.Set<TestClass>().AsQueryable();
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(DefaultPagination, DefaultSorting, TruePredicate);
+            var result = await sut.GetAsync(DefaultPagination, DefaultSorting);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
