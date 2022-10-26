@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -25,7 +26,8 @@ namespace Northwind.Application.Services
             QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token = default)
         {
-            var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<CustomerDemographic, bool>> predicate = x => true;
+            var (totalCustomerDemographics, customerDemographics) = await _unitOfWork.CustomerDemographics.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographics)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomerDemographics);
@@ -64,7 +66,7 @@ namespace Northwind.Application.Services
         public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
             var customerDemographicsToRemove = 
-                (await _unitOfWork.CustomerDemographics.GetAsync(new Pagination(), predicate: x => ids.Contains(x.CustomerTypeId), token: token))
+                (await _unitOfWork.CustomerDemographics.GetAsync(new Pagination(), new Sorting(), x => ids.Contains(x.CustomerTypeId), token))
                 .items;
 
             foreach (var customerDemographic in customerDemographicsToRemove)

@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -23,7 +24,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalProducts, products) = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Product, bool>> predicate = x => true;
+            var (totalProducts, products) = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<ProductDto>>(products)
                 .ToPagedResponse(queryParameters.Pagination, totalProducts);
@@ -60,7 +62,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ProductDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var productsToRemove = (await _unitOfWork.Products.GetAsync(new Pagination(), predicate: p => ids.Contains(p.ProductId), token: token)).items;
+            var productsToRemove = (await _unitOfWork.Products.GetAsync(new Pagination(), new Sorting(), p => ids.Contains(p.ProductId), token)).items;
 
             foreach (var product in productsToRemove)
             {

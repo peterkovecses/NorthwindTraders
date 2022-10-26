@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -23,7 +24,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Region, bool>> predicate = x => true;
+            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<RegionDto>>(regions)
                 .ToPagedResponse(queryParameters.Pagination, totalRegions);
@@ -60,7 +62,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(new Pagination(), predicate: r => ids.Contains(r.RegionId), token: token)).items;
+            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(new Pagination(), new Sorting(), r => ids.Contains(r.RegionId), token)).items;
 
             foreach (var region in regionsToRemove)
             {

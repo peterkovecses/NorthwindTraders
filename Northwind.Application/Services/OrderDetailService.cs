@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -25,7 +26,8 @@ namespace Northwind.Application.Services
             QueryParameters<OrderDetailFilter> queryParameters, 
             CancellationToken token = default)
         {
-            var (totalOrderDetails, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<OrderDetail, bool>> predicate = x => true;
+            var (totalOrderDetails, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetails)
                 .ToPagedResponse(queryParameters.Pagination, totalOrderDetails);

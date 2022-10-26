@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -23,7 +24,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<ShipperDto>> GetAsync(QueryParameters<ShipperFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalShippers, shippers) = await _unitOfWork.Shippers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Shipper, bool>> predicate = x => true;
+            var (totalShippers, shippers) = await _unitOfWork.Shippers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<ShipperDto>>(shippers)
                 .ToPagedResponse(queryParameters.Pagination, totalShippers);
@@ -60,7 +62,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(new Pagination(), predicate: s => ids.Contains(s.ShipperId), token: token)).items;
+            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(new Pagination(), new Sorting(), s => ids.Contains(s.ShipperId), token)).items;
 
             foreach (var shipper in shippersToRemove)
             {

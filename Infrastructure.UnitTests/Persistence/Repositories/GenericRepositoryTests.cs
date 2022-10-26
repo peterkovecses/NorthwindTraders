@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
-using Northwind.Application.Extensions;
 using Northwind.Application.Models;
 using Northwind.Infrastructure.Persistence.Repositories;
 using System.Linq.Expressions;
@@ -10,6 +9,10 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
     public class GenericRepositoryTests
     {
         private readonly Mock<DbContext> _contextMock;
+        private readonly Mock<DbSet<TestClass>> _dbSetMock;
+        private readonly Pagination DefaultPagination = new Pagination();
+        private readonly Sorting DefaultSorting= new Sorting();
+        private readonly Expression<Func<TestClass, bool>> TruePredicate = x => true;
         private readonly List<TestClass> TestEntities = new List<TestClass>
             {
                 new TestClass { Id = 1 },
@@ -18,8 +21,6 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
                 new TestClass { Id = 4 },
                 new TestClass { Id = 5 }
             };
-
-        private readonly Mock<DbSet<TestClass>> _dbSetMock;
 
         public GenericRepositoryTests()
         {
@@ -30,44 +31,14 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_WhenNoPaginationParameterGiven_ProperMethodsCalled()
+        public async Task Get_ParametersGiven_ProperMethodsCalled()
         {
             // Arrange                        
             var query = _contextMock.Object.Set<TestClass>().AsQueryable();
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(new Pagination());
-
-            //Assert
-            _contextMock.Verify(c => c.Set<TestClass>());
-        }
-
-        [Fact]
-        public async Task Get_WhenPaginationGiven_ProperMethodsCalled()
-        {
-            // Arrange            
-            var pagination = new Pagination { PageNumber = 2, PageSize = 3 };
-            var query = _contextMock.Object.Set<TestClass>().AsQueryable();
-            var sut = new TestGenericRepository(_contextMock.Object);
-
-            // Act
-            var result = await sut.GetAsync(pagination);
-
-            //Assert
-            _contextMock.Verify(c => c.Set<TestClass>());
-        }
-
-        [Fact]
-        public async Task Get_WhenSortingGiven_ProperMethodsCalled()
-        {
-            // Arrange            
-            var sorting = new Sorting { SortBy = "Id", DescendingOrder = true };
-            var query = _contextMock.Object.Set<TestClass>().AsQueryable().OrderByCustom(sorting);
-            var sut = new TestGenericRepository(_contextMock.Object);
-
-            // Act
-            var result = await sut.GetAsync(new Pagination(), sorting: sorting);
+            var result = await sut.GetAsync(DefaultPagination, DefaultSorting, TruePredicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
@@ -83,7 +54,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(new Pagination(), predicate: predicate);
+            var result = await sut.GetAsync(DefaultPagination, DefaultSorting, predicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());
@@ -152,6 +123,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
     public class TestClass
     {
         public int Id { get; set; }
+        public DateTime Created { get; set; } = DateTime.Now;
     }
 
     public class TestGenericRepository : GenericRepository<TestClass, int>

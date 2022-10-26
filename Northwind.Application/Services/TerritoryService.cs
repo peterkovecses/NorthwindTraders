@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -23,7 +24,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Territory, bool>> predicate = x => true;
+            var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
                 .ToPagedResponse(queryParameters.Pagination, totalTerritories);
@@ -60,7 +62,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(new Pagination(), predicate: t => ids.Contains(t.TerritoryId), token: token)).items;
+            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(new Pagination(), new Sorting(), t => ids.Contains(t.TerritoryId), token)).items;
 
             foreach (var territory in territoriesToRemove)
             {

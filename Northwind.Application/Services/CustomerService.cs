@@ -7,6 +7,7 @@ using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -23,7 +24,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<CustomerDto>> GetAsync(QueryParameters<CustomerFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalCustomers, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Customer, bool>> predicate = x => true;
+            var (totalCustomers, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<CustomerDto>>(customers)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomers);
@@ -71,7 +73,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<CustomerDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
         {
-            var customersToRemove = (await _unitOfWork.Customers.GetAsync(new Pagination(), predicate: c => ids.Contains(c.CustomerId), token: token)).items;
+            var customersToRemove = (await _unitOfWork.Customers.GetAsync(new Pagination(), new Sorting(), c => ids.Contains(c.CustomerId), token)).items;
             
             foreach (var customer in customersToRemove)
             {

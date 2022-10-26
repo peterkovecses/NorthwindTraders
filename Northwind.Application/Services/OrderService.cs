@@ -6,6 +6,7 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Northwind.Application.Services
 {
@@ -22,7 +23,8 @@ namespace Northwind.Application.Services
 
         public async Task<PagedResponse<OrderDto>> GetAsync(QueryParameters<OrderFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalOrders, orders) = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            Expression<Func<Order, bool>> predicate = x => true;
+            var (totalOrders, orders) = await _unitOfWork.Orders.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<OrderDto>>(orders)
                 .ToPagedResponse(queryParameters.Pagination, totalOrders);
@@ -59,7 +61,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<OrderDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var ordersToRemove = (await _unitOfWork.Orders.GetAsync(new Pagination(), predicate: o => ids.Contains(o.OrderId), token: token)).items;
+            var ordersToRemove = (await _unitOfWork.Orders.GetAsync(new Pagination(), new Sorting(), o => ids.Contains(o.OrderId), token)).items;
 
             foreach (var order in ordersToRemove)
             {

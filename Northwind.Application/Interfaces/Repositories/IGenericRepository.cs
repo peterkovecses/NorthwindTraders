@@ -7,8 +7,8 @@ namespace Northwind.Application.Interfaces.Repositories
     {
         Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(
             IPagination pagination, 
-            Sorting? sorting = null, 
-            Expression<Func<TEntity, bool>> ? predicate = null, 
+            Sorting sorting, 
+            Expression<Func<TEntity, bool>> predicate, 
             CancellationToken token = default);
 
         Task<TEntity>? FindByIdAsync(TId id, CancellationToken token = default);

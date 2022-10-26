@@ -18,8 +18,8 @@ namespace Northwind.Infrastructure.Persistence.Repositories
 
         public async Task<(int totalItems, IEnumerable<TEntity> items)> GetAsync(
             IPagination pagination, 
-            Sorting? sorting = null, 
-            Expression<Func<TEntity, bool>>? predicate = null, 
+            Sorting sorting, 
+            Expression<Func<TEntity, bool>> predicate, 
             CancellationToken token = default)
         {
             var query = _context.Set<TEntity>().Where(predicate).OrderByCustom(sorting);
