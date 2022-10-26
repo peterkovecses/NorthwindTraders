@@ -4,5 +4,6 @@
     {
         int PageNumber { get; }
         int PageSize { get; }
+        public bool IsNoPagination { get; }
     }
 }

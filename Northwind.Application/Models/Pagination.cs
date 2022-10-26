@@ -16,10 +16,15 @@ namespace Northwind.Application.Models
             get => _pageNumber;
             init => _pageNumber = value < MinPageNumber ? MinPageNumber : value;
         }
+
         public virtual int PageSize
         {
             get => _pageSize;
             init => _pageSize = value < MinPageSize ? MinPageSize : value > MaxPageSize ? MaxPageSize : value;
         }
+
+        public bool IsNoPagination { get; private init; }
+
+        public static Pagination NoPagination => new() { _pageNumber = default, _pageSize = default, IsNoPagination = true };
     }
 }

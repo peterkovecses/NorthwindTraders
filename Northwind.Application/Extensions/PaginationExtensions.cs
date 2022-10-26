@@ -10,6 +10,11 @@ namespace Northwind.Application.Extensions
         {
             if (totalItems > 0)
             {
+                if (pagination.IsNoPagination)
+                {
+                    return await query.ToListAsync(token);
+                }
+
                 var items = await query
                 .Skip(pagination.GetItemsToSkip())
                 .Take(pagination.GetItemsToTake(totalItems))

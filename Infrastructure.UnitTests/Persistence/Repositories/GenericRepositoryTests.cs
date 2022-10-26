@@ -10,15 +10,13 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
     {
         private readonly Mock<DbContext> _contextMock;
         private readonly Mock<DbSet<TestClass>> _dbSetMock;
-        private readonly Pagination DefaultPagination = new Pagination();
-        private readonly Sorting DefaultSorting= new Sorting();
-        private readonly List<TestClass> TestEntities = new List<TestClass>
-            {
-                new TestClass { Id = 1 },
+        private readonly List<TestClass> TestEntities = new()
+        {
                 new TestClass { Id = 2 },
+                new TestClass { Id = 1 },
                 new TestClass { Id = 3 },
-                new TestClass { Id = 4 },
-                new TestClass { Id = 5 }
+                new TestClass { Id = 5 },
+                new TestClass { Id = 4 }
             };
 
         public GenericRepositoryTests()
@@ -30,17 +28,83 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         }
 
         [Fact]
-        public async Task Get_WhenParametersGiven_ProperMethodsCalled()
+        public async Task Get_WhenNoPaginationGiven_AllEntriesAreReturned()
         {
             // Arrange                        
             var query = _contextMock.Object.Set<TestClass>().AsQueryable();
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(DefaultPagination, DefaultSorting);
+            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting);
 
             //Assert
-            _contextMock.Verify(c => c.Set<TestClass>());
+            result.items.Should().BeEquivalentTo(TestEntities);
+            result.totalItems.Should().Be(TestEntities.Count);
+        }
+
+        [Fact]
+        public async Task Get_WhenPaginationGiven_PaginatedEntriesAreReturned()
+        {
+            // Arrange                        
+            var query = _contextMock.Object.Set<TestClass>().AsQueryable();
+            var sut = new TestGenericRepository(_contextMock.Object);
+            var pagination = new Pagination { PageNumber = 2, PageSize = 1 };
+            var expected = TestEntities.Skip(1).Take(1);
+
+            // Act
+            var result = await sut.GetAsync(pagination, Sorting.NoSorting);
+
+            //Assert
+            result.items.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public async Task Get_WhenNoSortingGiven_EntriesAreReturnedInTheOriginalOrder()
+        {
+            // Arrange                        
+            var query = _contextMock.Object.Set<TestClass>().AsQueryable();
+            var sut = new TestGenericRepository(_contextMock.Object);
+
+            // Act
+            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting);
+
+            //Assert
+            result.items.First().Should().Be(TestEntities.First());
+            result.items.Last().Should().Be(TestEntities.Last());
+        }
+
+        [Fact]
+        public async Task Get_WhenSortingGivenWithAscendingOrder_EntriesAreReturnedInTheExpectedOrder()
+        {
+            // Arrange                        
+            var query = _contextMock.Object.Set<TestClass>().AsQueryable();
+            var sut = new TestGenericRepository(_contextMock.Object);
+            var sorting = new Sorting { SortBy = "Id" };
+            var orderedEntities = TestEntities.OrderBy(x => x.Id);
+
+            // Act
+            var result = await sut.GetAsync(Pagination.NoPagination, sorting);
+
+            //Assert
+            result.items.First().Should().Be(orderedEntities.First());
+            result.items.Last().Should().Be(orderedEntities.Last());
+        }
+
+        [Fact]
+        public async Task Get_WhenSortingGivenWithDescendingOrder_EntriesAreReturnedInTheExpectedOrder()
+        {
+            // Arrange                        
+            var query = _contextMock.Object.Set<TestClass>().AsQueryable();
+            var sut = new TestGenericRepository(_contextMock.Object);
+            var sorting = new Sorting { SortBy = "Id", DescendingOrder = true };
+            var orderedEntities = TestEntities.OrderByDescending(x => x.Id);
+
+            // Act
+            var result = await sut.GetAsync(Pagination.NoPagination, sorting);
+
+            //Assert
+            result.items.First().Should().Be(orderedEntities.First());
+            result.items.Last().Should().Be(orderedEntities.Last());
         }
 
         [Fact]
@@ -53,7 +117,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(DefaultPagination, DefaultSorting, predicate);
+            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting, predicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());

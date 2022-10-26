@@ -60,7 +60,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
         {
-            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(new Pagination(), new Sorting(), s => ids.Contains(s.ShipperId), token)).items;
+            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(Pagination.NoPagination, Sorting.NoSorting, s => ids.Contains(s.ShipperId), token)).items;
 
             foreach (var shipper in shippersToRemove)
             {
