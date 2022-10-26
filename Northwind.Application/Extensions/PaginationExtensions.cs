@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Interfaces;
 
 namespace Northwind.Application.Extensions
@@ -9,10 +10,17 @@ namespace Northwind.Application.Extensions
         {
             if (totalItems > 0)
             {
-                return await query
+                var items = await query
                 .Skip(pagination.GetItemsToSkip())
                 .Take(pagination.GetItemsToTake(totalItems))
                 .ToListAsync(token);
+
+                if (pagination.PageNumber > 1 && !items.Any())
+                {
+                    throw new PaginationException(pagination.PageNumber);
+                }
+
+                return items;
             }
             else
             {

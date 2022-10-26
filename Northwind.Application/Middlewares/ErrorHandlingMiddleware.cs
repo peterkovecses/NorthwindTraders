@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using System.Net;
 using System.Text.Json;
@@ -17,7 +18,7 @@ namespace Northwind.Application.Middlewares
             _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -26,17 +27,30 @@ namespace Northwind.Application.Middlewares
             catch (Exception ex)
             {
                 _logger.LogError(ex);
-                await HandleExceptionAsync(context);
+                await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context)
+        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var code = HttpStatusCode.InternalServerError;
-            var result = JsonSerializer.Serialize(new { error = "An error occurred while processing the request." });
+            var code = exception switch
+            {
+                TaskCanceledException => HttpStatusCode.Accepted,
+                PaginationException => HttpStatusCode.BadRequest,
+                _=> HttpStatusCode.InternalServerError
+            };
+
+            var message = exception switch
+            {
+                TaskCanceledException => "Operation was cancelled.",
+                PaginationException => exception.Message,
+                _ => "An error occurred while processing the request."
+            };
+
+            var result = JsonSerializer.Serialize(new { error = message });
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)code;
-            return context.Response.WriteAsync(result);
+            await context.Response.WriteAsync(result);
         }
     }
 }
