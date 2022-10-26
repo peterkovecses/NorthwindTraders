@@ -22,7 +22,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             Expression<Func<TEntity, bool>>? predicate = null, 
             CancellationToken token = default)
         {
-            var query = _context.Set<TEntity>().ApplyFilter<TEntity>(predicate).OrderByCustom(sorting);
+            var query = _context.Set<TEntity>().Where(predicate).OrderByCustom(sorting);
             var totalItems = await query.CountAsync(token);
             var items = await query.Paginate(pagination, totalItems, token);
 
