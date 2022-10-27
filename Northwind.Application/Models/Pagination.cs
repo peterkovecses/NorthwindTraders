@@ -1,4 +1,5 @@
-﻿using Northwind.Application.Interfaces;
+﻿using Northwind.Application.Exceptions;
+using Northwind.Application.Interfaces;
 
 namespace Northwind.Application.Models
 {
@@ -20,7 +21,7 @@ namespace Northwind.Application.Models
         public virtual int PageSize
         {
             get => _pageSize;
-            init => _pageSize = value < MinPageSize ? MinPageSize : value > MaxPageSize ? MaxPageSize : value;
+            init => _pageSize = value < MinPageSize ? MinPageSize : value > MaxPageSize ? throw new ValueAboveMaxPageSizeException(value) : value;
         }
 
         public bool IsNoPagination { get; private init; }
