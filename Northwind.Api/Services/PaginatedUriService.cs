@@ -3,7 +3,7 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 
-namespace Northwind.Application.Services
+namespace Northwind.Api.Services
 {
     public class PaginatedUriService : IPaginatedUriService
     {

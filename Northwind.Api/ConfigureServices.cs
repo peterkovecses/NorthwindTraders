@@ -1,5 +1,5 @@
 ﻿using Northwind.Application.Interfaces.Services;
-using Northwind.Application.Services;
+using Northwind.Api.Services;
 using Serilog;
 
 namespace Microsoft.Extensions.DependencyInjection
