@@ -1,6 +1,7 @@
-﻿using Northwind.Application.Interfaces.Services;
+﻿using Microsoft.AspNetCore.Mvc;
+using Northwind.Api.Common;
 using Northwind.Api.Services;
-using Serilog;
+using Northwind.Application.Interfaces.Services;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -21,7 +22,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new PaginatedUriService(absoluteUri);
             });
 
+            services.AddMvc()
+                .ConfigureApiBehaviorOptions(opt
+                    =>
+                    {
+                        opt.InvalidModelStateResponseFactory = context =>
+                        {
+                            var problemDetails = new CustomBadRequest(context);
+
+                            return new BadRequestObjectResult(problemDetails)
+                            {
+                                ContentTypes = { "application / problem + json", "application / problem + xml" }
+                            };
+                        };
+                    });
+
             return services;
-        }        
+        }
     }
 }

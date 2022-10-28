@@ -6,7 +6,7 @@ namespace Northwind.Application.Exceptions
     {
         public int PageSize { get; }
 
-        public ValueAboveMaxPageSizeException(int pageSize) : base($"Page size {pageSize} is above the maximum page size ({Pagination.MaxPageSize}.)")
+        public ValueAboveMaxPageSizeException(int pageSize) : base($"Page size {pageSize} is above the maximum page size ({Pagination.MaxPageSize}).")
         {
             PageSize = pageSize;
         }
