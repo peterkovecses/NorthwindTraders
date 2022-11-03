@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Northwind.Application.Exceptions;
 
-namespace Northwind.Api.Common
+namespace Northwind.Api.Errors
 {
     public class CustomBadRequest : ValidationProblemDetails
     {

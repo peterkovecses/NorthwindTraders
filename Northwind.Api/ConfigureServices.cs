@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Northwind.Api.Common;
+using Northwind.Api.Errors;
 using Northwind.Api.Services;
 using Northwind.Application.Interfaces.Services;
 
