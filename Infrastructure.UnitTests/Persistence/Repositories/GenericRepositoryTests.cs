@@ -35,7 +35,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting);
 
             //Assert
             result.items.Should().BeEquivalentTo(TestEntities);
@@ -66,7 +66,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting);
 
             //Assert
             result.items.First().Should().Be(TestEntities.First());
@@ -83,7 +83,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var orderedEntities = TestEntities.OrderBy(x => x.Id);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination, sorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), sorting);
 
             //Assert
             result.items.First().Should().Be(orderedEntities.First());
@@ -100,7 +100,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var orderedEntities = TestEntities.OrderByDescending(x => x.Id);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination, sorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), sorting);
 
             //Assert
             result.items.First().Should().Be(orderedEntities.First());
@@ -117,7 +117,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination, Sorting.NoSorting, predicate);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting, predicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());

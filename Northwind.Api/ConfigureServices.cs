@@ -16,8 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IPaginatedUriService>(provider =>
             {
-                var acessor = provider.GetRequiredService<IHttpContextAccessor>();
-                var request = acessor.HttpContext.Request;
+                var accessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
                 var absoluteUri = string.Concat($"{request.Scheme}://{request.Host.ToUriComponent()}{request.Path}", "/");
                 return new PaginatedUriService(absoluteUri);
             });

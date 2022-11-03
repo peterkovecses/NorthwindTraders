@@ -44,7 +44,14 @@ namespace Northwind.Api.Errors
 
         private static string GetErrorMessage(ModelError error)
         {
-            if (error.Exception.GetType() == typeof(ValueAboveMaxPageSizeException))
+            var exceptionType = error.Exception.GetType();
+
+            if (exceptionType == typeof(ValueAboveMaxPageSizeException))
+            {
+                return error.Exception.Message;
+            }
+
+            if (exceptionType == typeof(ArgumentOutOfRangeException))
             {
                 return error.Exception.Message;
             }

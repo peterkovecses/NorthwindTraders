@@ -38,6 +38,7 @@ namespace Northwind.Application.Middlewares
                 TaskCanceledException => HttpStatusCode.Accepted,
                 PaginationException => HttpStatusCode.BadRequest,
                 ValueAboveMaxPageSizeException => HttpStatusCode.BadRequest,
+                ArgumentOutOfRangeException => HttpStatusCode.BadRequest,
                 _=> HttpStatusCode.InternalServerError
             };
 
@@ -46,6 +47,7 @@ namespace Northwind.Application.Middlewares
                 TaskCanceledException => "Operation was cancelled.",
                 PaginationException => exception.Message,
                 ValueAboveMaxPageSizeException => exception.Message,
+                ArgumentOutOfRangeException => exception.Message,
                 _ => "An error occurred while processing the request."
             };
 
