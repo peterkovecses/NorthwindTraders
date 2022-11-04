@@ -39,7 +39,8 @@ namespace Northwind.Application.Middlewares
                 PaginationException => HttpStatusCode.BadRequest,
                 ValueAboveMaxPageSizeException => HttpStatusCode.BadRequest,
                 ArgumentOutOfRangeException => HttpStatusCode.BadRequest,
-                _=> HttpStatusCode.InternalServerError
+                ArgumentException => HttpStatusCode.BadRequest,
+                _ => HttpStatusCode.InternalServerError
             };
 
             var message = exception switch
@@ -48,6 +49,7 @@ namespace Northwind.Application.Middlewares
                 PaginationException => exception.Message,
                 ValueAboveMaxPageSizeException => exception.Message,
                 ArgumentOutOfRangeException => exception.Message,
+                ArgumentException => exception.Message,
                 _ => "An error occurred while processing the request."
             };
 

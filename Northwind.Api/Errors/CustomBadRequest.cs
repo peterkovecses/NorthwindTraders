@@ -56,6 +56,11 @@ namespace Northwind.Api.Errors
                 return error.Exception.Message;
             }
 
+            if (exceptionType == typeof(ArgumentException))
+            {
+                return error.Exception.Message;
+            }
+
             return "The input was not valid.";
         }
     }

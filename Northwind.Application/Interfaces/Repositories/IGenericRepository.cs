@@ -11,9 +11,9 @@ namespace Northwind.Application.Interfaces.Repositories
             Expression<Func<TEntity, bool>>? predicate = default, 
             CancellationToken token = default);
 
-        Task<TEntity>? FindByIdAsync(TId id, CancellationToken token = default);
+        Task<TEntity>? FindByIdAsync(TId id, CancellationToken token);
 
-        Task AddAsync(TEntity entity, CancellationToken token = default);
+        Task AddAsync(TEntity entity, CancellationToken token);
 
         void Remove(TEntity entity);
     }

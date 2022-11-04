@@ -67,7 +67,7 @@ namespace Northwind.Application.Services
 
         public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids, CancellationToken token)
         {
-            var employeesToRemove = (await _unitOfWork.Employees.GetAsync(Pagination.NoPagination(), Sorting.NoSorting, e => ids.Contains(e.EmployeeId), token)).items;
+            var employeesToRemove = (await _unitOfWork.Employees.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), e => ids.Contains(e.EmployeeId), token)).items;
 
             foreach (var employee in employeesToRemove)
             {
