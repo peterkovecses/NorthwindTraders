@@ -27,7 +27,7 @@ namespace Northwind.Application.Services
             _predicateBuilder = predicateBuilder;
         }
 
-        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token = default)
+        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {            
             var predicate = _predicateBuilder.GetPredicate(queryParameters);
             (int totalEmployees, IEnumerable<Employee> employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
@@ -43,7 +43,7 @@ namespace Northwind.Application.Services
             return _mapper.Map<EmployeeDto>(employee).ToResponse();
         }
 
-        public async Task<Response<EmployeeDto>> CreateAsync(EmployeeDto employeeDto, CancellationToken token = default)
+        public async Task<Response<EmployeeDto>> CreateAsync(EmployeeDto employeeDto, CancellationToken token)
         {
             var employee = _mapper.Map<Employee>(employeeDto);
 

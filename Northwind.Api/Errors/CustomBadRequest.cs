@@ -6,6 +6,7 @@ namespace Northwind.Api.Errors
 {
     public class CustomBadRequest : ValidationProblemDetails
     {
+        public const string DefaultErrorMessage = "The input was not valid.";
         public CustomBadRequest(ActionContext context)
         {
             Title = "Invalid arguments to the API";
@@ -44,24 +45,27 @@ namespace Northwind.Api.Errors
 
         private static string GetErrorMessage(ModelError error)
         {
-            var exceptionType = error.Exception.GetType();
-
-            if (exceptionType == typeof(ValueAboveMaxPageSizeException))
+            if (error.Exception != null)
             {
-                return error.Exception.Message;
-            }
+                var exceptionType = error.Exception.GetType();
 
-            if (exceptionType == typeof(ArgumentOutOfRangeException))
-            {
-                return error.Exception.Message;
-            }
+                if (exceptionType == typeof(ValueAboveMaxPageSizeException))
+                {
+                    return error.Exception.Message;
+                }
 
-            if (exceptionType == typeof(ArgumentException))
-            {
-                return error.Exception.Message;
-            }
+                if (exceptionType == typeof(ArgumentOutOfRangeException))
+                {
+                    return error.Exception.Message;
+                }
 
-            return "The input was not valid.";
+                if (exceptionType == typeof(ArgumentException))
+                {
+                    return error.Exception.Message;
+                }
+            }
+            
+            return DefaultErrorMessage;
         }
     }
 }

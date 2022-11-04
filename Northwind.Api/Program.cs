@@ -1,4 +1,4 @@
-using Northwind.Application.Middlewares;
+using Northwind.Api.Middlewares;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

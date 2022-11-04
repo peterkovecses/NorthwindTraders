@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
@@ -10,26 +11,24 @@ namespace Northwind.Api.Controllers
 {
     [Route("customers")]
     [ApiController]
-    public class CustomersController : ControllerBase
+    public class CustomersController : ApiControllerBase
     {
         private readonly ICustomerService _customerService;
-        private readonly IPaginatedUriService _uriService;
-        private readonly ILogger<CustomersController> _logger;
 
-        public CustomersController(ICustomerService customerService, IPaginatedUriService paginatedUriService, ILogger<CustomersController> logger)
+        public CustomersController(
+            ICustomerService customerService, 
+            ILogger<CustomersController> logger) 
+            : base(logger)
         {
             _customerService = customerService;
-            _uriService = paginatedUriService;
-            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter> queryParameters, CancellationToken token)
         {
-            var response = await _customerService.GetAsync(queryParameters, token);
-            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
+            var response = (await _customerService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
-            return Ok(response);
+            return Ok();
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
@@ -37,12 +36,7 @@ namespace Northwind.Api.Controllers
         {
             var response = await _customerService.FindByIdAsync(id, token);
 
-            if (response.HasData)
-            {
-                return Ok(response);
-            }
-
-            return NotFound();
+            return GetResult(response);
         }
 
         [HttpPost]

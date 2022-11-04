@@ -35,7 +35,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting());
 
             //Assert
             result.items.Should().BeEquivalentTo(TestEntities);
@@ -52,7 +52,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var expected = TestEntities.Skip(1).Take(1);
 
             // Act
-            var result = await sut.GetAsync(pagination, Sorting.NoSorting);
+            var result = await sut.GetAsync(pagination, Sorting.NoSorting());
 
             //Assert
             result.items.Should().BeEquivalentTo(expected);
@@ -66,7 +66,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting());
 
             //Assert
             result.items.First().Should().Be(TestEntities.First());
@@ -117,7 +117,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting, predicate);
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), predicate);
 
             //Assert
             _contextMock.Verify(c => c.Set<TestClass>());

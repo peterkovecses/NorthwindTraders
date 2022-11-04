@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Northwind.Application.Exceptions;
+﻿using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
 using System.Net;
 using System.Text.Json;
 
-namespace Northwind.Application.Middlewares
+namespace Northwind.Api.Middlewares
 {
     public class ErrorHandlingMiddleware
     {
@@ -39,7 +37,6 @@ namespace Northwind.Application.Middlewares
                 PaginationException => HttpStatusCode.BadRequest,
                 ValueAboveMaxPageSizeException => HttpStatusCode.BadRequest,
                 ArgumentOutOfRangeException => HttpStatusCode.BadRequest,
-                ArgumentException => HttpStatusCode.BadRequest,
                 _ => HttpStatusCode.InternalServerError
             };
 
@@ -49,7 +46,6 @@ namespace Northwind.Application.Middlewares
                 PaginationException => exception.Message,
                 ValueAboveMaxPageSizeException => exception.Message,
                 ArgumentOutOfRangeException => exception.Message,
-                ArgumentException => exception.Message,
                 _ => "An error occurred while processing the request."
             };
 

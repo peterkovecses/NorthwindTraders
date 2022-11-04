@@ -9,7 +9,7 @@ namespace Northwind.Application.Models
         public const int MinPageNumber = 1;
         public const int MinPageSize = 1;
         public const int NoPaginationPageNumber = 0;
-        public const int NoPaginationPageSize = 0;
+        public const int NoPaginationPageSize = int.MaxValue;
         public const int MaxPageSize = 5000;
 
         private int _pageNumber;
@@ -34,7 +34,7 @@ namespace Northwind.Application.Models
         }
 
         [BindNever]
-        public bool IsNoPagination => _pageNumber == NoPaginationPageNumber || _pageSize == NoPaginationPageSize;
+        public bool IsNoPagination => _pageNumber == NoPaginationPageNumber;
 
         public static Pagination NoPagination() => new() { _pageNumber = NoPaginationPageNumber, _pageSize = NoPaginationPageSize };
         public static Pagination DefaultPagination() => new() { _pageNumber = MinPageNumber, _pageSize = MaxPageSize };

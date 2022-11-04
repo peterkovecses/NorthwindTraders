@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
@@ -10,24 +11,22 @@ namespace Northwind.Api.Controllers
 {
     [Route("employees")]
     [ApiController]
-    public class EmployeesController : ControllerBase
+    public class EmployeesController : ApiControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IPaginatedUriService _uriService;
-        private readonly ILogger<EmployeesController> _logger;
 
-        public EmployeesController(IEmployeeService employeeService, IPaginatedUriService uriService, ILogger<EmployeesController> logger)
+        public EmployeesController(
+            IEmployeeService employeeService, 
+            ILogger<EmployeesController> logger) 
+            : base(logger)
         {
             _employeeService = employeeService;
-            _uriService = uriService;
-            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {
-            var response = await _employeeService.GetAsync(queryParameters, token);
-            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
+            var response = (await _employeeService.GetAsync(queryParameters, token)).SetNavigation(BaseUri);
 
             return Ok(response);
         }
@@ -37,12 +36,7 @@ namespace Northwind.Api.Controllers
         {
             var response = await _employeeService.FindByIdAsync(id, token);
 
-            if (response.HasData)
-            {
-                return Ok(response);
-            }
-
-            return NotFound();
+            return GetResult(response);
         }
 
         [HttpPost]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
@@ -10,17 +11,16 @@ namespace Northwind.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomerDemographicsController : ControllerBase
+    public class CustomerDemographicsController : ApiControllerBase
     {
         private readonly ICustomerDemographicService _customerDemographicService;
-        private readonly IPaginatedUriService _uriService;
-        private readonly ILogger<CustomerDemographicsController> _logger;
 
-        public CustomerDemographicsController(ICustomerDemographicService customerDemographicService, IPaginatedUriService uriService, ILogger<CustomerDemographicsController> logger)
+        public CustomerDemographicsController(
+            ICustomerDemographicService customerDemographicService, 
+            ILogger<CustomerDemographicsController> logger) 
+            : base(logger)
         {
             _customerDemographicService = customerDemographicService;
-            _uriService = uriService;
-            _logger = logger;
         }
 
         [HttpGet]
@@ -28,10 +28,9 @@ namespace Northwind.Api.Controllers
             [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token)
         {
-            var response = await _customerDemographicService.GetAsync(queryParameters, token);
-            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
+            var response = (await _customerDemographicService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
-            return Ok(response);
+            return Ok();
         }
 
         [HttpGet("{id}", Name = "GetCustomerDemographic")]
@@ -39,12 +38,7 @@ namespace Northwind.Api.Controllers
         {
             var response = await _customerDemographicService.FindByIdAsync(id, token);
 
-            if (response.HasData)
-            {
-                return Ok(response);
-            }
-
-            return NotFound();
+            return GetResult(response);
         }
 
         [HttpPost]

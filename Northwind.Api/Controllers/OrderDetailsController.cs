@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
@@ -10,41 +11,33 @@ namespace Northwind.Api.Controllers
 {
     [Route("orderdetails")]
     [ApiController]
-    public class OrderDetailsController : ControllerBase
+    public class OrderDetailsController : ApiControllerBase
     {
         private readonly IOrderDetailService _orderDetailService;
-        private readonly IPaginatedUriService _uriService;
-        private readonly ILogger<OrderDetailsController> _logger;
 
-        public OrderDetailsController(IOrderDetailService orderDetailService, IPaginatedUriService uriService, ILogger<OrderDetailsController> logger)
+        public OrderDetailsController(
+            IOrderDetailService orderDetailService, 
+            ILogger<OrderDetailsController> logger)
+            : base(logger)
         {
             _orderDetailService = orderDetailService;
-            _uriService = uriService;
-            _logger = logger;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters, CancellationToken token)
         {
-            var response = await _orderDetailService.GetAsync(queryParameters, token);
-            (response.NextPage, response.PreviousPage) = _uriService.GetNavigations(queryParameters.Pagination);
+            var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
-            return Ok(response);
+            return Ok();
         }
 
         [HttpGet("detail", Name = "GetOrderDetail")]
         public async Task<IActionResult> GetOrderDetail(int orderId, int productId, CancellationToken token)
         {
             var key = new OrderDetailKey(orderId, productId);
-
             var response = await _orderDetailService.FindByIdAsync(key, token);
 
-            if (response.HasData)
-            {
-                return Ok(response);
-            }
-
-            return NotFound();
+            return GetResult(response);
         }
 
         [HttpPost]

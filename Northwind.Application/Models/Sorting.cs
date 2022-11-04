@@ -1,18 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.ComponentModel.DataAnnotations;
 
 namespace Northwind.Application.Models
 {
     public class Sorting
     {
-        private string? _sortBy;
-
-        [DisplayFormat(ConvertEmptyStringToNull = false)]
-        public string? SortBy 
-        { 
-            get => _sortBy; 
-            init => _sortBy = value != null && String.IsNullOrWhiteSpace(value) ? throw new ArgumentException(nameof(SortBy)) : value; 
-        }
+        public string? SortBy { get; set; }
 
         public bool DescendingOrder { get; init; }
 
