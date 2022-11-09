@@ -54,7 +54,7 @@ namespace Northwind.Application.Services
         {
             var customerDemographicInDb = 
                 await _unitOfWork.CustomerDemographics.FindByIdAsync(customerDemographicDto.CustomerTypeId, token) 
-                    ?? throw new ItemNotFoundException(customerDemographicDto.CustomerTypeId);
+                    ?? throw new ItemNotFoundException<string>(customerDemographicDto.CustomerTypeId);
             customerDemographicInDb.CustomerDesc = customerDemographicDto.CustomerDesc;             
             await _unitOfWork.CompleteAsync();
 

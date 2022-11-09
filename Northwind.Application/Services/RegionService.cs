@@ -51,7 +51,7 @@ namespace Northwind.Application.Services
         public async Task<Response<RegionDto>> UpdateAsync(RegionDto regionDto, CancellationToken token = default)
         {
             var regionInDb = 
-                await _unitOfWork.Regions.FindByIdAsync(regionDto.RegionId, token) ?? throw new ItemNotFoundException(regionDto.RegionId);
+                await _unitOfWork.Regions.FindByIdAsync(regionDto.RegionId, token) ?? throw new ItemNotFoundException<int>(regionDto.RegionId);
             _mapper.Map(regionDto, regionInDb);
             await _unitOfWork.CompleteAsync();
 

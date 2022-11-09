@@ -51,7 +51,7 @@ namespace Northwind.Application.Services
         public async Task<Response<CustomerDto>> UpdateAsync(CustomerDto customerDto, CancellationToken token = default)
         {
             var customerInDb = 
-                await _unitOfWork.Customers.FindByIdAsync(customerDto.CustomerId, token) ?? throw new ItemNotFoundException(customerDto.CustomerId);
+                await _unitOfWork.Customers.FindByIdAsync(customerDto.CustomerId, token) ?? throw new ItemNotFoundException<string>(customerDto.CustomerId);
 
             customerInDb.CompanyName = customerDto.CompanyName;
             customerInDb.ContactName = customerDto.ContactName;

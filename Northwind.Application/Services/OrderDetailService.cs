@@ -55,7 +55,7 @@ namespace Northwind.Application.Services
         {
             var key = new OrderDetailKey(orderDetailDto.OrderId, orderDetailDto.ProductId);
             var orderDetailInDb = 
-                await _unitOfWork.OrderDetails.FindByIdAsync(key, token) ?? throw new ItemNotFoundException((key.OrderId, key.ProductId));
+                await _unitOfWork.OrderDetails.FindByIdAsync(key, token) ?? throw new ItemNotFoundException<(int, int)>((key.OrderId, key.ProductId));
             _mapper.Map(orderDetailDto, orderDetailInDb);
             await _unitOfWork.CompleteAsync();
 

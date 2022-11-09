@@ -55,26 +55,17 @@ namespace Northwind.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCustomer(string id, CustomerDto customer, CancellationToken token)
         {
+            if (id != customer.CustomerId)
+            {
+                ModelState.AddModelError("id", IdsNotMatchMessage);
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-            }
+            }            
 
-            if (id != customer.CustomerId)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Response<CustomerDto> response;
-            try
-            {
-                response = await _customerService.UpdateAsync(customer, token);
-            }
-            catch (ItemNotFoundException ex)
-            {
-                _logger.LogError(ex);
-                return NotFound();
-            }
+            var response = await _customerService.UpdateAsync(customer, token);
 
             return Ok(response);
         }

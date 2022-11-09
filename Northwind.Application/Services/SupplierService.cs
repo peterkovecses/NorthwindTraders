@@ -51,7 +51,7 @@ namespace Northwind.Application.Services
         public async Task<Response<SupplierDto>> UpdateAsync(SupplierDto supplierDto, CancellationToken token = default)
         {
             var supplierInDb = 
-                await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId, token) ?? throw new ItemNotFoundException(supplierDto.SupplierId);
+                await _unitOfWork.Suppliers.FindByIdAsync(supplierDto.SupplierId, token) ?? throw new ItemNotFoundException<int>(supplierDto.SupplierId);
             _mapper.Map(supplierDto, supplierInDb);
             await _unitOfWork.CompleteAsync();
 

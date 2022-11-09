@@ -51,7 +51,7 @@ namespace Northwind.Application.Services
         public async Task<Response<CategoryDto>> UpdateAsync(CategoryDto categoryDto, CancellationToken token = default)
         {
             var categoryInDb = 
-                await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId, token) ?? throw new ItemNotFoundException(categoryDto.CategoryId);
+                await _unitOfWork.Categories.FindByIdAsync(categoryDto.CategoryId, token) ?? throw new ItemNotFoundException<int>(categoryDto.CategoryId);
             _mapper.Map(categoryDto, categoryInDb);
             await _unitOfWork.CompleteAsync();
 

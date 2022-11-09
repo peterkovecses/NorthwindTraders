@@ -3,28 +3,18 @@ using Northwind.Application.Models;
 
 namespace Northwind.Api.Controllers
 {
-    public class ApiControllerBase : ControllerBase
-    {
+    public abstract class ApiControllerBase : ControllerBase
+    {        
         protected readonly ILogger<ApiControllerBase> _logger;
-        private string? _baseUri;
 
-        protected string? BaseUri
-        {
-            get
-            {
-                _baseUri ??= GetAbsoluteUri();
-                return _baseUri;
-            }
-        }
+        protected const string IdsNotMatchMessage = "The specified id does not match the id of the object to be modified.";
+
+
+        protected string BaseUri => string.Concat($"{Request.Scheme}://{Request.Host.ToUriComponent()}{Request.Path}", "/");
 
         public ApiControllerBase(ILogger<ApiControllerBase> logger)
         {
             _logger = logger;
-        }
-
-        private string GetAbsoluteUri()
-        {
-            return string.Concat($"{Request.Scheme}://{Request.Host.ToUriComponent()}{Request.Path}", "/");
         }
 
         protected IActionResult GetResult<T>(Response<T> response)

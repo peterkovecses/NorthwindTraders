@@ -58,7 +58,7 @@ namespace Northwind.Application.Services
         public async Task<Response<EmployeeDto>> UpdateAsync(EmployeeDto employeeDto, CancellationToken token)
         {
             var employeeInDb = 
-                await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId, token) ?? throw new ItemNotFoundException(employeeDto.EmployeeId);
+                await _unitOfWork.Employees.FindByIdAsync(employeeDto.EmployeeId, token) ?? throw new ItemNotFoundException<int>(employeeDto.EmployeeId);
             _mapper.Map(employeeDto, employeeInDb);
             await _unitOfWork.CompleteAsync();
 

@@ -56,26 +56,17 @@ namespace Northwind.Api.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateOrderDetail(int orderId, int productId, OrderDetailDto orderDetail, CancellationToken token)
         {
+            if (orderId != orderDetail.OrderId || productId != orderDetail.ProductId)
+            {
+                ModelState.AddModelError("id", IdsNotMatchMessage);
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (orderId != orderDetail.OrderId || productId != orderDetail.ProductId)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Response<OrderDetailDto> response;
-            try
-            {
-            response = await _orderDetailService.UpdateAsync(orderDetail, token);
-            }
-            catch (ItemNotFoundException ex)
-            {
-                _logger.LogError(ex);
-                return NotFound();
-            }
+            var response = await _orderDetailService.UpdateAsync(orderDetail, token);           
 
             return Ok(response);
         }

@@ -31,23 +31,17 @@ namespace Northwind.Api.Middlewares
 
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var code = exception switch
+            (HttpStatusCode code, string message) = exception switch
             {
-                TaskCanceledException => HttpStatusCode.Accepted,
-                PaginationException => HttpStatusCode.BadRequest,
-                ValueAboveMaxPageSizeException => HttpStatusCode.BadRequest,
-                ArgumentOutOfRangeException => HttpStatusCode.BadRequest,
-                _ => HttpStatusCode.InternalServerError
-            };
-
-            var message = exception switch
-            {
-                TaskCanceledException => "Operation was cancelled.",
-                PaginationException => exception.Message,
-                ValueAboveMaxPageSizeException => exception.Message,
-                ArgumentOutOfRangeException => exception.Message,
-                _ => "An error occurred while processing the request."
-            };
+                TaskCanceledException => (HttpStatusCode.Accepted, "Operation was cancelled."),
+                PaginationException => (HttpStatusCode.BadRequest, exception.Message),
+                ValueAboveMaxPageSizeException => (HttpStatusCode.BadRequest, exception.Message),
+                ArgumentOutOfRangeException => (HttpStatusCode.BadRequest, exception.Message),
+                ItemNotFoundException<int> => (HttpStatusCode.NotFound, exception.Message),
+                ItemNotFoundException<string> => (HttpStatusCode.NotFound, exception.Message),
+                ItemNotFoundException<(int, int)> => (HttpStatusCode.NotFound, exception.Message),
+                _ => (HttpStatusCode.InternalServerError, "An error occurred while processing the request.")
+            };           
 
             var result = JsonSerializer.Serialize(new { error = message });
             context.Response.ContentType = "application/json";

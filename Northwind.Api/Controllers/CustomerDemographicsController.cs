@@ -60,26 +60,17 @@ namespace Northwind.Api.Controllers
             CustomerDemographicDto customerDemographicDto, 
             CancellationToken token)
         {
+            if (id != customerDemographicDto.CustomerTypeId)
+            {
+                ModelState.AddModelError("id", IdsNotMatchMessage);
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != customerDemographicDto.CustomerTypeId)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Response<CustomerDemographicDto> response;
-            try
-            {
-                response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
-            }
-            catch (ItemNotFoundException ex)
-            {
-                _logger.LogError(ex);
-                return NotFound();
-            }
+            var response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
 
             return Ok(response);
         }
