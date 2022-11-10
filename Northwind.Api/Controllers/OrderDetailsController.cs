@@ -28,7 +28,7 @@ namespace Northwind.Api.Controllers
         {
             var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
-            return Ok();
+            return Ok(response);
         }
 
         [HttpGet("detail", Name = "GetOrderDetail")]

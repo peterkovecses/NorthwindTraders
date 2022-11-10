@@ -33,7 +33,7 @@ namespace Northwind.Api.Middlewares
         {
             (HttpStatusCode code, string message) = exception switch
             {
-                TaskCanceledException => (HttpStatusCode.Accepted, "Operation was cancelled."),
+                OperationCanceledException => (HttpStatusCode.Accepted, "Operation was cancelled."),
                 PaginationException => (HttpStatusCode.BadRequest, exception.Message),
                 ValueAboveMaxPageSizeException => (HttpStatusCode.BadRequest, exception.Message),
                 ArgumentOutOfRangeException => (HttpStatusCode.BadRequest, exception.Message),

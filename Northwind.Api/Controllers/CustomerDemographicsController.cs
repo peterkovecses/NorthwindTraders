@@ -30,7 +30,7 @@ namespace Northwind.Api.Controllers
         {
             var response = (await _customerDemographicService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
-            return Ok();
+            return Ok(response);
         }
 
         [HttpGet("{id}", Name = "GetCustomerDemographic")]
