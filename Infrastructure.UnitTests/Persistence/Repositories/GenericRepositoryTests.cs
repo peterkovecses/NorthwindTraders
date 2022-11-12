@@ -10,6 +10,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
     {
         private readonly Mock<DbContext> _contextMock;
         private readonly Mock<DbSet<TestClass>> _dbSetMock;
+        private readonly Expression<Func<TestClass, bool>> _truePredicate = _ => true;
         private readonly List<TestClass> TestEntities = new()
         {
                 new TestClass { Id = 2 },
@@ -35,7 +36,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting());
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), _truePredicate);
 
             //Assert
             result.items.Should().BeEquivalentTo(TestEntities);
@@ -52,7 +53,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var expected = TestEntities.Skip(1).Take(1);
 
             // Act
-            var result = await sut.GetAsync(pagination, Sorting.NoSorting());
+            var result = await sut.GetAsync(pagination, Sorting.NoSorting(), _truePredicate);
 
             //Assert
             result.items.Should().BeEquivalentTo(expected);
@@ -66,7 +67,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var sut = new TestGenericRepository(_contextMock.Object);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting());
+            var result = await sut.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), _truePredicate);
 
             //Assert
             result.items.First().Should().Be(TestEntities.First());
@@ -83,7 +84,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var orderedEntities = TestEntities.OrderBy(x => x.Id);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), sorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), sorting, _truePredicate);
 
             //Assert
             result.items.First().Should().Be(orderedEntities.First());
@@ -100,7 +101,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             var orderedEntities = TestEntities.OrderByDescending(x => x.Id);
 
             // Act
-            var result = await sut.GetAsync(Pagination.NoPagination(), sorting);
+            var result = await sut.GetAsync(Pagination.NoPagination(), sorting, _truePredicate);
 
             //Assert
             result.items.First().Should().Be(orderedEntities.First());

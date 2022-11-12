@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
-using Northwind.Application.Exceptions;
-using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;

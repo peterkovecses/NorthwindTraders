@@ -6,6 +6,6 @@ namespace Northwind.Application.Models
     {
         public Pagination Pagination { get; init; } = Pagination.DefaultPagination();
         public Sorting Sorting { get; init; } = Sorting.NoSorting();        
-        public virtual T Filter { get; init; } = new T();
+        public virtual T Filter { get; init; } = new();
     }
 }

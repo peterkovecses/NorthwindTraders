@@ -2,7 +2,6 @@
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Mappings;
 using Northwind.Application.Services;
-using Northwind.Application.Services.PredicateBuilders;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -23,17 +22,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IOrderDetailService, OrderDetailService>();
-
-            services.AddScoped<CategoryPredicateBuilder>();
-            services.AddScoped<CustomerPredicateBuilder>();
-            services.AddScoped<EmployeePredicateBuilder>();
-            services.AddScoped<OrderDetailPredicateBuilder>();
-            services.AddScoped<OrderPredicateBuilder>();
-            services.AddScoped<ProductPredicateBuilder>();
-            services.AddScoped<RegionPredicateBuilder>();
-            services.AddScoped<ShipperPredicateBuilder>();
-            services.AddScoped<SupplierPredicateBuilder>();
-            services.AddScoped<TerritoryPredicateBuilder>();
 
             return services;
         }

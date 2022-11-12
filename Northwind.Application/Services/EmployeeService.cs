@@ -6,7 +6,6 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
-using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -15,19 +14,16 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly EmployeePredicateBuilder _predicateBuilder;
 
-        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, EmployeePredicateBuilder predicateBuilder)
+        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _predicateBuilder = predicateBuilder;
         }
 
         public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
         {            
-            var predicate = _predicateBuilder.GetPredicate(queryParameters);
-            (int totalEmployees, IEnumerable<Employee> employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            (int totalEmployees, IEnumerable<Employee> employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 
             return _mapper.Map<IEnumerable<EmployeeDto>>(employees)
                 .ToPagedResponse(queryParameters.Pagination, totalEmployees);

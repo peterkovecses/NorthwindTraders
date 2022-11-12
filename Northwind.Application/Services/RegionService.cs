@@ -6,7 +6,6 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
-using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -15,19 +14,16 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly RegionPredicateBuilder _predicateBuilder;
 
-        public RegionService(IUnitOfWork unitOfWork, IMapper mapper, RegionPredicateBuilder predicateBuilder)
+        public RegionService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _predicateBuilder = predicateBuilder;
         }
 
         public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
         {
-            var predicate = _predicateBuilder.GetPredicate(queryParameters);
-            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
+            var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 
             return _mapper.Map<IEnumerable<RegionDto>>(regions)
                 .ToPagedResponse(queryParameters.Pagination, totalRegions);

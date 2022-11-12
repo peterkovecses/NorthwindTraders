@@ -1,4 +1,6 @@
-﻿using Northwind.Application.Interfaces;
+﻿using LinqKit;
+using Northwind.Application.Interfaces;
+using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
@@ -19,5 +21,87 @@ namespace Northwind.Application.Models.Filters
         public string? ShipRegion { get; set; }
         public string? ShipPostalCode { get; set; }
         public string? ShipCountry { get; set; }
+
+        public ExpressionStarter<Order> GetPredicate()
+        {
+            var predicate = PredicateBuilder.New<Order>(true);
+
+            if (EmployeeId != null)
+            {
+                predicate = predicate.And(o => o.EmployeeId == EmployeeId);
+            }
+
+            if (MinOrderDate != null)
+            {
+                predicate = predicate.And(o => o.OrderDate >= MinOrderDate);
+            }
+
+            if (MaxOrderDate != null)
+            {
+                predicate = predicate.And(o => o.OrderDate <= MaxOrderDate);
+            }
+
+            if (MinRequiredDate != null)
+            {
+                predicate = predicate.And(o => o.RequiredDate >= MinRequiredDate);
+            }
+
+            if (MaxRequiredDate != null)
+            {
+                predicate = predicate.And(o => o.RequiredDate <= MaxRequiredDate);
+            }
+
+            if (MinShippedDate != null)
+            {
+                predicate = predicate.And(o => o.ShippedDate >= MinShippedDate);
+            }
+
+            if (MaxShippedDate != null)
+            {
+                predicate = predicate.And(o => o.ShippedDate <= MaxShippedDate);
+            }
+
+            if (ShipVia != null)
+            {
+                predicate = predicate.And(o => o.ShipVia == ShipVia);
+            }
+
+            if (MinFreight != null)
+            {
+                predicate = predicate.And(o => o.Freight >= MinFreight);
+            }
+
+            if (MaxFreight != null)
+            {
+                predicate = predicate.And(o => o.Freight <= MaxFreight);
+            }
+
+            if (!string.IsNullOrEmpty(ShipName))
+            {
+                predicate = predicate.And(o => o.ShipName == ShipName);
+            }
+
+            if (!string.IsNullOrEmpty(ShipCity))
+            {
+                predicate = predicate.And(o => o.ShipCity == ShipCity);
+            }
+
+            if (!string.IsNullOrEmpty(ShipRegion))
+            {
+                predicate = predicate.And(o => o.ShipRegion == ShipRegion);
+            }
+
+            if (!string.IsNullOrEmpty(ShipPostalCode))
+            {
+                predicate = predicate.And(o => o.ShipPostalCode == ShipPostalCode);
+            }
+
+            if (!string.IsNullOrEmpty(ShipCountry))
+            {
+                predicate = predicate.And(o => o.ShipCountry == ShipCountry);
+            }
+
+            return predicate;
+        }
     }
 }
