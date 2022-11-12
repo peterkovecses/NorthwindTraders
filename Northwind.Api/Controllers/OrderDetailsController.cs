@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
-using Northwind.Application.Exceptions;
-using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
@@ -24,7 +22,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters, CancellationToken token)
+        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParametersNoFilterBinding<OrderDetailFilter> queryParameters, CancellationToken token)
         {
             var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 

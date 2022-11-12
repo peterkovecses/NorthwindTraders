@@ -7,7 +7,7 @@ using Northwind.Application.Models.Filters;
 
 namespace Northwind.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("customerdemographics")]
     [ApiController]
     public class CustomerDemographicsController : ApiControllerBase
     {
@@ -23,7 +23,7 @@ namespace Northwind.Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetCustomerDemographic(
-            [FromQuery] QueryParametersNoFilterBinding<CustomerDemographicFilter> queryParameters, 
+            [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
             CancellationToken token)
         {
             var response = (await _customerDemographicService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
