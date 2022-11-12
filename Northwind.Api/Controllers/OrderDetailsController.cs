@@ -22,7 +22,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParametersNoFilterBinding<OrderDetailFilter> queryParameters, CancellationToken token)
+        public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter> queryParameters, CancellationToken token)
         {
             var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
 
