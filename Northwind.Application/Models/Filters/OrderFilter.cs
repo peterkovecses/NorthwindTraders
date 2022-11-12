@@ -1,6 +1,6 @@
 ﻿using Northwind.Application.Interfaces;
 
-namespace Northwind.Application.Dtos
+namespace Northwind.Application.Models.Filters
 {
     public class OrderFilter : IFilter
     {

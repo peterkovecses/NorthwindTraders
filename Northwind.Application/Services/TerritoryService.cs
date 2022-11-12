@@ -6,6 +6,7 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -14,16 +15,19 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly TerritoryPredicateBuilder _predicateBuilder;
 
-        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper)
+        public TerritoryService(IUnitOfWork unitOfWork, IMapper mapper, TerritoryPredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _predicateBuilder = predicateBuilder;
         }
 
         public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            var predicate = _predicateBuilder.GetPredicate(queryParameters);
+            var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<TerritoryDto>>(territories)
                 .ToPagedResponse(queryParameters.Pagination, totalTerritories);

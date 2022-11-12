@@ -4,6 +4,6 @@ namespace Northwind.Application.Models.Filters
 {
     public class ShipperFilter : IFilter
     {
-        public string CompanyName { get; set; } = null!;
+        public string? CompanyName { get; set; }
     }
 }

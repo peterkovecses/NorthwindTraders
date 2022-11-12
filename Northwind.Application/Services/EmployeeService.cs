@@ -17,10 +17,7 @@ namespace Northwind.Application.Services
         private readonly IMapper _mapper;
         private readonly EmployeePredicateBuilder _predicateBuilder;
 
-        public EmployeeService(
-            IUnitOfWork unitOfWork, 
-            IMapper mapper, 
-            EmployeePredicateBuilder predicateBuilder)
+        public EmployeeService(IUnitOfWork unitOfWork, IMapper mapper, EmployeePredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

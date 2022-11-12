@@ -6,6 +6,7 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -14,16 +15,19 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly CustomerPredicateBuilder _predicateBuilder;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, CustomerPredicateBuilder customerPredicate)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _predicateBuilder = customerPredicate;
         }
 
         public async Task<PagedResponse<CustomerDto>> GetAsync(QueryParameters<CustomerFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalCustomers, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            var predicate = _predicateBuilder.GetPredicate(queryParameters);
+            var (totalCustomers, customers) = await _unitOfWork.Customers.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<CustomerDto>>(customers)
                 .ToPagedResponse(queryParameters.Pagination, totalCustomers);

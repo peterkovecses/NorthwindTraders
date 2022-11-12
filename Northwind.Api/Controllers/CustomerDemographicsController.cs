@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
-using Northwind.Application.Exceptions;
-using Northwind.Application.Extensions;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
-using Northwind.Application.Models.Filters;
 
 namespace Northwind.Api.Controllers
 {
@@ -25,7 +22,7 @@ namespace Northwind.Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetCustomerDemographic(
-            [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
+            [FromQuery] QueryParametersNoFilter queryParameters, 
             CancellationToken token)
         {
             var response = (await _customerDemographicService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;

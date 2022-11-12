@@ -4,7 +4,7 @@ namespace Northwind.Application.Models.Filters
 {
     public class OrderDetailFilter : IFilter
     {
-        public short MinQuantity { get; set; }
-        public short MaxQuantity { get; set; }
+        public short? MinQuantity { get; set; }
+        public short? MaxQuantity { get; set; }
     }
 }

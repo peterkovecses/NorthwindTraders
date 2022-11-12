@@ -41,22 +41,22 @@ namespace Northwind.Application.Services.PredicateBuilders
                 predicate = predicate.And(e => e.BirthDate <= filter.MaxBirthDate);
             }
 
-            if (filter.City != null)
+            if (!string.IsNullOrEmpty(filter.City))
             {
                 predicate = predicate.And(e => e.City == filter.City);
             }
 
-            if (filter.Country != null)
+            if (!string.IsNullOrEmpty(filter.Country))
             {
                 predicate = predicate.And(e => e.Country == filter.Country);
             }
 
-            if (filter.PostalCode != null)
+            if (!string.IsNullOrEmpty(filter.PostalCode))
             {
                 predicate = predicate.And(e => e.PostalCode == filter.PostalCode);
             }
 
-            if (filter.Region != null)
+            if (!string.IsNullOrEmpty(filter.Region))
             {
                 predicate = predicate.And(e => e.Region == filter.Region);
             }
@@ -66,12 +66,12 @@ namespace Northwind.Application.Services.PredicateBuilders
                 predicate = predicate.And(e => e.ReportsTo == filter.ReportsTo);
             }
 
-            if (filter.Title != null)
+            if (!string.IsNullOrEmpty(filter.Title))
             {
                 predicate = predicate.And(e => e.Title == filter.Title);
             }
 
-            if (filter.TitleOfCourtesy != null)
+            if (!string.IsNullOrEmpty(filter.TitleOfCourtesy))
             {
                 predicate = predicate.And(e => e.TitleOfCourtesy == filter.TitleOfCourtesy);
             }

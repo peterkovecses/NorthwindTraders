@@ -6,6 +6,7 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services.PredicateBuilders;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Services
@@ -14,16 +15,19 @@ namespace Northwind.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ProductPredicateBuilder _predicateBuilder;
 
-        public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ProductService(IUnitOfWork unitOfWork, IMapper mapper, ProductPredicateBuilder predicateBuilder)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _predicateBuilder = predicateBuilder;
         }
 
         public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter> queryParameters, CancellationToken token = default)
         {
-            var (totalProducts, products) = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, token: token);
+            var predicate = _predicateBuilder.GetPredicate(queryParameters);
+            var (totalProducts, products) = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, predicate, token);
 
             return _mapper.Map<IEnumerable<ProductDto>>(products)
                 .ToPagedResponse(queryParameters.Pagination, totalProducts);
