@@ -52,7 +52,8 @@ namespace Northwind.Application.Services
         {
             var territoryInDb = 
                 await _unitOfWork.Territories.FindByIdAsync(territoryDto.TerritoryId, token) ?? throw new ItemNotFoundException<string>(territoryDto.TerritoryId);
-            _mapper.Map(territoryDto, territoryInDb);
+            territoryInDb.TerritoryDescription = territoryDto.TerritoryDescription;
+            territoryInDb.RegionId = territoryDto.RegionId;
             await _unitOfWork.CompleteAsync();
 
             return territoryDto.ToResponse();
