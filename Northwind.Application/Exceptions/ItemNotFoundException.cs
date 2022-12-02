@@ -3,8 +3,6 @@
     public class ItemNotFoundException<T> : Exception
     {
         public T Id { get; init; }
-        public string? StringId { get; init; }
-        public (int, int) IntTupleId { get; init; }
 
         public ItemNotFoundException(T Id) : base($"Item with Id {Id} does not exist.")
         {

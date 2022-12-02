@@ -1,5 +1,5 @@
 ﻿using Northwind.Application.Exceptions;
-using Northwind.Application.Extensions;
+using System;
 using System.Net;
 using System.Text.Json;
 
@@ -24,7 +24,7 @@ namespace Northwind.Api.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex);
+                _logger.LogError(ex, "An exception occured");
                 await HandleExceptionAsync(context, ex);
             }
         }
