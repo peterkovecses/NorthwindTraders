@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class EmployeeFilter : IFilter
+    public class EmployeeFilter : IFilter<Employee>
     {
         public string? FullNameFraction { get; set; }
         public string? Title { get; set; }

@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class CustomerFilter : IFilter
+    public class CustomerFilter : IFilter<Customer>
     {
         public string? CompanyNameFraction { get; set; }
         public string? City { get; set; }

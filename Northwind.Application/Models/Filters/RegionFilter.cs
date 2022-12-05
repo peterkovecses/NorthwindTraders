@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class RegionFilter : IFilter
+    public class RegionFilter : IFilter<Region>
     {
         public string RegionDescriptionFragment { get; set; } = null!;
 

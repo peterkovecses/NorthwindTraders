@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class OrderFilter : IFilter
+    public class OrderFilter : IFilter<Order>
     {
         public int? EmployeeId { get; set; }
         public DateTime? MinOrderDate { get; set; }

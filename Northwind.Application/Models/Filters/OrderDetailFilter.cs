@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class OrderDetailFilter : IFilter
+    public class OrderDetailFilter : IFilter<OrderDetail>
     {
         public short? MinQuantity { get; set; }
         public short? MaxQuantity { get; set; }

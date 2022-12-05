@@ -1,11 +1,11 @@
-﻿using Northwind.Application.Interfaces;
+﻿using LinqKit;
+using Northwind.Application.Interfaces;
 using Northwind.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class CustomerDemographicFilter : IFilter
+    public class CustomerDemographicFilter : IFilter<CustomerDemographic>
     {
-        public static Expression<Func<CustomerDemographic, bool>> GetPredicate() => _ => true;
+        public ExpressionStarter<CustomerDemographic> GetPredicate() => PredicateBuilder.New<CustomerDemographic>(true);
     }
 }

@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class TerritoryFilter : IFilter
+    public class TerritoryFilter : IFilter<Territory>
     {
         public string? TerritoryDescriptionFraction { get; set; }
         public int? RegionId { get; set; }

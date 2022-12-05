@@ -34,6 +34,7 @@ namespace Northwind.Api.Middlewares
             (HttpStatusCode code, string message) = exception switch
             {
                 OperationCanceledException => (HttpStatusCode.Accepted, "Operation was cancelled."),
+                PropertyNotFoundException => (HttpStatusCode.BadRequest, exception.Message),
                 PaginationException => (HttpStatusCode.BadRequest, exception.Message),
                 ValueAboveMaxPageSizeException => (HttpStatusCode.BadRequest, exception.Message),
                 ArgumentOutOfRangeException => (HttpStatusCode.BadRequest, exception.Message),

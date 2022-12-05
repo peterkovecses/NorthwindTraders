@@ -1,8 +1,11 @@
 ﻿using Northwind.Application.Models;
+using Northwind.Domain.Common;
 
 namespace Northwind.Application.Interfaces.Services
 {
-    public interface IGenericService<TEntity, TId, TFilter> where TEntity : class where TFilter : IFilter, new()
+    public interface IGenericService<TEntity, TId, TFilter>
+        where TEntity : class
+        where TFilter : IFilter<EntityBase>, new() 
     {
         Task<PagedResponse<TEntity>> GetAsync(QueryParameters<TFilter> queryParameters, CancellationToken token);
         Task<Response<TEntity>> FindByIdAsync(TId id, CancellationToken token);
