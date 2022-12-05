@@ -4,6 +4,7 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Domain.Entities;
 
 namespace Northwind.Api.Controllers
 {
@@ -22,7 +23,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
+        public async Task<IActionResult> GetEmployees([FromQuery] QueryParameters<EmployeeFilter, Employee> queryParameters, CancellationToken token)
         {
             var response = (await _employeeService.GetAsync(queryParameters, token)).SetNavigation(BaseUri);
 

@@ -22,7 +22,7 @@ namespace Northwind.Application.Services
         }
 
         public async Task<PagedResponse<OrderDetailDto>> GetAsync(
-            QueryParameters<OrderDetailFilter> queryParameters, 
+            QueryParameters<OrderDetailFilter, OrderDetail> queryParameters, 
             CancellationToken token = default)
         {
             var (totalOrderDetails, orderDetails) = await _unitOfWork.OrderDetails.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);

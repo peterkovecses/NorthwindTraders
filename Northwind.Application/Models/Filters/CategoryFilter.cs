@@ -4,7 +4,7 @@ using Northwind.Domain.Entities;
 
 namespace Northwind.Application.Models.Filters
 {
-    public class CategoryFilter<EntityBase> : IFilter<Category>
+    public class CategoryFilter : IFilter<Category>
     {
 
         public string? CategoryNameFraction { get; set; }

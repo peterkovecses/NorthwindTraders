@@ -21,7 +21,7 @@ namespace Northwind.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter> queryParameters, CancellationToken token)
+        public async Task<PagedResponse<EmployeeDto>> GetAsync(QueryParameters<EmployeeFilter, Employee> queryParameters, CancellationToken token)
         {            
             (int totalEmployees, IEnumerable<Employee> employees) = await _unitOfWork.Employees.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 

@@ -4,6 +4,7 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Domain.Entities;
 
 namespace Northwind.Api.Controllers
 {
@@ -23,7 +24,7 @@ namespace Northwind.Api.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetCustomerDemographic(
-            [FromQuery] QueryParameters<CustomerDemographicFilter> queryParameters, 
+            [FromQuery] QueryParameters<CustomerDemographicFilter, CustomerDemographic> queryParameters, 
             CancellationToken token)
         {
             var response = (await _customerDemographicService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;

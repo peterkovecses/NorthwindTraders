@@ -21,7 +21,7 @@ namespace Northwind.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter> queryParameters, CancellationToken token = default)
+        public async Task<PagedResponse<ProductDto>> GetAsync(QueryParameters<ProductFilter, Product> queryParameters, CancellationToken token = default)
         {
             var (totalProducts, products) = await _unitOfWork.Products.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 

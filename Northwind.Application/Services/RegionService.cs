@@ -21,7 +21,7 @@ namespace Northwind.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter> queryParameters, CancellationToken token = default)
+        public async Task<PagedResponse<RegionDto>> GetAsync(QueryParameters<RegionFilter, Region> queryParameters, CancellationToken token = default)
         {
             var (totalRegions, regions) = await _unitOfWork.Regions.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 

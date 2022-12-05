@@ -21,7 +21,7 @@ namespace Northwind.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter> queryParameters, CancellationToken token = default)
+        public async Task<PagedResponse<TerritoryDto>> GetAsync(QueryParameters<TerritoryFilter, Territory> queryParameters, CancellationToken token = default)
         {
             var (totalTerritories, territories) = await _unitOfWork.Territories.GetAsync(queryParameters.Pagination, queryParameters.Sorting, queryParameters.Filter.GetPredicate(), token);
 

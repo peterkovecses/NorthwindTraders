@@ -1,5 +1,4 @@
 ﻿using Northwind.Application.Exceptions;
-using System;
 using System.Net;
 using System.Text.Json;
 
@@ -38,9 +37,7 @@ namespace Northwind.Api.Middlewares
                 PaginationException => (HttpStatusCode.BadRequest, exception.Message),
                 ValueAboveMaxPageSizeException => (HttpStatusCode.BadRequest, exception.Message),
                 ArgumentOutOfRangeException => (HttpStatusCode.BadRequest, exception.Message),
-                ItemNotFoundException<int> => (HttpStatusCode.NotFound, exception.Message),
-                ItemNotFoundException<string> => (HttpStatusCode.NotFound, exception.Message),
-                ItemNotFoundException<(int, int)> => (HttpStatusCode.NotFound, exception.Message),
+                ItemNotFoundException => (HttpStatusCode.NotFound, exception.Message),
                 _ => (HttpStatusCode.InternalServerError, "An error occurred while processing the request.")
             };           
 

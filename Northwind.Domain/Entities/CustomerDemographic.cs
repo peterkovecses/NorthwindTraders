@@ -11,7 +11,6 @@ namespace Northwind.Domain.Entities
 
         public string CustomerTypeId { get; set; } = null!;
         public string? CustomerDesc { get; set; }
-        public int TestProperty { get; set; }
 
         public virtual ICollection<Customer> Customers { get; private set; }
     }

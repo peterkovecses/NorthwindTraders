@@ -1,6 +1,11 @@
 ﻿namespace Northwind.Application.Exceptions
 {
-    public class ItemNotFoundException<T> : Exception
+    public abstract class ItemNotFoundException : Exception
+    {
+        public ItemNotFoundException(string message) : base(message) { }
+    }
+
+    public class ItemNotFoundException<T> : ItemNotFoundException
     {
         public T Id { get; init; }
 
