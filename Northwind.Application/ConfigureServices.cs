@@ -13,7 +13,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 mc.AddProfile(new MappingProfile());
             });
-
             IMapper mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
 

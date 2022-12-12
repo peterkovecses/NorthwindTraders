@@ -49,7 +49,7 @@ namespace Application.UnitTests.Exceptions
             sut.PropertyName.Should().Be(propertyName);
         }
 
-        private string GetExpectedMessage(string propertyName)
+        private static string GetExpectedMessage(string propertyName)
         {
             return $"Property {propertyName} does not exist.";
         }
