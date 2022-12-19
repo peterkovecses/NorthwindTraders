@@ -50,7 +50,7 @@ namespace Northwind.Api.Controllers
 
             var response = await _customerDemographicService.CreateAsync(customerDemographicDto, token);
 
-            return CreatedAtAction("GetCustomerDemographic", new { id = response.Data.CustomerTypeId }, response);
+            return CreatedAtAction(nameof(GetCustomerDemographic), new { id = response.Data.CustomerTypeId }, response);
         }
 
         [HttpPut("{id}")]

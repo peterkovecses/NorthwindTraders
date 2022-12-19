@@ -49,7 +49,7 @@ namespace Northwind.Api.Controllers
 
             var response = await _orderDetailService.CreateAsync(orderDetail, token);
 
-            return CreatedAtAction("GetOrderDetail", new { orderId = response.Data.OrderId, productId = response.Data.ProductId }, response);
+            return CreatedAtAction(nameof(GetOrderDetail), new { orderId = response.Data.OrderId, productId = response.Data.ProductId }, response);
         }
 
         [HttpPut]

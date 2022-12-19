@@ -48,7 +48,7 @@ namespace Northwind.Api.Controllers
 
             var response = await _employeeService.CreateAsync(employee, token);
 
-            return CreatedAtAction("GetEmployee", new { id = response.Data.EmployeeId }, response);
+            return CreatedAtAction(nameof(GetEmployee), new { id = response.Data.EmployeeId }, response);
         }
 
         [HttpPut("{id}")]
