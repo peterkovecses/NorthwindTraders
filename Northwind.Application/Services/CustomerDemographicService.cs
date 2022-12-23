@@ -59,7 +59,7 @@ namespace Northwind.Application.Services
             return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
         }
 
-        public async Task<Response<IEnumerable<CustomerDemographicDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
         {
             var customerDemographicsToRemove = 
                 (await _unitOfWork.CustomerDemographics.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), x => ids.Contains(x.CustomerTypeId), token))
@@ -71,8 +71,6 @@ namespace Northwind.Application.Services
 
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<CustomerDemographicDto>>(customerDemographicsToRemove).ToResponse();
         }
     }
 }

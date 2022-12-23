@@ -62,7 +62,7 @@ namespace Northwind.Infrastructure.Persistence
                 await _roleManager.CreateAsync(administratorRole);
             }
 
-            var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
+            var administrator = new ApplicationUser { UserName = "administrator@mycompany.com", Email = "administrator@mycompany.com" };
 
             if (_userManager.Users.All(u => u.UserName != administrator.UserName))
             {

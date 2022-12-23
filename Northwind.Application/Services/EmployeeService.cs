@@ -58,7 +58,7 @@ namespace Northwind.Application.Services
             return employeeDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<EmployeeDto>>> DeleteAsync(int[] ids, CancellationToken token)
+        public async Task DeleteAsync(int[] ids, CancellationToken token)
         {
             var employeesToRemove = (await _unitOfWork.Employees.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), e => ids.Contains(e.EmployeeId), token)).items;
 
@@ -67,8 +67,6 @@ namespace Northwind.Application.Services
                 _unitOfWork.Employees.Remove(employee);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<EmployeeDto>>(employeesToRemove).ToResponse();
         }       
     }
 }

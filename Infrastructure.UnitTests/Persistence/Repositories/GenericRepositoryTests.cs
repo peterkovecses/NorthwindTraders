@@ -120,30 +120,13 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
         public async Task FindById_WhenValidIdPassed_EntryIsReturnedWithTheSameId()
         {
             // Arrange
-            var id = 3;
-            var expected = _dbSetMock.Object.Where(e => e.Id == id).First();
-            _dbSetMock.Setup(d => d.FindAsync(It.IsAny<object[]>(), CancellationToken.None)).ReturnsAsync(expected);
+            var id = 10;
 
             // Act
-            var actual = await _sut.FindByIdAsync(id);
+            await _sut.FindByIdAsync(id);
 
             //Assert
-            actual.Should().Be(expected);
-        }
-
-        [Fact]
-        public async Task FindById_WhenInvalidIdPassed_ReturnsNull()
-        {
-            // Arrange
-            var id = 6;
-            var expected = _dbSetMock.Object.Where(e => e.Id == id).FirstOrDefault();
-            _dbSetMock.Setup(d => d.FindAsync(It.IsAny<object[]>(), CancellationToken.None)).ReturnsAsync(expected);
-
-            // Act
-            var actual = await _sut.FindByIdAsync(id);
-
-            //Assert
-            actual.Should().BeNull();
+            _contextMock.Verify(c => c.Set<TestClass>(), Times.Once);
         }
 
         [Fact]
@@ -156,7 +139,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             await _sut.AddAsync(objectToAdd);
 
             //Assert
-            _contextMock.Verify(x => x.Set<TestClass>().AddAsync(objectToAdd, new CancellationToken()));
+            _contextMock.Verify(x => x.Set<TestClass>().AddAsync(objectToAdd, new CancellationToken()), Times.Once);
         }
 
         [Fact]
@@ -170,7 +153,7 @@ namespace Infrastructure.UnitTests.Persistence.Repositories
             _sut.Remove(objectToRemove);
 
             //Assert
-            _contextMock.Verify(x => x.Set<TestClass>().Remove(objectToRemove));
+            _contextMock.Verify(x => x.Set<TestClass>().Remove(objectToRemove), Times.Once);
         }
     }
 

@@ -12,6 +12,6 @@ namespace Northwind.Application.Interfaces.Services
         Task<Response<TEntity>> FindByIdAsync(TId id, CancellationToken token);
         Task<Response<TEntity>> CreateAsync(TEntity obj, CancellationToken token);
         Task<Response<TEntity>> UpdateAsync(TEntity obj, CancellationToken token);
-        Task<Response<IEnumerable<TEntity>>> DeleteAsync(TId[] ids, CancellationToken token);
+        Task DeleteAsync(TId[] ids, CancellationToken token);
     }
 }

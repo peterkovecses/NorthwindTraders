@@ -58,7 +58,7 @@ namespace Northwind.Application.Services
             return categoryDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<CategoryDto>>> DeleteAsync(int[] ids, CancellationToken token = default )
+        public async Task DeleteAsync(int[] ids, CancellationToken token = default )
         {
             var categoriesToRemove = (await _unitOfWork.Categories.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), c => ids.Contains(c.CategoryId), token)).items;
 
@@ -68,8 +68,6 @@ namespace Northwind.Application.Services
 
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<CategoryDto>>(categoriesToRemove).ToResponse();
         }
     }
 }

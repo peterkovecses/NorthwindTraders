@@ -58,7 +58,7 @@ namespace Northwind.Application.Services
             return regionDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<RegionDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(int[] ids, CancellationToken token = default)
         {
             var regionsToRemove = (await _unitOfWork.Regions.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), r => ids.Contains(r.RegionId), token)).items;
 
@@ -67,8 +67,6 @@ namespace Northwind.Application.Services
                 _unitOfWork.Regions.Remove(region);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<RegionDto>>(regionsToRemove).ToResponse();
         }
     }
 }

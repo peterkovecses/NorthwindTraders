@@ -59,7 +59,7 @@ namespace Northwind.Application.Services
             return territoryDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<TerritoryDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
         {
             var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), t => ids.Contains(t.TerritoryId), token)).items;
 
@@ -68,8 +68,6 @@ namespace Northwind.Application.Services
             _unitOfWork.Territories.Remove(territory);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<TerritoryDto>>(territoriesToRemove).ToResponse();
         }
     }
 }

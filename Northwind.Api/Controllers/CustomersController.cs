@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
@@ -10,6 +12,7 @@ namespace Northwind.Api.Controllers
 {
     [Route("customers")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CustomersController : ApiControllerBase
     {
         private readonly ICustomerService _customerService;
@@ -73,9 +76,9 @@ namespace Northwind.Api.Controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids, CancellationToken token)
         {
-            var response = await _customerService.DeleteAsync(ids, token);
+            await _customerService.DeleteAsync(ids, token);
 
-            return Ok(response);
+            return Ok();
         }
     }
 }

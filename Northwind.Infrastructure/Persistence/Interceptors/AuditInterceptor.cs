@@ -8,10 +8,12 @@ namespace Northwind.Infrastructure.Persistence.Interceptors
     public class AuditInterceptor : SaveChangesInterceptor
     {
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AuditInterceptor(IDateTimeProvider dateTimeProvider) 
+        public AuditInterceptor(IDateTimeProvider dateTimeProvider, ICurrentUserService currentUserService) 
         {
             _dateTimeProvider = dateTimeProvider;
+            _currentUserService = currentUserService;
         }
 
         private void SetCreateUpdateDates(DbContextEventData eventData)
@@ -22,11 +24,13 @@ namespace Northwind.Infrastructure.Persistence.Interceptors
                 if (entityEntry.State == Added)
                 {
                     entityEntry.Entity.Created = now;
+                    entityEntry.Entity.CreatedBy = _currentUserService.UserId;
                 }
 
                 if (entityEntry.State is Added or Modified)
                 {
                     entityEntry.Entity.LastModified = now;
+                    entityEntry.Entity.LastModifiedBy = _currentUserService.UserId;
                 }
             }
         }

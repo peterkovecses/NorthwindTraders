@@ -62,7 +62,7 @@ namespace Northwind.Application.Services
             return orderDetailDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<OrderDetailDto>>> DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
         {
             var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
 
@@ -71,8 +71,6 @@ namespace Northwind.Application.Services
                 _unitOfWork.OrderDetails.Remove(orderDetail);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<OrderDetailDto>>(orderDetailsToRemove).ToResponse();
         }
     }
 }

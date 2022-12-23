@@ -69,7 +69,7 @@ namespace Northwind.Application.Services
             return customerDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<CustomerDto>>> DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
         {
             var customersToRemove = (await _unitOfWork.Customers.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), c => ids.Contains(c.CustomerId), token)).items;
             
@@ -78,8 +78,6 @@ namespace Northwind.Application.Services
                 _unitOfWork.Customers.Remove(customer);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<CustomerDto>>(customersToRemove).ToResponse();
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Northwind.Application.Services
             return shipperDto.ToResponse();
         }
 
-        public async Task<Response<IEnumerable<ShipperDto>>> DeleteAsync(int[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(int[] ids, CancellationToken token = default)
         {
             var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), s => ids.Contains(s.ShipperId), token)).items;
 
@@ -67,8 +67,6 @@ namespace Northwind.Application.Services
             _unitOfWork.Shippers.Remove(shipper);
             }
             await _unitOfWork.CompleteAsync();
-
-            return _mapper.Map<IEnumerable<ShipperDto>>(shippersToRemove).ToResponse();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
             return (totalItems, items);
         }
 
-        public virtual async Task<TEntity>? FindByIdAsync(TId id, CancellationToken token = default)
+        public virtual async Task<TEntity?> FindByIdAsync(TId id, CancellationToken token = default)
         {
             return await _context.Set<TEntity>().FindAsync(new object?[] { id }, cancellationToken: token);
         }

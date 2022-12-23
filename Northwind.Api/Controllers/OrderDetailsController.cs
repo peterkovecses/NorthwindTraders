@@ -74,9 +74,9 @@ namespace Northwind.Api.Controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteOrderDetail(OrderDetailKey[] ids, CancellationToken token)
         {
-            var response = await _orderDetailService.DeleteAsync(ids, token);
+            await _orderDetailService.DeleteAsync(ids, token);
 
-            return Ok(response);
+            return Ok();
         }
     }
 }
