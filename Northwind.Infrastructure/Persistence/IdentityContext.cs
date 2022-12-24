@@ -14,5 +14,7 @@ namespace Northwind.Infrastructure.Persistence
             : base(options, operationalStoreOptions)
         {
         }
+
+        public DbSet<CustomRefreshToken> RefreshTokens { get; set; } = default!;
     }
 }

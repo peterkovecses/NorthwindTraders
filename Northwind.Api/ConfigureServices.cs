@@ -39,6 +39,19 @@ namespace Microsoft.Extensions.DependencyInjection
                     };
                 });
 
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtOptions.ValidIssuer,
+                ValidAudience = jwtOptions.ValidAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
+            };
+
+            services.AddSingleton(tokenValidationParameters);
+
             services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -47,16 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
             })
             .AddJwtBearer(opt =>
             {
-                opt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.ValidIssuer,
-                    ValidAudience = jwtOptions.ValidAudience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
-                };
+                opt.TokenValidationParameters = tokenValidationParameters;
             });
 
             services.AddSwaggerGen(opt =>

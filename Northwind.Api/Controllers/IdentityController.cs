@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IdentityModel.Client;
+using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Models;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
@@ -31,14 +32,10 @@ namespace Northwind.Api.Controllers
 
             if(!authResponse.Success)
             {
-#pragma warning disable CS8601 // Possible null reference assignment.
                 return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
-#pragma warning restore CS8601 // Possible null reference assignment.
             }
 
-#pragma warning disable CS8601 // Possible null reference assignment.
             return Ok(new AuthSuccesResponse { Token =  authResponse.Token});
-#pragma warning restore CS8601 // Possible null reference assignment.
         }
 
         [HttpPost("login")]
@@ -48,14 +45,31 @@ namespace Northwind.Api.Controllers
 
             if (!authResponse.Success)
             {
-#pragma warning disable CS8601 // Possible null reference assignment.
                 return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
-#pragma warning restore CS8601 // Possible null reference assignment.
             }
 
-#pragma warning disable CS8601 // Possible null reference assignment.
-            return Ok(new AuthSuccesResponse { Token = authResponse.Token });
-#pragma warning restore CS8601 // Possible null reference assignment.
+            return Ok(new AuthSuccesResponse 
+            {
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken
+            });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] Models.RefreshTokenRequest request)
+        {
+            var authResponse = await _identityService.RefreshTokenAsync(request.Token, request.RefreshToken);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
+            }
+
+            return Ok(new AuthSuccesResponse
+            {
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken
+            });
         }
     }
 }
