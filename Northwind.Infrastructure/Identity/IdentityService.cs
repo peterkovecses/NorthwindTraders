@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Northwind.Application.Claims;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
 using Northwind.Application.Options;
@@ -20,7 +21,7 @@ namespace Northwind.Infrastructure.Identity
         private readonly IdentityContext _context;
 
         public IdentityService(
-            UserManager<ApplicationUser> userManager,
+            UserManager<ApplicationUser> userManager,            
             JwtOptions jwtOptions,
             TokenValidationParameters tokenValidationParameters,
             IdentityContext context)
@@ -31,7 +32,8 @@ namespace Northwind.Infrastructure.Identity
             _context = context;
         }
 
-        public async Task<AuthenticationResult> RegisterAsync(string email, string password)
+        public async Task<AuthenticationResult> RegisterAsync(string email, string password,
+            IEnumerable<string>? claimTypes = default)
         {
             var existingUser = await _userManager.FindByNameAsync(email);
 
@@ -43,11 +45,25 @@ namespace Northwind.Infrastructure.Identity
                 };
             }
 
+            var newUserId = Guid.NewGuid();
             var newUser = new ApplicationUser
             {
+                Id = newUserId.ToString(),
                 Email = email,
                 UserName = email
             };
+
+            var claims = ClaimsStore.AllClaims.Where(c => claimTypes.Contains(c.Type));
+
+            if (IsNotAllClaimsFound(claimTypes, claims))
+            {
+                var claimTypesNotFound = ClaimsStore.AllClaims.Where(c => !claimTypes.Contains(c.Type));
+                var errors = claimTypes.Select(c => new string($"{c} claim not found."));
+                return new AuthenticationResult
+                {
+                    Errors = errors
+                };
+            }
 
             var createdUser = await _userManager.CreateAsync(newUser, password);
 
@@ -58,6 +74,8 @@ namespace Northwind.Infrastructure.Identity
                     Errors = createdUser.Errors.Select(e => e.Description)
                 };
             }
+
+            await _userManager.AddClaimsAsync(newUser, claims);
 
             return await CreateSuccessfulAuthenticationResultAsync(newUser);
         }
@@ -86,7 +104,7 @@ namespace Northwind.Infrastructure.Identity
             }
             catch (InvalidJwtException ex)
             {
-                return new AuthenticationResult { Errors = new[] { ex.Message }};
+                return new AuthenticationResult { Errors = new[] { ex.Message } };
             }
 
             var expiryDateUnix =
@@ -133,22 +151,34 @@ namespace Northwind.Infrastructure.Identity
             await _context.SaveChangesAsync();
 
             var user = await _userManager.FindByIdAsync(validatedToken.Claims.Single(x => x.Type == "id").Value);
-            return await  CreateSuccessfulAuthenticationResultAsync(user);
+            return await CreateSuccessfulAuthenticationResultAsync(user);
+        }
+
+        private static bool IsNotAllClaimsFound(IEnumerable<string>? claimTypes, IEnumerable<Claim> claims)
+        {
+            return claims.Count() < claimTypes.Count();
         }
 
         private async Task<AuthenticationResult> CreateSuccessfulAuthenticationResultAsync(ApplicationUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("id", user.Id)
+            };
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            claims.AddRange(userClaims);
+
             var tokenDescription = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim("id", user.Id)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Issuer = _jwtOptions.ValidIssuer,
                 Audience = _jwtOptions.ValidAudience,
                 Expires = DateTime.UtcNow.Add(_jwtOptions.TokenLifeTime),
@@ -176,27 +206,25 @@ namespace Northwind.Infrastructure.Identity
             };
         }
 
-        private ClaimsPrincipal? GetPrincipalFromToken(string token) 
+        private ClaimsPrincipal? GetPrincipalFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             ClaimsPrincipal? principal = default;
+            SecurityToken validatedToken;
             try
             {
-                principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
-                if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
-                {
-                    throw new InvalidJwtException();
-                }
-            }
-            catch(InvalidJwtException)
-            {
-                throw;
+                principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out validatedToken);
+
             }
             catch
             {
                 throw new InvalidJwtException();
             }
 
+            if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
+            {
+                throw new InvalidJwtException();
+            }
             return principal;
         }
 

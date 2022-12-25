@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
+using Northwind.Api.Policies;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
@@ -12,7 +12,6 @@ namespace Northwind.Api.Controllers
 {
     [Route("customers")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CustomersController : ApiControllerBase
     {
         private readonly ICustomerService _customerService;
@@ -26,6 +25,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = AuthorizationPolicies.CustomerViewer)]
         public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter, Customer> queryParameters, CancellationToken token)
         {
             var response = (await _customerService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
@@ -34,6 +34,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
+        [Authorize(Policy = AuthorizationPolicies.CustomerViewer)]
         public async Task<IActionResult> GetCustomer(string id, CancellationToken token)
         {
             var response = await _customerService.FindByIdAsync(id, token);
@@ -42,6 +43,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.CustomerAdministrator)]
         public async Task<IActionResult> CreateCustomer(CustomerDto customer, CancellationToken token)
         {
             if (!ModelState.IsValid)
@@ -55,6 +57,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.CustomerAdministrator)]
         public async Task<IActionResult> UpdateCustomer(string id, CustomerDto customer, CancellationToken token)
         {
             if (id != customer.CustomerId)
@@ -74,6 +77,7 @@ namespace Northwind.Api.Controllers
 
         [HttpDelete]
         [Route("delete")]
+        [Authorize(Policy = AuthorizationPolicies.CustomerAdministrator)]
         public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids, CancellationToken token)
         {
             await _customerService.DeleteAsync(ids, token);

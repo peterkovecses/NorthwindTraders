@@ -1,5 +1,4 @@
-﻿using IdentityModel.Client;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Models;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
@@ -28,14 +27,14 @@ namespace Northwind.Api.Controllers
                 });
             }
 
-            var authResponse = await _identityService.RegisterAsync(request.Email, request.Password);
+            var authResponse = await _identityService.RegisterAsync(request.Email, request.Password, request.ClaimTypes);
 
             if(!authResponse.Success)
             {
                 return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
             }
 
-            return Ok(new AuthSuccesResponse { Token =  authResponse.Token});
+            return Ok(new AuthSuccesResponse { Token =  authResponse.Token, RefreshToken = authResponse.RefreshToken});
         }
 
         [HttpPost("login")]

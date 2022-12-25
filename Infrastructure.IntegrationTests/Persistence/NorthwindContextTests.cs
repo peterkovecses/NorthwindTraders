@@ -20,7 +20,8 @@ namespace Infrastructure.IntegrationTests.Persistence
             _dateTime = new DateTime(2500, 03, 07);
             var dateTimeProviderMock = new Mock<IDateTimeProvider>();
             dateTimeProviderMock.Setup(d => d.GetDateTime()).Returns(_dateTime);
-            var auditInterceptor = new AuditInterceptor(dateTimeProviderMock.Object);
+            var currentUserServiceMock = new Mock<ICurrentUserService>();
+            var auditInterceptor = new AuditInterceptor(dateTimeProviderMock.Object, currentUserServiceMock.Object);
 
             _sut = new NorthwindContext(options, auditInterceptor);
         }

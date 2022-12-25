@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Northwind.Api.Errors;
+using Northwind.Api.Policies;
 using Northwind.Api.Services;
+using Northwind.Application.Claims;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Options;
 using System.Text;
@@ -61,6 +63,20 @@ namespace Microsoft.Extensions.DependencyInjection
             .AddJwtBearer(opt =>
             {
                 opt.TokenValidationParameters = tokenValidationParameters;
+            });
+
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy(AuthorizationPolicies.CustomerViewer, builder => 
+                    builder.RequireClaim(
+                        AuthorizationClaims.CustomerViewer.Type, 
+                        AuthorizationClaims.CustomerViewer.Value));
+
+                opt.AddPolicy(AuthorizationPolicies.CustomerAdministrator, builder =>
+                {
+                    builder.RequireClaim(AuthorizationClaims.CustomerViewer.Type, AuthorizationClaims.CustomerViewer.Value);
+                    builder.RequireClaim(AuthorizationClaims.CustomerWriter.Type, AuthorizationClaims.CustomerWriter.Value);
+                });
             });
 
             services.AddSwaggerGen(opt =>

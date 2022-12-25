@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
@@ -10,6 +12,7 @@ namespace Northwind.Api.Controllers
 {
     [Route("customerdemographics")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CustomerDemographicsController : ApiControllerBase
     {
         private readonly ICustomerDemographicService _customerDemographicService;
