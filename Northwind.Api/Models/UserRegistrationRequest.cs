@@ -8,5 +8,6 @@ namespace Northwind.Application.Models
         public string Email { get; set; } = default!;
         public string Password { get; set; } = default!;
         public IEnumerable<string> ClaimTypes { get; set; } = default!;
+        public IEnumerable<string> RoleNames { get; set; } = default!;
     }
 }

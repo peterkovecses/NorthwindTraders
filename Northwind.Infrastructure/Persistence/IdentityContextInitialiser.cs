@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Northwind.Application.Claims;
 using Northwind.Infrastructure.Identity;
+using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Persistence
 {
@@ -67,10 +69,14 @@ namespace Northwind.Infrastructure.Persistence
             if (_userManager.Users.All(u => u.UserName != administrator.UserName))
             {
                 await _userManager.CreateAsync(administrator, "Password11!");
+
                 if (!string.IsNullOrWhiteSpace(administratorRole.Name))
                 {
                     await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
                 }
+
+                var claims = ClaimsStore.AllClaims;
+                await _userManager.AddClaimsAsync(administrator, claims);
             }
         }
     }

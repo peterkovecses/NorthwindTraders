@@ -10,6 +10,7 @@ using Northwind.Infrastructure.Persistence;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static Duende.IdentityServer.IdentityServerConstants;
 
 namespace Northwind.Infrastructure.Identity
 {
@@ -32,52 +33,41 @@ namespace Northwind.Infrastructure.Identity
             _context = context;
         }
 
-        public async Task<AuthenticationResult> RegisterAsync(string email, string password,
-            IEnumerable<string>? claimTypes = default)
+        public async Task<AuthenticationResult> RegisterAsync(
+            string email, 
+            string password,
+            IEnumerable<string>? claimTypes = default,
+            IEnumerable<string>? roleNames = default)
         {
-            var existingUser = await _userManager.FindByNameAsync(email);
+            bool hasClaims = claimTypes != null && claimTypes.Any();
+            if (hasClaims)
+            {
+                var claimsValidationResult = ValidateClaims(claimTypes);
+                if (!claimsValidationResult.Success)
+                {
+                    return new AuthenticationResult
+                    {
+                        Errors = claimsValidationResult.Errors
+                    };
+                }
+            }
 
-            if (existingUser != null)
+            var userCreationResult = await CreateUserAsync(email, password);
+
+            if (!userCreationResult.Success)
             {
                 return new AuthenticationResult
                 {
-                    Errors = new[] { "User with this e-mail address already exists." }
+                    Errors = userCreationResult.Errors
                 };
-            }
+            }            
 
-            var newUserId = Guid.NewGuid();
-            var newUser = new ApplicationUser
+            if (hasClaims)
             {
-                Id = newUserId.ToString(),
-                Email = email,
-                UserName = email
-            };
-
-            var claims = ClaimsStore.AllClaims.Where(c => claimTypes.Contains(c.Type));
-
-            if (IsNotAllClaimsFound(claimTypes, claims))
-            {
-                var claimTypesNotFound = ClaimsStore.AllClaims.Where(c => !claimTypes.Contains(c.Type));
-                var errors = claimTypes.Select(c => new string($"{c} claim not found."));
-                return new AuthenticationResult
-                {
-                    Errors = errors
-                };
+                await AddClaimsForUserAsync(userCreationResult.User, claimTypes);
             }
-
-            var createdUser = await _userManager.CreateAsync(newUser, password);
-
-            if (!createdUser.Succeeded)
-            {
-                return new AuthenticationResult
-                {
-                    Errors = createdUser.Errors.Select(e => e.Description)
-                };
-            }
-
-            await _userManager.AddClaimsAsync(newUser, claims);
-
-            return await CreateSuccessfulAuthenticationResultAsync(newUser);
+            
+            return await CreateSuccessfulAuthenticationResultAsync(userCreationResult.User);
         }
 
         public async Task<AuthenticationResult> LoginAsync(string email, string password)
@@ -154,9 +144,65 @@ namespace Northwind.Infrastructure.Identity
             return await CreateSuccessfulAuthenticationResultAsync(user);
         }
 
-        private static bool IsNotAllClaimsFound(IEnumerable<string>? claimTypes, IEnumerable<Claim> claims)
+        private static Result ValidateClaims(IEnumerable<string> claimTypes)
         {
-            return claims.Count() < claimTypes.Count();
+            var claimTypesNotFound = claimTypes.Where(c => !ClaimsStore.AllClaims.Select(c => c.Type).Contains(c));
+            if (claimTypesNotFound.Any())
+            {
+                var errors = claimTypesNotFound.Select(c => new string($"{c} claim not found."));
+                return new Result
+                {
+                    Errors = errors
+                };
+            }
+
+            return new Result
+            {
+                Success = true
+            };
+        }
+
+        private async Task<UserCreationResult> CreateUserAsync(string email, string password)
+        {
+            var existingUser = await _userManager.FindByNameAsync(email);
+
+            if (existingUser != null)
+            {
+                return new UserCreationResult
+                {
+                    Errors = new[] { "User with this e-mail address already exists." }
+                };
+            }
+
+            var newUserId = Guid.NewGuid();
+            var newUser = new ApplicationUser
+            {
+                Id = newUserId.ToString(),
+                Email = email,
+                UserName = email
+            };
+
+            var result = await _userManager.CreateAsync(newUser, password);
+
+            if (!result.Succeeded)
+            {
+                return new UserCreationResult
+                {
+                    Errors = result.Errors.Select(e => e.Description)
+                };
+            }
+
+            return new UserCreationResult
+            {
+                Success = true,
+                User = newUser
+            };
+        }
+
+        private async Task AddClaimsForUserAsync(ApplicationUser user, IEnumerable<string> claimTypes)
+        {
+            var claims = ClaimsStore.AllClaims.Where(c => claimTypes.Contains(c.Type));
+            await _userManager.AddClaimsAsync(user, claims);
         }
 
         private async Task<AuthenticationResult> CreateSuccessfulAuthenticationResultAsync(ApplicationUser user)

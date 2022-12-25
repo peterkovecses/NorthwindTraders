@@ -1,10 +1,8 @@
 ﻿namespace Northwind.Application.Models
 {
-    public class AuthenticationResult
+    public class AuthenticationResult : Result
     {
         public string? Token { get; set; }
         public string? RefreshToken { get; set; }
-        public bool Success { get; set; }
-        public IEnumerable<string>? Errors { get; set; }
     }
 }
