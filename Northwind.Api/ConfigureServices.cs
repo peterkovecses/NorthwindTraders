@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Northwind.Api.Authorization;
 using Northwind.Api.Errors;
 using Northwind.Api.Policies;
 using Northwind.Api.Services;
@@ -77,7 +79,12 @@ namespace Microsoft.Extensions.DependencyInjection
                     builder.RequireClaim(AuthorizationClaims.CustomerViewer.Type, AuthorizationClaims.CustomerViewer.Value);
                     builder.RequireClaim(AuthorizationClaims.CustomerWriter.Type, AuthorizationClaims.CustomerWriter.Value);
                 });
+
+                opt.AddPolicy("MustForMyCompany", policy =>
+                policy.AddRequirements(new WorksForCompanyRequirement("comp.com")));
             });
+
+            services.AddSingleton<IAuthorizationHandler, WorksforCompanyHandler>();
 
             services.AddSwaggerGen(opt =>
             {

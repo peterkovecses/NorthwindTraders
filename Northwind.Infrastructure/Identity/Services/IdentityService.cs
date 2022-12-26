@@ -19,7 +19,7 @@ namespace Northwind.Infrastructure.Identity.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IClaimManager _claimManagaer;
+        private readonly IClaimManager _claimManager;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly IdentityContext _context;
@@ -27,14 +27,14 @@ namespace Northwind.Infrastructure.Identity.Services
         public IdentityService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IClaimManager claimManagaer,
+            IClaimManager claimManager,
             JwtOptions jwtOptions,
             TokenValidationParameters tokenValidationParameters,
             IdentityContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _claimManagaer = claimManagaer;
+            _claimManager = claimManager;
             _jwtOptions = jwtOptions;
             _tokenValidationParameters = tokenValidationParameters;
             _context = context;
@@ -48,16 +48,13 @@ namespace Northwind.Infrastructure.Identity.Services
         {
             var errors = new List<string>();
             ValidateClaims(claimTypes, errors);
-
             await ValidateRoles(roles, errors);
-
             if (errors.Any())
             {
                 return new Result { Errors = errors };
             }
 
             var userCreationResult = await CreateUserAsync(email, password);
-
             if (!userCreationResult.Success)
             {
                 return new Result
@@ -80,32 +77,6 @@ namespace Northwind.Infrastructure.Identity.Services
             {
                 Success = true,
             };
-        }
-
-        private async Task ValidateRoles(IEnumerable<string>? roles, List<string> errors)
-        {
-            if (HasRoles(roles))
-            {
-                foreach (var role in roles)
-                {
-                    if (!await _roleManager.RoleExistsAsync(role))
-                    {
-                        errors.Add($"{role} role not found.");
-                    }
-                }
-            }
-        }
-
-        private void ValidateClaims(IEnumerable<string>? claimTypes, List<string> errors)
-        {
-            if (HasClaims(claimTypes))
-            {
-                var claimsValidationResult = _claimManagaer.AllClaimsExist(claimTypes);
-                if (!claimsValidationResult.AllExists)
-                {
-                    errors.AddRange(claimsValidationResult.Errors);
-                }
-            }
         }
 
         public async Task<AuthenticationResult> LoginAsync(string email, string password)
@@ -180,6 +151,32 @@ namespace Northwind.Infrastructure.Identity.Services
 
             var user = await _userManager.FindByIdAsync(validatedToken.Claims.Single(x => x.Type == "id").Value);
             return await CreateSuccessfulAuthenticationResultAsync(user);
+        }
+
+        private async Task ValidateRoles(IEnumerable<string>? roles, List<string> errors)
+        {
+            if (HasRoles(roles))
+            {
+                foreach (var role in roles)
+                {
+                    if (!await _roleManager.RoleExistsAsync(role))
+                    {
+                        errors.Add($"{role} role not found.");
+                    }
+                }
+            }
+        }
+
+        private void ValidateClaims(IEnumerable<string>? claimTypes, List<string> errors)
+        {
+            if (HasClaims(claimTypes))
+            {
+                var claimsValidationResult = _claimManager.AllClaimsExist(claimTypes);
+                if (!claimsValidationResult.AllExists)
+                {
+                    errors.AddRange(claimsValidationResult.Errors);
+                }
+            }
         }
 
         private static bool HasRoles(IEnumerable<string>? roles)

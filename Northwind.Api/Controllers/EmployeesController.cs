@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
@@ -10,6 +11,7 @@ namespace Northwind.Api.Controllers
 {
     [Route("employees")]
     [ApiController]
+    [Authorize(Policy = "MustForMyCompany")]
     public class EmployeesController : ApiControllerBase
     {
         private readonly IEmployeeService _employeeService;
