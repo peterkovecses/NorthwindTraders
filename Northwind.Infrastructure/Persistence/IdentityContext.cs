@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Northwind.Infrastructure.Identity;
+using Northwind.Infrastructure.Identity.Models;
 
 namespace Northwind.Infrastructure.Persistence
 {

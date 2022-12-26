@@ -1,7 +1,6 @@
 ﻿using Northwind.Application.Models;
-using Northwind.Infrastructure.Identity;
 
-namespace Northwind.Infrastructure.Identity
+namespace Northwind.Infrastructure.Identity.Models
 {
     public class UserCreationResult : Result
     {

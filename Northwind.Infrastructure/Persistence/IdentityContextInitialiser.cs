@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Northwind.Application.Claims;
-using Northwind.Infrastructure.Identity;
+using Northwind.Infrastructure.Identity.Models;
 
 namespace Northwind.Infrastructure.Persistence
 {
@@ -57,25 +57,28 @@ namespace Northwind.Infrastructure.Persistence
         public async Task TrySeedAsync()
         {
             var administratorRole = new IdentityRole("Administrator");
+            var testerRole = new IdentityRole("Tester");
 
-            if (_roleManager.Roles.All(r => r.Name != administratorRole.Name))
+            if (!_roleManager.Roles.Any())
             {
                 await _roleManager.CreateAsync(administratorRole);
+                await _roleManager.CreateAsync(testerRole);
             }
 
-            var administrator = new ApplicationUser { UserName = "administrator@mycompany.com", Email = "administrator@mycompany.com" };
+            var administrator = new ApplicationUser { UserName = "admin@comp.com", Email = "admin@comp.com" };
+            var tester = new ApplicationUser { UserName = "tester@comp.com", Email = "tester@comp.com" };
 
-            if (_userManager.Users.All(u => u.UserName != administrator.UserName))
+            if (!_userManager.Users.Any())
             {
                 await _userManager.CreateAsync(administrator, "Password11!");
+                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
 
-                if (!string.IsNullOrWhiteSpace(administratorRole.Name))
-                {
-                    await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
-                }
+                await _userManager.CreateAsync(tester, "Password");
+                await _userManager.AddToRolesAsync(tester, new[] { testerRole.Name });
 
                 var claims = ClaimsStore.AllClaims;
                 await _userManager.AddClaimsAsync(administrator, claims);
+                await _userManager.AddClaimsAsync(tester, claims);
             }
         }
     }

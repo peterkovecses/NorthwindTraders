@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Northwind.Application.Interfaces;
-using Northwind.Infrastructure.Identity;
+using Northwind.Infrastructure.Identity.Interfaces;
+using Northwind.Infrastructure.Identity.Models;
+using Northwind.Infrastructure.Identity.Services;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Interceptors;
 using Northwind.Infrastructure.Services;
@@ -38,6 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDateTimeProvider, DateTimeProvider>();
             services.AddScoped<AuditInterceptor>();
+            services.AddScoped<IClaimManager, ClaimManager>();
 
             return services;
         }

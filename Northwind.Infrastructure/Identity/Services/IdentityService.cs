@@ -6,19 +6,20 @@ using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
 using Northwind.Application.Options;
 using Northwind.Infrastructure.Exceptions;
+using Northwind.Infrastructure.Identity.Interfaces;
+using Northwind.Infrastructure.Identity.Models;
 using Northwind.Infrastructure.Persistence;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using static Duende.IdentityServer.IdentityServerConstants;
 
-namespace Northwind.Infrastructure.Identity
+namespace Northwind.Infrastructure.Identity.Services
 {
     public class IdentityService : IIdentityService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IClaimManager _claimManagaer;
         private readonly JwtOptions _jwtOptions;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly IdentityContext _context;
@@ -26,44 +27,50 @@ namespace Northwind.Infrastructure.Identity
         public IdentityService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
+            IClaimManager claimManagaer,
             JwtOptions jwtOptions,
             TokenValidationParameters tokenValidationParameters,
             IdentityContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _claimManagaer = claimManagaer;
             _jwtOptions = jwtOptions;
             _tokenValidationParameters = tokenValidationParameters;
             _context = context;
         }
 
         public async Task<AuthenticationResult> RegisterAsync(
-            string email, 
+            string email,
             string password,
             IEnumerable<string>? claimTypes = default,
             IEnumerable<string>? roles = default)
         {
+            var errors = new List<string>();
+
             if (HasClaims(claimTypes))
             {
-                var claimsValidationResult = ValidateClaims(claimTypes);
-                if (!claimsValidationResult.Success)
+                var claimsValidationResult = _claimManagaer.AllClaimsExist(claimTypes);
+                if (!claimsValidationResult.AllExists)
                 {
-                    return new AuthenticationResult
-                    {
-                        Errors = claimsValidationResult.Errors
-                    };
+                    errors.AddRange(claimsValidationResult.Errors);
                 }
             }
 
             if (HasRoles(roles))
-            {
+            {                
                 foreach (var role in roles)
-                {
+                {                    
                     if (!await _roleManager.RoleExistsAsync(role))
                     {
-                        return new AuthenticationResult { Errors = new[] { $"{role} not found." } };
-                    }
+                        errors.Add($"{role} role not found.");
+                    }                    
                 }
+            }
+
+            if (errors.Any())
+            {
+                return new AuthenticationResult { Errors = errors };
             }
 
             var userCreationResult = await CreateUserAsync(email, password);
@@ -173,18 +180,6 @@ namespace Northwind.Infrastructure.Identity
             return claimTypes != null && claimTypes.Any();
         }
 
-        private static Result ValidateClaims(IEnumerable<string> claimTypes)
-        {
-            var claimTypesNotFound = claimTypes.Where(c => !ClaimsStore.AllClaims.Select(c => c.Type).Contains(c));
-            if (claimTypesNotFound.Any())
-            {
-                var errors = claimTypesNotFound.Select(c => new string($"{c} claim not found."));
-                return new Result { Errors = errors };
-            }
-
-            return new Result { Success = true };
-        }
-
         private async Task<UserCreationResult> CreateUserAsync(string email, string password)
         {
             var existingUser = await _userManager.FindByNameAsync(email);
@@ -230,7 +225,7 @@ namespace Northwind.Infrastructure.Identity
 
         private async Task AddRolesForUserAsync(ApplicationUser user, IEnumerable<string> roles)
         {
-            foreach(var role in roles)
+            foreach (var role in roles)
             {
                 await _userManager.AddToRoleAsync(user, role);
             }
@@ -254,7 +249,7 @@ namespace Northwind.Infrastructure.Identity
 
             var userRoles = (await _userManager.GetRolesAsync(user))
                                 .Select(r => new Claim(System.Security.Claims.ClaimTypes.Role, r));
-            claims.AddRange(userRoles);            
+            claims.AddRange(userRoles);
 
             var tokenDescription = new SecurityTokenDescriptor
             {
@@ -310,7 +305,7 @@ namespace Northwind.Infrastructure.Identity
 
         private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
         {
-            return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+            return validatedToken is JwtSecurityToken jwtSecurityToken &&
                 jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
                 StringComparison.InvariantCultureIgnoreCase);
         }

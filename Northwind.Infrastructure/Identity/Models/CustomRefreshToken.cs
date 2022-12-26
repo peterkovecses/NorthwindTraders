@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Northwind.Infrastructure.Identity
+namespace Northwind.Infrastructure.Identity.Models
 {
     public class CustomRefreshToken
     {
