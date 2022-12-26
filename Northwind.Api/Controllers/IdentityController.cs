@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Models;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
@@ -17,6 +19,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost("register")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Administrator")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
         {
             if (!ModelState.IsValid)
@@ -27,7 +30,8 @@ namespace Northwind.Api.Controllers
                 });
             }
 
-            var authResponse = await _identityService.RegisterAsync(request.Email, request.Password, request.ClaimTypes);
+            var authResponse = 
+                await _identityService.RegisterAsync(request.Email, request.Password, request.ClaimTypes, request.Roles);
 
             if(!authResponse.Success)
             {

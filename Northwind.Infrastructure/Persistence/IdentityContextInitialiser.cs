@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Northwind.Application.Claims;
 using Northwind.Infrastructure.Identity;
-using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Persistence
 {
