@@ -4,7 +4,7 @@ namespace Northwind.Application.Interfaces
 {
     public interface IIdentityService
     {
-        Task<AuthenticationResult> RegisterAsync(
+        Task<Result> RegisterAsync(
             string email,
             string password,
             IEnumerable<string>? claimTypes = default,

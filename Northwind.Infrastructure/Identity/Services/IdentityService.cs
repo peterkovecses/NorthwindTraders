@@ -40,44 +40,27 @@ namespace Northwind.Infrastructure.Identity.Services
             _context = context;
         }
 
-        public async Task<AuthenticationResult> RegisterAsync(
+        public async Task<Result> RegisterAsync(
             string email,
             string password,
             IEnumerable<string>? claimTypes = default,
             IEnumerable<string>? roles = default)
         {
             var errors = new List<string>();
+            ValidateClaims(claimTypes, errors);
 
-            if (HasClaims(claimTypes))
-            {
-                var claimsValidationResult = _claimManagaer.AllClaimsExist(claimTypes);
-                if (!claimsValidationResult.AllExists)
-                {
-                    errors.AddRange(claimsValidationResult.Errors);
-                }
-            }
-
-            if (HasRoles(roles))
-            {                
-                foreach (var role in roles)
-                {                    
-                    if (!await _roleManager.RoleExistsAsync(role))
-                    {
-                        errors.Add($"{role} role not found.");
-                    }                    
-                }
-            }
+            await ValidateRoles(roles, errors);
 
             if (errors.Any())
             {
-                return new AuthenticationResult { Errors = errors };
+                return new Result { Errors = errors };
             }
 
             var userCreationResult = await CreateUserAsync(email, password);
 
             if (!userCreationResult.Success)
             {
-                return new AuthenticationResult
+                return new Result
                 {
                     Errors = userCreationResult.Errors
                 };
@@ -93,7 +76,36 @@ namespace Northwind.Infrastructure.Identity.Services
                 await AddRolesForUserAsync(userCreationResult.User, roles);
             }
 
-            return await CreateSuccessfulAuthenticationResultAsync(userCreationResult.User);
+            return new Result
+            {
+                Success = true,
+            };
+        }
+
+        private async Task ValidateRoles(IEnumerable<string>? roles, List<string> errors)
+        {
+            if (HasRoles(roles))
+            {
+                foreach (var role in roles)
+                {
+                    if (!await _roleManager.RoleExistsAsync(role))
+                    {
+                        errors.Add($"{role} role not found.");
+                    }
+                }
+            }
+        }
+
+        private void ValidateClaims(IEnumerable<string>? claimTypes, List<string> errors)
+        {
+            if (HasClaims(claimTypes))
+            {
+                var claimsValidationResult = _claimManagaer.AllClaimsExist(claimTypes);
+                if (!claimsValidationResult.AllExists)
+                {
+                    errors.AddRange(claimsValidationResult.Errors);
+                }
+            }
         }
 
         public async Task<AuthenticationResult> LoginAsync(string email, string password)

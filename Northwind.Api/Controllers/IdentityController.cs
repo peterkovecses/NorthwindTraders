@@ -30,15 +30,15 @@ namespace Northwind.Api.Controllers
                 });
             }
 
-            var authResponse = 
+            var response = 
                 await _identityService.RegisterAsync(request.Email, request.Password, request.ClaimTypes, request.Roles);
 
-            if(!authResponse.Success)
+            if(!response.Success)
             {
-                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
+                return BadRequest(new AuthFailedResponse { Errors = response.Errors });
             }
 
-            return Ok(new AuthSuccesResponse { Token =  authResponse.Token, RefreshToken = authResponse.RefreshToken});
+            return Ok();
         }
 
         [HttpPost("login")]
