@@ -35,7 +35,7 @@ namespace Northwind.Api.Controllers
 
             if(!response.Success)
             {
-                return BadRequest(new AuthFailedResponse { Errors = response.Errors });
+                return BadRequest(new AuthFailedResponse { Errors = response.Errors! });
             }
 
             return Ok();
@@ -48,13 +48,13 @@ namespace Northwind.Api.Controllers
 
             if (!authResponse.Success)
             {
-                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
+                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors! });
             }
 
             return Ok(new AuthSuccesResponse 
             {
-                Token = authResponse.Token,
-                RefreshToken = authResponse.RefreshToken
+                Token = authResponse.Token!,
+                RefreshToken = authResponse.RefreshToken!
             });
         }
 
@@ -65,13 +65,13 @@ namespace Northwind.Api.Controllers
 
             if (!authResponse.Success)
             {
-                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors });
+                return BadRequest(new AuthFailedResponse { Errors = authResponse.Errors! });
             }
 
             return Ok(new AuthSuccesResponse
             {
-                Token = authResponse.Token,
-                RefreshToken = authResponse.RefreshToken
+                Token = authResponse.Token!,
+                RefreshToken = authResponse.RefreshToken!
             });
         }
     }

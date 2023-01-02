@@ -8,7 +8,8 @@ namespace Infrastructure.IntegrationTests.Persistence
 {
     public class NorthwindContextTests : IDisposable
     {
-        private readonly DateTime _dateTime;
+        private readonly DateTime DateTime;
+        private const string UserId = "12";
         private readonly NorthwindContext _sut;
 
         public NorthwindContextTests()
@@ -17,27 +18,29 @@ namespace Infrastructure.IntegrationTests.Persistence
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
-            _dateTime = new DateTime(2500, 03, 07);
+            DateTime = new DateTime(2500, 03, 07);
             var dateTimeProviderMock = new Mock<IDateTimeProvider>();
-            dateTimeProviderMock.Setup(d => d.GetDateTime()).Returns(_dateTime);
+            dateTimeProviderMock.Setup(d => d.GetDateTime()).Returns(DateTime);
             var currentUserServiceMock = new Mock<ICurrentUserService>();
+            currentUserServiceMock.Setup(c => c.UserId).Returns(UserId);
             var auditInterceptor = new AuditInterceptor(dateTimeProviderMock.Object, currentUserServiceMock.Object);
 
             _sut = new NorthwindContext(options, auditInterceptor);
         }
 
         [Fact]
-        public async Task SaveChangesAsync_WhenNewCategoryAdded_CreatedPropertySet()
+        public async Task SaveChangesAsync_WhenNewCategoryAdded_CreatedAndCreatedByPropertiesAreSet()
         {
             // Act
             var category = await AddCategory();
 
             // Assert
-            category.Created.Should().Be(_dateTime);
+            category.Created.Should().Be(DateTime);
+            category.CreatedBy.Should().Be(UserId);
         }
 
         [Fact]
-        public async Task SaveChangesAsync_WhenCategoryUpdated_ModifiedPropertiesSet()
+        public async Task SaveChangesAsync_WhenCategoryUpdated_LastModifiedAndLastModifiedByPropertiesAreSet()
         {
             // Arrange
             await AddCategory();
@@ -47,7 +50,9 @@ namespace Infrastructure.IntegrationTests.Persistence
             // Act
             await _sut.SaveChangesAsync();
             
-            category.LastModified.Should().Be(_dateTime);
+            // Assert
+            category.LastModified.Should().Be(DateTime);
+            category.LastModifiedBy.Should().Be(UserId);
         }
 
         private async Task<Category> AddCategory()

@@ -12,7 +12,7 @@ namespace Northwind.Api.Controllers
 {
     [Route("customerdemographics")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CustomerDemographicsController : ApiControllerBase
     {
         private readonly ICustomerDemographicService _customerDemographicService;
