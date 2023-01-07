@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Northwind.Application.Interfaces;
+using Northwind.Infrastructure;
 using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
 using Northwind.Infrastructure.Identity.Services;
@@ -28,11 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddIdentity<ApplicationUser, IdentityRole>(o =>
             {
-                o.Password.RequireDigit = false;
-                o.Password.RequireLowercase = false;
-                o.Password.RequireUppercase = false;
-                o.Password.RequireNonAlphanumeric = false;
-                o.User.RequireUniqueEmail = true;
+                o.Password.RequireDigit = configuration.GetValue<bool>(ConfigKeys.IdentityPasswordRequireDigit);
+                o.Password.RequireLowercase = configuration.GetValue<bool>(ConfigKeys.IdentityPasswordRequireLowercase);
+                o.Password.RequireUppercase = configuration.GetValue<bool>(ConfigKeys.IdentityPasswordRequireUppercase);
+                o.Password.RequireNonAlphanumeric = configuration.GetValue<bool>(ConfigKeys.IdentityPasswordNonAlphanumeric);
+                o.User.RequireUniqueEmail = configuration.GetValue<bool>(ConfigKeys.IdentityUserRequireUniqueEmail);
             })
             .AddEntityFrameworkStores<IdentityContext>()
             .AddDefaultTokenProviders();

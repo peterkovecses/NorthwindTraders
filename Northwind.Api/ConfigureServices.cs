@@ -9,7 +9,7 @@ using Northwind.Api.Policies;
 using Northwind.Api.Services;
 using Northwind.Application.Claims;
 using Northwind.Application.Interfaces;
-using Northwind.Application.Options;
+using Northwind.Infrastructure;
 using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -20,10 +20,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddHttpContextAccessor();
             services.AddSingleton<ICurrentUserService, CurrentUserService>();
-
-            var jwtOptions = new JwtOptions();
-            configuration.Bind(nameof(jwtOptions), jwtOptions);
-            services.AddSingleton(jwtOptions);
 
             services.AddControllers();
             services.AddEndpointsApiExplorer();
@@ -45,13 +41,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtOptions.ValidIssuer,
-                ValidAudience = jwtOptions.ValidAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
+                ValidateIssuer = configuration.GetValue<bool>(ConfigKeys.TokenValidateIssuer),
+                ValidateAudience = configuration.GetValue<bool>(ConfigKeys.TokenValidateAudience),
+                ValidateLifetime = configuration.GetValue<bool>(ConfigKeys.TokenValidateLifetime),
+                ValidateIssuerSigningKey = configuration.GetValue<bool>(ConfigKeys.TokenValidateIssuerSigningKey),
+                ValidIssuer = configuration[ConfigKeys.TokenValidIssuer],
+                ValidAudience = configuration[ConfigKeys.TokenValidAudience],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[ConfigKeys.TokenSecret]))
             };
 
             services.AddSingleton(tokenValidationParameters);

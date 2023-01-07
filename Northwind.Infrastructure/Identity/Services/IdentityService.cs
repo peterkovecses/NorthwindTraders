@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Northwind.Application.Claims;
 using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
-using Northwind.Application.Options;
 using Northwind.Infrastructure.Exceptions;
 using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
@@ -20,24 +20,24 @@ namespace Northwind.Infrastructure.Identity.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IClaimManager _claimManager;
-        private readonly JwtOptions _jwtOptions;
-        private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly IdentityContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly TokenValidationParameters _tokenValidationParameters;
 
         public IdentityService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IClaimManager claimManager,
-            JwtOptions jwtOptions,
-            TokenValidationParameters tokenValidationParameters,
-            IdentityContext context)
+            IdentityContext context,
+            IConfiguration configuration,
+            TokenValidationParameters tokenValidationParameters)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _claimManager = claimManager;
-            _jwtOptions = jwtOptions;
-            _tokenValidationParameters = tokenValidationParameters;
             _context = context;
+            _configuration = configuration;
+            _tokenValidationParameters = tokenValidationParameters;
         }
 
         public async Task<Result> RegisterAsync(
@@ -243,7 +243,7 @@ namespace Northwind.Infrastructure.Identity.Services
         private async Task<AuthenticationResult> CreateSuccessfulAuthenticationResultAsync(ApplicationUser user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
+            var key = Encoding.ASCII.GetBytes(_configuration[ConfigKeys.TokenSecret]);
 
             var claims = new List<Claim>
             {
@@ -257,15 +257,15 @@ namespace Northwind.Infrastructure.Identity.Services
             claims.AddRange(userClaims);
 
             var userRoles = (await _userManager.GetRolesAsync(user))
-                                .Select(r => new Claim(System.Security.Claims.ClaimTypes.Role, r));
+                                .Select(r => new Claim(ClaimTypes.Role, r));
             claims.AddRange(userRoles);
 
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Issuer = _jwtOptions.ValidIssuer,
-                Audience = _jwtOptions.ValidAudience,
-                Expires = DateTime.UtcNow.Add(_jwtOptions.TokenLifeTime),
+                Issuer = _configuration[ConfigKeys.TokenValidIssuer],
+                Audience = _configuration[ConfigKeys.TokenValidAudience],
+                Expires = DateTime.UtcNow.Add(_configuration.GetValue<TimeSpan>(ConfigKeys.TokenLifeTime)),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
@@ -295,10 +295,12 @@ namespace Northwind.Infrastructure.Identity.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             ClaimsPrincipal? principal = default;
             SecurityToken validatedToken;
+
+            var tokenValidationParameters = _tokenValidationParameters;
+
             try
             {
-                principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out validatedToken);
-
+                principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
             }
             catch
             {
