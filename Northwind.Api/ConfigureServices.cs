@@ -5,9 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Northwind.Api.Authorization;
 using Northwind.Api.Errors;
-using Northwind.Api.Policies;
 using Northwind.Api.Services;
-using Northwind.Application.Claims;
 using Northwind.Application.Interfaces;
 using Northwind.Infrastructure;
 using System.Text;
@@ -65,17 +63,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthorization(opt =>
             {
-                opt.AddPolicy(AuthorizationPolicies.CustomerViewer, builder => 
-                    builder.RequireClaim(
-                        AuthorizationClaims.CustomerViewer.Type, 
-                        AuthorizationClaims.CustomerViewer.Value));
-
-                opt.AddPolicy(AuthorizationPolicies.CustomerAdministrator, builder =>
-                {
-                    builder.RequireClaim(AuthorizationClaims.CustomerViewer.Type, AuthorizationClaims.CustomerViewer.Value);
-                    builder.RequireClaim(AuthorizationClaims.CustomerWriter.Type, AuthorizationClaims.CustomerWriter.Value);
-                });
-
                 opt.AddPolicy("MustForMyCompany", policy =>
                 policy.AddRequirements(new WorksForCompanyRequirement("comp.com")));
             });

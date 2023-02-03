@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Northwind.Application.Claims;
+using Northwind.Infrastructure.Claims;
+using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
 
 namespace Northwind.Infrastructure.Persistence
@@ -10,19 +11,16 @@ namespace Northwind.Infrastructure.Persistence
     {
         private readonly ILogger<IdentityContextInitialiser> _logger;
         private readonly IdentityContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IIdentityService _identityService;
 
         public IdentityContextInitialiser(
             ILogger<IdentityContextInitialiser> logger,
             IdentityContext context,
-            UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            IIdentityService identityService)
         {
             _logger = logger;
             _context = context;
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _identityService = identityService;
         }
 
         public async Task InitialiseAsync()
@@ -45,7 +43,10 @@ namespace Northwind.Infrastructure.Persistence
         {
             try
             {
-                await TrySeedAsync();
+                if (_identityService.NoIdentityData())
+                {
+                    await TrySeedAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -58,28 +59,16 @@ namespace Northwind.Infrastructure.Persistence
         {
             var administratorRole = new IdentityRole("Administrator");
             var testerRole = new IdentityRole("Tester");
-
-            if (!_roleManager.Roles.Any())
-            {
-                await _roleManager.CreateAsync(administratorRole);
-                await _roleManager.CreateAsync(testerRole);
-            }
+            await _identityService.AddRoles(administratorRole, testerRole);
 
             var administrator = new ApplicationUser { UserName = "admin@comp.com", Email = "admin@comp.com" };
             var tester = new ApplicationUser { UserName = "tester@comp.com", Email = "tester@comp.com" };
+            await _identityService.AddUsers("Password11!", administrator, tester);
 
-            if (!_userManager.Users.Any())
-            {
-                await _userManager.CreateAsync(administrator, "Password11!");
-                await _userManager.AddToRolesAsync(administrator, new[] { administratorRole.Name });
+            await _identityService.AddUsersToRoles((administrator, new[] { administratorRole.Name }), (tester, new[] { testerRole.Name }));
 
-                await _userManager.CreateAsync(tester, "Password");
-                await _userManager.AddToRolesAsync(tester, new[] { testerRole.Name });
-
-                var claims = ClaimsStore.AllClaims;
-                await _userManager.AddClaimsAsync(administrator, claims);
-                await _userManager.AddClaimsAsync(tester, claims);
-            }
-        }
+            await _identityService.AddClaimsToRoles(AuthorizationClaims.All, administratorRole);
+            await _identityService.AddClaimsToUsers(AuthorizationClaims.All, tester);
+        }        
     }
 }

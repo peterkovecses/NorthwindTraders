@@ -1,4 +1,4 @@
-﻿namespace Northwind.Infrastructure.Identity.Models
+﻿namespace Northwind.Infrastructure.Claims
 {
     public class ClaimsValidationResult
     {

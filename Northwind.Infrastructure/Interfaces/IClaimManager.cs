@@ -1,6 +1,6 @@
-﻿using Northwind.Infrastructure.Identity.Models;
+﻿using Northwind.Infrastructure.Claims;
 
-namespace Northwind.Infrastructure.Identity.Interfaces
+namespace Northwind.Infrastructure.Interfaces
 {
     public interface IClaimManager
     {

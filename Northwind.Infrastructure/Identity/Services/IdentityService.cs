@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Northwind.Application.Claims;
-using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
-using Northwind.Infrastructure.Exceptions;
 using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
+using Northwind.Infrastructure.Interfaces;
 using Northwind.Infrastructure.Persistence;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,7 +12,7 @@ using System.Text;
 
 namespace Northwind.Infrastructure.Identity.Services
 {
-    public class IdentityService : IIdentityService
+    public partial class IdentityService : IIdentityService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -40,45 +37,6 @@ namespace Northwind.Infrastructure.Identity.Services
             _tokenValidationParameters = tokenValidationParameters;
         }
 
-        public async Task<Result> RegisterAsync(
-            string email,
-            string password,
-            IEnumerable<string>? claimTypes = default,
-            IEnumerable<string>? roles = default)
-        {
-            var errors = new List<string>();
-            ValidateClaims(claimTypes, errors);
-            await ValidateRoles(roles, errors);
-            if (errors.Any())
-            {
-                return new Result { Errors = errors };
-            }
-
-            var userCreationResult = await CreateUserAsync(email, password);
-            if (!userCreationResult.Success)
-            {
-                return new Result
-                {
-                    Errors = userCreationResult.Errors
-                };
-            }
-
-            if (HasClaims(claimTypes))
-            {
-                await AddClaimsForUserAsync(userCreationResult.User, claimTypes);
-            }
-
-            if (HasRoles(roles))
-            {
-                await AddRolesForUserAsync(userCreationResult.User, roles);
-            }
-
-            return new Result
-            {
-                Success = true,
-            };
-        }
-
         public async Task<AuthenticationResult> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByNameAsync(email);
@@ -92,151 +50,53 @@ namespace Northwind.Infrastructure.Identity.Services
             }
 
             return await CreateSuccessfulAuthenticationResultAsync(user);
-        }
+        }       
 
-        public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
+        public bool NoIdentityData()
         {
-            ClaimsPrincipal? validatedToken;
-            try
-            {
-                validatedToken = GetPrincipalFromToken(token);
-            }
-            catch (InvalidJwtException ex)
-            {
-                return new AuthenticationResult { Errors = new[] { ex.Message } };
-            }
-
-            var expiryDateUnix =
-                long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
-
-            var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                .AddSeconds(expiryDateUnix);
-
-            if (expiryDateTimeUtc > DateTime.UtcNow)
-            {
-                return new AuthenticationResult { Errors = new[] { "This token hasn't expired yet." } };
-            }
-
-            var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
-
-            var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(r => r.Token == refreshToken);
-
-            if (storedRefreshToken == null)
-            {
-                return new AuthenticationResult { Errors = new[] { "This refresh token does not exists." } };
-            }
-
-            if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
-            {
-                return new AuthenticationResult { Errors = new[] { "This refresh token has expired." } };
-            }
-
-            if (storedRefreshToken.Invalidated)
-            {
-                return new AuthenticationResult { Errors = new[] { "This refresh token has been invalidated." } };
-            }
-
-            if (storedRefreshToken.Used)
-            {
-                return new AuthenticationResult { Errors = new[] { "This refresh token has been used." } };
-            }
-
-            if (storedRefreshToken.JwtId != jti)
-            {
-                return new AuthenticationResult { Errors = new[] { "This refresh token does not match this JWT." } };
-            }
-
-            storedRefreshToken.Used = true;
-            await _context.SaveChangesAsync();
-
-            var user = await _userManager.FindByIdAsync(validatedToken.Claims.Single(x => x.Type == "id").Value);
-            return await CreateSuccessfulAuthenticationResultAsync(user);
+            return !(_roleManager.Roles.Any() || _userManager.Users.Any());
         }
 
-        private async Task ValidateRoles(IEnumerable<string>? roles, List<string> errors)
-        {
-            if (HasRoles(roles))
-            {
-                foreach (var role in roles)
-                {
-                    if (!await _roleManager.RoleExistsAsync(role))
-                    {
-                        errors.Add($"{role} role not found.");
-                    }
-                }
-            }
-        }
-
-        private void ValidateClaims(IEnumerable<string>? claimTypes, List<string> errors)
-        {
-            if (HasClaims(claimTypes))
-            {
-                var claimsValidationResult = _claimManager.AllClaimsExist(claimTypes);
-                if (!claimsValidationResult.AllExists)
-                {
-                    errors.AddRange(claimsValidationResult.Errors);
-                }
-            }
-        }
-
-        private static bool HasRoles(IEnumerable<string>? roles)
-        {
-            return roles != null && roles.Any();
-        }
-
-        private static bool HasClaims(IEnumerable<string>? claimTypes)
-        {
-            return claimTypes != null && claimTypes.Any();
-        }
-
-        private async Task<UserCreationResult> CreateUserAsync(string email, string password)
-        {
-            var existingUser = await _userManager.FindByNameAsync(email);
-
-            if (existingUser != null)
-            {
-                return new UserCreationResult
-                {
-                    Errors = new[] { "User with this e-mail address already exists." }
-                };
-            }
-
-            var newUserId = Guid.NewGuid();
-            var newUser = new ApplicationUser
-            {
-                Id = newUserId.ToString(),
-                Email = email,
-                UserName = email
-            };
-
-            var result = await _userManager.CreateAsync(newUser, password);
-
-            if (!result.Succeeded)
-            {
-                return new UserCreationResult
-                {
-                    Errors = result.Errors.Select(e => e.Description)
-                };
-            }
-
-            return new UserCreationResult
-            {
-                Success = true,
-                User = newUser
-            };
-        }
-
-        private async Task AddClaimsForUserAsync(ApplicationUser user, IEnumerable<string> claimTypes)
-        {
-            var claims = ClaimsStore.AllClaims.Where(c => claimTypes.Contains(c.Type));
-            await _userManager.AddClaimsAsync(user, claims);
-        }
-
-        private async Task AddRolesForUserAsync(ApplicationUser user, IEnumerable<string> roles)
+        public async Task AddRoles(params IdentityRole[] roles)
         {
             foreach (var role in roles)
             {
-                await _userManager.AddToRoleAsync(user, role);
+                await _roleManager.CreateAsync(role);
+            }
+        }
+
+        public async Task AddUsers(string password, params ApplicationUser[] users)
+        {
+            foreach (var user in users)
+            {
+                await _userManager.CreateAsync(user, password);
+            }
+        }
+
+        public async Task AddUsersToRoles(params (ApplicationUser user, IEnumerable<string> roles)[] userRolePairs)
+        {
+            foreach (var (user, roles) in userRolePairs)
+            {
+                await _userManager.AddToRolesAsync(user, roles);
+            }
+        }
+
+        public async Task AddClaimsToRoles(IEnumerable<Claim> claims, params IdentityRole[] administratorRoles)
+        {
+            foreach (var claim in claims)
+            {
+                foreach (var role in administratorRoles)
+                {
+                    await _roleManager.AddClaimAsync(role, claim);
+                }
+            }
+        }
+
+        public async Task AddClaimsToUsers(IEnumerable<Claim> claims, params ApplicationUser[] users)
+        {
+            foreach (var user in users)
+            {
+                await _userManager.AddClaimsAsync(user, claims);
             }
         }
 
@@ -288,37 +148,6 @@ namespace Northwind.Infrastructure.Identity.Services
                 Token = tokenHandler.WriteToken(token),
                 RefreshToken = refreshToken.Token
             };
-        }
-
-        private ClaimsPrincipal? GetPrincipalFromToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            ClaimsPrincipal? principal = default;
-            SecurityToken validatedToken;
-
-            var tokenValidationParameters = _tokenValidationParameters;
-
-            try
-            {
-                principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
-            }
-            catch
-            {
-                throw new InvalidJwtException();
-            }
-
-            if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
-            {
-                throw new InvalidJwtException();
-            }
-            return principal;
-        }
-
-        private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
-        {
-            return validatedToken is JwtSecurityToken jwtSecurityToken &&
-                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

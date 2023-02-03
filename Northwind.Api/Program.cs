@@ -1,4 +1,5 @@
 using Northwind.Api.Middlewares;
+using Northwind.Infrastructure.Claims;
 using Northwind.Infrastructure.Persistence;
 using Northwind.Infrastructure.Persistence.Services;
 using Serilog;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddApiServices(builder.Configuration);
+builder.Services.AddAuthorizationClaimPolicies();
 
 var logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)

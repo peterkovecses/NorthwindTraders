@@ -14,7 +14,8 @@ namespace Infrastructure.UnitTests.Persistence
         {
             var options = new DbContextOptions<NorthwindContext>();
             var dateTimeProviderMock = new Mock<IDateTimeProvider>();
-            var interceptorMock = new Mock<AuditInterceptor>(dateTimeProviderMock.Object);
+            var currentUserServiceMock = new Mock<ICurrentUserService>();
+            var interceptorMock = new Mock<AuditInterceptor>(dateTimeProviderMock.Object, currentUserServiceMock.Object);
             _contextMock = new Mock<NorthwindContext>(options, interceptorMock.Object);
 
             _sut = new UnitOfWork(_contextMock.Object);
