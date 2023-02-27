@@ -79,7 +79,7 @@ namespace Northwind.Infrastructure.Identity.Services
 
             try
             {
-                principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out validatedToken);
+                principal = tokenHandler.ValidateToken(token, tokenValidationParameters.ToTokenValidationParameters(), out validatedToken);
             }
             catch
             {

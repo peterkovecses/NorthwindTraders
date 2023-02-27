@@ -7,8 +7,7 @@ using Northwind.Api.Authorization;
 using Northwind.Api.Errors;
 using Northwind.Api.Services;
 using Northwind.Application.Interfaces;
-using Northwind.Infrastructure;
-using System.Text;
+using Northwind.Infrastructure.Identity.Models;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -37,18 +36,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     };
                 });
 
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = configuration.GetValue<bool>(ConfigKeys.TokenValidateIssuer),
-                ValidateAudience = configuration.GetValue<bool>(ConfigKeys.TokenValidateAudience),
-                ValidateLifetime = configuration.GetValue<bool>(ConfigKeys.TokenValidateLifetime),
-                ValidateIssuerSigningKey = configuration.GetValue<bool>(ConfigKeys.TokenValidateIssuerSigningKey),
-                ValidIssuer = configuration[ConfigKeys.TokenValidIssuer],
-                ValidAudience = configuration[ConfigKeys.TokenValidAudience],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[ConfigKeys.TokenSecret]))
-            };
-
-            services.AddSingleton(tokenValidationParameters);
+            var tokenValidationParametersConfigSection = configuration.GetSection("TokenValidationParameters");
+            var tokenValidationParameters = new CustomTokenValidationParameters();
+            tokenValidationParametersConfigSection.Bind(tokenValidationParameters);
+            services.Configure<CustomTokenValidationParameters>(tokenValidationParametersConfigSection);                
 
             services.AddAuthentication(opt =>
             {
@@ -58,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             })
             .AddJwtBearer(opt =>
             {
-                opt.TokenValidationParameters = tokenValidationParameters;
+                opt.TokenValidationParameters = tokenValidationParameters.ToTokenValidationParameters();
             });
 
             services.AddAuthorization(opt =>

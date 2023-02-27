@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Northwind.Application.Models;
 using Northwind.Infrastructure.Identity.Interfaces;
@@ -19,7 +20,7 @@ namespace Northwind.Infrastructure.Identity.Services
         private readonly IClaimManager _claimManager;
         private readonly IdentityContext _context;
         private readonly IConfiguration _configuration;
-        private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly CustomTokenValidationParameters _tokenValidationParameters;
 
         public IdentityService(
             UserManager<ApplicationUser> userManager,
@@ -27,14 +28,14 @@ namespace Northwind.Infrastructure.Identity.Services
             IClaimManager claimManager,
             IdentityContext context,
             IConfiguration configuration,
-            TokenValidationParameters tokenValidationParameters)
+            IOptions<CustomTokenValidationParameters> options)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _claimManager = claimManager;
             _context = context;
             _configuration = configuration;
-            _tokenValidationParameters = tokenValidationParameters;
+            _tokenValidationParameters = options.Value;
         }
 
         public async Task<AuthenticationResult> LoginAsync(string email, string password)
@@ -123,8 +124,8 @@ namespace Northwind.Infrastructure.Identity.Services
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Issuer = _configuration[ConfigKeys.TokenValidIssuer],
-                Audience = _configuration[ConfigKeys.TokenValidAudience],
+                Issuer = _tokenValidationParameters.ValidIssuer,
+                Audience = _tokenValidationParameters.ValidAudience,
                 Expires = DateTime.UtcNow.Add(_configuration.GetValue<TimeSpan>(ConfigKeys.TokenLifeTime)),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
