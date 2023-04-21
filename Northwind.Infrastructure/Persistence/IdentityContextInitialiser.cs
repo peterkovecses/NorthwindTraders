@@ -55,7 +55,7 @@ namespace Northwind.Infrastructure.Persistence
             }
         }
 
-        public async Task TrySeedAsync()
+        private async Task TrySeedAsync()
         {
             var administratorRole = new IdentityRole("Administrator");
             var testerRole = new IdentityRole("Tester");
