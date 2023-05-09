@@ -59,17 +59,11 @@ namespace Northwind.Application.Services
             return _mapper.Map<CustomerDemographicDto>(customerDemographicInDb).ToResponse();
         }
 
-        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string id, CancellationToken token = default)
         {
-            var customerDemographicsToRemove = 
-                (await _unitOfWork.CustomerDemographics.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), x => ids.Contains(x.CustomerTypeId), token))
-                .items;
+            var customerDemographicToRemove = await _unitOfWork.CustomerDemographics.FindByIdAsync(id, token);
+            _unitOfWork.CustomerDemographics.Remove(customerDemographicToRemove);
 
-            foreach (var customerDemographic in customerDemographicsToRemove)
-            {
-                _unitOfWork.CustomerDemographics.Remove(customerDemographic);
-
-            }
             await _unitOfWork.CompleteAsync();
         }
     }

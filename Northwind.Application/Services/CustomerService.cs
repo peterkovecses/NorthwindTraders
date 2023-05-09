@@ -69,14 +69,11 @@ namespace Northwind.Application.Services
             return customerDto.ToResponse();
         }
 
-        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string id, CancellationToken token = default)
         {
-            var customersToRemove = (await _unitOfWork.Customers.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), c => ids.Contains(c.CustomerId), token)).items;
-            
-            foreach (var customer in customersToRemove)
-            {
-                _unitOfWork.Customers.Remove(customer);
-            }
+            var customerToRemove = await _unitOfWork.Customers.FindByIdAsync(id, token);
+            _unitOfWork.Customers.Remove(customerToRemove);
+
             await _unitOfWork.CompleteAsync();
         }
     }

@@ -58,14 +58,11 @@ namespace Northwind.Application.Services
             return shipperDto.ToResponse();
         }
 
-        public async Task DeleteAsync(int[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(int id, CancellationToken token = default)
         {
-            var shippersToRemove = (await _unitOfWork.Shippers.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), s => ids.Contains(s.ShipperId), token)).items;
+            var shipperToRemove = await _unitOfWork.Shippers.FindByIdAsync(id, token);
+            _unitOfWork.Shippers.Remove(shipperToRemove);
 
-            foreach (var shipper in shippersToRemove)
-            {
-            _unitOfWork.Shippers.Remove(shipper);
-            }
             await _unitOfWork.CompleteAsync();
         }
     }

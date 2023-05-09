@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentAssertions.Execution;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Extensions;
@@ -58,14 +59,11 @@ namespace Northwind.Application.Services
             return regionDto.ToResponse();
         }
 
-        public async Task DeleteAsync(int[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(int id, CancellationToken token = default)
         {
-            var regionsToRemove = (await _unitOfWork.Regions.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), r => ids.Contains(r.RegionId), token)).items;
+            var regionToRemove = await _unitOfWork.Regions.FindByIdAsync(id, token);
+            _unitOfWork.Regions.Remove(regionToRemove);
 
-            foreach (var region in regionsToRemove)
-            {
-                _unitOfWork.Regions.Remove(region);
-            }
             await _unitOfWork.CompleteAsync();
         }
     }

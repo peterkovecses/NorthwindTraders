@@ -14,7 +14,7 @@ namespace Northwind.Infrastructure.Persistence.Repositories
 
         public override async Task<OrderDetail?> FindByIdAsync(IOrderDetailKey key, CancellationToken token = default)
         {
-            return await _context.Set<OrderDetail>().FindAsync(new object?[] { key.ProductId, key.OrderId }, cancellationToken: token);
+            return await _context.Set<OrderDetail>().FindAsync(new object?[] { key.OrderId, key.ProductId }, cancellationToken: token);
         }
 
         public async Task<IEnumerable<OrderDetail>> FindByIdsAsync(IOrderDetailKey[] keys, CancellationToken token)

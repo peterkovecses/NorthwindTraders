@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Extensions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services;
 using Northwind.Domain.Entities;
 
 namespace Northwind.Api.Controllers
@@ -44,14 +43,21 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCustomerDemographic(CustomerDemographicDto customerDemographicDto, CancellationToken token)
+        public async Task<IActionResult> CreateCustomerDemographic(CustomerDemographicDto customerDemographic, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var response = await _customerDemographicService.CreateAsync(customerDemographicDto, token);
+            var existingCustomerDemographic = (await _customerDemographicService.FindByIdAsync(customerDemographic.CustomerTypeId, token)).Data;
+
+            if (existingCustomerDemographic != null)
+            {
+                return Conflict("A CustomerDemographic with the same CustomerTypeId already exists.");
+            }
+
+            var response = await _customerDemographicService.CreateAsync(customerDemographic, token);
 
             return CreatedAtAction(nameof(GetCustomerDemographic), new { id = response.Data.CustomerTypeId }, response);
         }
@@ -59,10 +65,10 @@ namespace Northwind.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCustomerDemographic(
             string id, 
-            CustomerDemographicDto customerDemographicDto, 
+            CustomerDemographicDto customerDemographic, 
             CancellationToken token)
         {
-            if (id != customerDemographicDto.CustomerTypeId)
+            if (id != customerDemographic.CustomerTypeId)
             {
                 ModelState.AddModelError("id", IdsNotMatchMessage);
             }
@@ -72,16 +78,15 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _customerDemographicService.UpdateAsync(customerDemographicDto, token);
+            var response = await _customerDemographicService.UpdateAsync(customerDemographic, token);
 
             return Ok(response);
         }
 
-        [HttpDelete]
-        [Route("delete")]
-        public async Task<IActionResult> DeleteCustomerDemographics([FromQuery] string[] ids, CancellationToken token)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCustomerDemographics(string id, CancellationToken token)
         {
-            await _customerDemographicService.DeleteAsync(ids, token);
+            await _customerDemographicService.DeleteAsync(id, token);
 
             return Ok();
         }

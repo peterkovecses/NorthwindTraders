@@ -59,14 +59,11 @@ namespace Northwind.Application.Services
             return territoryDto.ToResponse();
         }
 
-        public async Task DeleteAsync(string[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(string id, CancellationToken token = default)
         {
-            var territoriesToRemove = (await _unitOfWork.Territories.GetAsync(Pagination.NoPagination(), Sorting.NoSorting(), t => ids.Contains(t.TerritoryId), token)).items;
+            var territoryToRemove = await _unitOfWork.Territories.FindByIdAsync(id, token);
+            _unitOfWork.Territories.Remove(territoryToRemove);
 
-            foreach (var territory in territoriesToRemove)
-            {
-            _unitOfWork.Territories.Remove(territory);
-            }
             await _unitOfWork.CompleteAsync();
         }
     }

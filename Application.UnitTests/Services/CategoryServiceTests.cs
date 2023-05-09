@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FluentAssertions;
 using Northwind.Application.Dtos;
 using Northwind.Application.Exceptions;
 using Northwind.Application.Interfaces;
@@ -152,36 +151,15 @@ namespace Application.UnitTests.Services
         public async Task Delete_WhenIdsPassed_ExpectedMethodsAreCalled()
         {
             // Arrange
-            var ids = new[] { 45, 50 };
-            IEnumerable<Category> categoriesToRemove = new List<Category>
-            {
-                new Category { CategoryId = 45 },
-                new Category { CategoryId = 50 }
-
-            };
-            var totalCategories = categoriesToRemove.Count();
-
-            IEnumerable<CategoryDto> categoryDtos = new List<CategoryDto>
-            {
-                new CategoryDto { CategoryId = 45 },
-                new CategoryDto { CategoryId = 50 }
-
-            };
-
-            _unitOfWorkMock
-                .Setup(u => u.Categories.GetAsync(It.IsAny<Pagination>(), It.IsAny<Sorting>(), c => ids.Contains(c.CategoryId), CancellationToken.None))
-                .ReturnsAsync((totalCategories, categoriesToRemove));
-
-            _unitOfWorkMock.Setup(u => u.Categories.Remove(It.IsAny<Category>()));
-            _unitOfWorkMock.Setup(u => u.CompleteAsync());
+            var id = 1;
+            var categoryToRemove = new Category { CategoryId = id };
+            _unitOfWorkMock.Setup(u => u.Categories.FindByIdAsync(id, CancellationToken.None)).ReturnsAsync(categoryToRemove);
 
             // Act
-            await _sut.DeleteAsync(ids);
+            await _sut.DeleteAsync(id);
 
             // Assert
-            _unitOfWorkMock
-                .Verify(u => u.Categories.GetAsync(It.IsAny<Pagination>(), It.IsAny<Sorting>(), c => ids.Contains(c.CategoryId), CancellationToken.None), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Categories.Remove(It.IsAny<Category>()), Times.Exactly(categoriesToRemove.Count()));
+            _unitOfWorkMock.Verify(u => u.Categories.FindByIdAsync(id, CancellationToken.None), Times.Once);
             _unitOfWorkMock.Verify(u => u.CompleteAsync(), Times.Once);
         }
     }

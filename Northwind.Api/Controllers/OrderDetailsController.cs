@@ -25,7 +25,7 @@ namespace Northwind.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrderDetails([FromQuery] QueryParameters<OrderDetailFilter, OrderDetail> queryParameters, CancellationToken token)
         {
-            var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
+            var response = (await _orderDetailService.GetAsync(queryParameters, token)).SetNavigation(BaseUri);
 
             return Ok(response);
         }
@@ -45,6 +45,13 @@ namespace Northwind.Api.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            var existingOrderDetail = (await _orderDetailService.FindByIdAsync(new OrderDetailKey(orderDetail.OrderId, orderDetail.ProductId), token)).Data;
+
+            if (existingOrderDetail != null)
+            {
+                return Conflict("An OrderDetail with the same OrderId and ProductId already exists.");
             }
 
             var response = await _orderDetailService.CreateAsync(orderDetail, token);
@@ -71,10 +78,9 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpDelete]
-        [Route("delete")]
-        public async Task<IActionResult> DeleteOrderDetail(OrderDetailKey[] ids, CancellationToken token)
+        public async Task<IActionResult> DeleteOrderDetail(OrderDetailKey id, CancellationToken token)
         {
-            await _orderDetailService.DeleteAsync(ids, token);
+            await _orderDetailService.DeleteAsync(id, token);
 
             return Ok();
         }

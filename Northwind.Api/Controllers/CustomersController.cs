@@ -5,6 +5,7 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
+using Northwind.Application.Services;
 using Northwind.Domain.Entities;
 using Northwind.Infrastructure.Claims;
 
@@ -51,6 +52,13 @@ namespace Northwind.Api.Controllers
                 return BadRequest(ModelState);
             }
 
+            var existingCustomer = (await _customerService.FindByIdAsync(customer.CustomerId, token)).Data;
+
+            if (existingCustomer != null)
+            {
+                return Conflict("A Customer with the same CustomerId already exists.");
+            }
+
             var response = await _customerService.CreateAsync(customer, token);
 
             return CreatedAtAction(nameof(GetCustomer), new { id = customer.CustomerId }, response);
@@ -75,12 +83,11 @@ namespace Northwind.Api.Controllers
             return Ok(response);
         }
 
-        [HttpDelete]
-        [Route("delete")]
+        [HttpDelete("{id}")]
         [Authorize(Policy = AuthorizationClaims.Policies.CustomerAdministrator)]
-        public async Task<IActionResult> DeleteCustomers([FromQuery] string[] ids, CancellationToken token)
+        public async Task<IActionResult> DeleteCustomers(string id, CancellationToken token)
         {
-            await _customerService.DeleteAsync(ids, token);
+            await _customerService.DeleteAsync(id, token);
 
             return Ok();
         }

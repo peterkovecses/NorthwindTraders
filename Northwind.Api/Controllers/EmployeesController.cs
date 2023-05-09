@@ -71,11 +71,10 @@ namespace Northwind.Api.Controllers
             return Ok(response);
         }
 
-        [HttpDelete]
-        [Route("delete")]
-        public async Task<IActionResult> DeleteEmployees([FromQuery] int[] ids, CancellationToken token)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEmployees(int id, CancellationToken token)
         {
-            await _employeeService.DeleteAsync(ids, token);
+            await _employeeService.DeleteAsync(id, token);
 
             return Ok();
         }

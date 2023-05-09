@@ -62,14 +62,11 @@ namespace Northwind.Application.Services
             return orderDetailDto.ToResponse();
         }
 
-        public async Task DeleteAsync(OrderDetailKey[] ids, CancellationToken token = default)
+        public async Task DeleteAsync(OrderDetailKey id, CancellationToken token = default)
         {
-            var orderDetailsToRemove = await _unitOfWork.OrderDetails.FindByIdsAsync(ids, token);
+            var orderDetailToRemove = await _unitOfWork.OrderDetails.FindByIdAsync(id, token);
+            _unitOfWork.OrderDetails.Remove(orderDetailToRemove);
 
-            foreach (var orderDetail in orderDetailsToRemove)
-            {
-                _unitOfWork.OrderDetails.Remove(orderDetail);
-            }
             await _unitOfWork.CompleteAsync();
         }
     }
