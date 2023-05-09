@@ -21,6 +21,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IOrderDetailService, OrderDetailService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IRegionService, RegionService>();
+            services.AddScoped<IShipperService, ShipperService>();
+            services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<ITerritoryService, TerritoryService>();
 
             return services;
         }
