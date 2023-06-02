@@ -1,6 +1,6 @@
-﻿using Northwind.Application.Models;
+﻿using Northwind.Application.Interfaces;
+using Northwind.Application.Models;
 using Northwind.Infrastructure.Claims;
-using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
 
 namespace Northwind.Infrastructure.Identity.Services
@@ -121,7 +121,7 @@ namespace Northwind.Infrastructure.Identity.Services
 
         private async Task AddClaimsForUserAsync(ApplicationUser user, IEnumerable<string> claimTypes)
         {
-            var claims = AuthorizationClaims.All.Where(c => claimTypes.Contains(c.Type));
+            var claims = AuthorizationClaims.All.Where(claim => claimTypes.Contains(claim.Type));
             await _userManager.AddClaimsAsync(user, claims);
         }
 

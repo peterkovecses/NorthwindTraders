@@ -3,32 +3,26 @@ using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Claims
 {
-    public static class AuthorizationClaims
+    public static partial class AuthorizationClaims
     {
         public static Claim CustomerViewer => new("customers.view", "true");
         public static Claim CustomerWriter => new("customers.write", "true");
-        public static List<Claim> All => new()
+        public static IEnumerable<Claim> All => new List<Claim>()
         {
             CustomerViewer,
             CustomerWriter
         };
 
-        public static class Policies
-        {
-            public const string CustomerViewer = "CustomerViewer";
-            public const string CustomerAdministrator = "CustomerAdministrator";
-        }
-
         public static IServiceCollection AddAuthorizationClaimPolicies(this IServiceCollection services)
         {
             services.AddAuthorization(opt =>
             {
-                opt.AddPolicy(Policies.CustomerViewer, builder =>
+                opt.AddPolicy(ClaimPolicies.CustomerViewer, builder =>
                     builder.RequireClaim(
                         AuthorizationClaims.CustomerViewer.Type,
                         AuthorizationClaims.CustomerViewer.Value));
 
-                opt.AddPolicy(Policies.CustomerAdministrator, builder =>
+                opt.AddPolicy(ClaimPolicies.CustomerAdministrator, builder =>
                 {
                     builder.RequireClaim(AuthorizationClaims.CustomerViewer.Type, AuthorizationClaims.CustomerViewer.Value);
                     builder.RequireClaim(AuthorizationClaims.CustomerWriter.Type, AuthorizationClaims.CustomerWriter.Value);
@@ -36,6 +30,6 @@ namespace Northwind.Infrastructure.Claims
             });
 
             return services;
-        }
+        }        
     }
 }

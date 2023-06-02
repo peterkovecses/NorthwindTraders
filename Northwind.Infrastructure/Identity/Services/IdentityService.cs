@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
-using Northwind.Infrastructure.Identity.Interfaces;
+using Northwind.Infrastructure.Claims;
 using Northwind.Infrastructure.Identity.Models;
 using Northwind.Infrastructure.Interfaces;
 using Northwind.Infrastructure.Persistence;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -53,52 +55,30 @@ namespace Northwind.Infrastructure.Identity.Services
             return await CreateSuccessfulAuthenticationResultAsync(user);
         }       
 
-        public bool NoIdentityData()
+        public async Task AddRole(string role)
         {
-            return !(_roleManager.Roles.Any() || _userManager.Users.Any());
+            await _roleManager.CreateAsync(new IdentityRole(role));
         }
 
-        public async Task AddRoles(params IdentityRole[] roles)
+        public async Task AddUserToRoles(string email, params string[] roles)
         {
-            foreach (var role in roles)
+            var user = await _userManager.FindByEmailAsync(email);
+            await _userManager.AddToRolesAsync(user, roles);
+        }
+
+        public async Task AddClaimsToRole(IEnumerable<string> claimTypes, string roleName)
+        {
+            var role = await _roleManager.FindByNameAsync(roleName);
+            foreach (var claim in _claimManager.FilterByTypes(claimTypes))
             {
-                await _roleManager.CreateAsync(role);
+                await _roleManager.AddClaimAsync(role, claim);
             }
         }
 
-        public async Task AddUsers(string password, params ApplicationUser[] users)
+        public async Task AddClaimsToUser(IEnumerable<Claim> claims, string email)
         {
-            foreach (var user in users)
-            {
-                await _userManager.CreateAsync(user, password);
-            }
-        }
-
-        public async Task AddUsersToRoles(params (ApplicationUser user, IEnumerable<string> roles)[] userRolePairs)
-        {
-            foreach (var (user, roles) in userRolePairs)
-            {
-                await _userManager.AddToRolesAsync(user, roles);
-            }
-        }
-
-        public async Task AddClaimsToRoles(IEnumerable<Claim> claims, params IdentityRole[] administratorRoles)
-        {
-            foreach (var claim in claims)
-            {
-                foreach (var role in administratorRoles)
-                {
-                    await _roleManager.AddClaimAsync(role, claim);
-                }
-            }
-        }
-
-        public async Task AddClaimsToUsers(IEnumerable<Claim> claims, params ApplicationUser[] users)
-        {
-            foreach (var user in users)
-            {
-                await _userManager.AddClaimsAsync(user, claims);
-            }
+            var user = await _userManager.FindByEmailAsync(email);
+            await _userManager.AddClaimsAsync(user, claims);
         }
 
         private async Task<AuthenticationResult> CreateSuccessfulAuthenticationResultAsync(ApplicationUser user)

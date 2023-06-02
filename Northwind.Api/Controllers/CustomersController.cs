@@ -5,7 +5,6 @@ using Northwind.Application.Dtos;
 using Northwind.Application.Interfaces.Services;
 using Northwind.Application.Models;
 using Northwind.Application.Models.Filters;
-using Northwind.Application.Services;
 using Northwind.Domain.Entities;
 using Northwind.Infrastructure.Claims;
 
@@ -26,7 +25,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationClaims.Policies.CustomerViewer)]
+        [Authorize(Policy = ClaimPolicies.CustomerViewer)]
         public async Task<IActionResult> GetCustomers([FromQuery] QueryParameters<CustomerFilter, Customer> queryParameters, CancellationToken token)
         {
             var response = (await _customerService.GetAsync(queryParameters, token)).SetNavigation(BaseUri); ;
@@ -35,7 +34,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpGet("{id}", Name = "GetCustomer")]
-        [Authorize(Policy = AuthorizationClaims.Policies.CustomerViewer)]
+        [Authorize(Policy = ClaimPolicies.CustomerViewer)]
         public async Task<IActionResult> GetCustomer(string id, CancellationToken token)
         {
             var response = await _customerService.FindByIdAsync(id, token);
@@ -44,7 +43,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = AuthorizationClaims.Policies.CustomerAdministrator)]
+        [Authorize(Policy = ClaimPolicies.CustomerAdministrator)]
         public async Task<IActionResult> CreateCustomer(CustomerDto customer, CancellationToken token)
         {
             if (!ModelState.IsValid)
@@ -65,7 +64,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = AuthorizationClaims.Policies.CustomerAdministrator)]
+        [Authorize(Policy = ClaimPolicies.CustomerAdministrator)]
         public async Task<IActionResult> UpdateCustomer(string id, CustomerDto customer, CancellationToken token)
         {
             if (id != customer.CustomerId)
@@ -84,7 +83,7 @@ namespace Northwind.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = AuthorizationClaims.Policies.CustomerAdministrator)]
+        [Authorize(Policy = ClaimPolicies.CustomerAdministrator)]
         public async Task<IActionResult> DeleteCustomers(string id, CancellationToken token)
         {
             await _customerService.DeleteAsync(id, token);

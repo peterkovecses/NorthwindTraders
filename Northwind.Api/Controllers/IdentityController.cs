@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Northwind.Api.Models;
+using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
-using Northwind.Infrastructure.Identity.Interfaces;
 
 namespace Northwind.Api.Controllers
 {

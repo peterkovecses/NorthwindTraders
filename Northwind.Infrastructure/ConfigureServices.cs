@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Northwind.Application.Interfaces;
 using Northwind.Infrastructure;
 using Northwind.Infrastructure.Claims;
-using Northwind.Infrastructure.Identity.Interfaces;
 using Northwind.Infrastructure.Identity.Models;
 using Northwind.Infrastructure.Identity.Services;
 using Northwind.Infrastructure.Interfaces;

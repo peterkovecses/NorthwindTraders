@@ -1,4 +1,5 @@
 ﻿using Northwind.Infrastructure.Claims;
+using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Interfaces
 {
@@ -6,5 +7,6 @@ namespace Northwind.Infrastructure.Interfaces
     {
         bool ClaimExists(string claimType);
         ClaimsValidationResult AllClaimsExist(IEnumerable<string> claimTypes);
+        IEnumerable<Claim> FilterByTypes(IEnumerable<string> claimTypes);
     }
 }

@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Northwind.Application.Interfaces;
 using Northwind.Infrastructure.Claims;
-using Northwind.Infrastructure.Identity.Interfaces;
-using Northwind.Infrastructure.Identity.Models;
+using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Persistence
 {
@@ -43,7 +42,7 @@ namespace Northwind.Infrastructure.Persistence
         {
             try
             {
-                if (_identityService.NoIdentityData())
+                if (!_context.Users.Any())
                 {
                     await TrySeedAsync();
                 }
@@ -57,18 +56,14 @@ namespace Northwind.Infrastructure.Persistence
 
         private async Task TrySeedAsync()
         {
-            var administratorRole = new IdentityRole("Administrator");
-            var testerRole = new IdentityRole("Tester");
-            await _identityService.AddRoles(administratorRole, testerRole);
+            await _identityService.AddRole("Administrator");
+            await _identityService.AddRole("Tester");
 
-            var administrator = new ApplicationUser { UserName = "admin@comp.com", Email = "admin@comp.com" };
-            var tester = new ApplicationUser { UserName = "tester@comp.com", Email = "tester@comp.com" };
-            await _identityService.AddUsers("Password11!", administrator, tester);
+            await _identityService.RegisterAsync("admin@comp.com", "Password11!", roles: new List<string> { "Administrator", });
+            await _identityService.RegisterAsync("tester@comp.com", "Password11!", roles: new List<string> { "Tester", });
 
-            await _identityService.AddUsersToRoles((administrator, new[] { administratorRole.Name }), (tester, new[] { testerRole.Name }));
-
-            await _identityService.AddClaimsToRoles(AuthorizationClaims.All, administratorRole);
-            await _identityService.AddClaimsToUsers(AuthorizationClaims.All, tester);
-        }        
+            await _identityService.AddClaimsToRole(AuthorizationClaims.All.Select(claim => claim.Type), "Administrator");
+            await _identityService.AddClaimsToUser(new List<Claim> { AuthorizationClaims.CustomerViewer }, "tester@comp.com");
+        }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Northwind.Application.Interfaces;
 using Northwind.Application.Models;
 using Northwind.Infrastructure.Exceptions;
-using Northwind.Infrastructure.Identity.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 

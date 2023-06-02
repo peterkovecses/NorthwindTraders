@@ -1,20 +1,23 @@
 ﻿using Northwind.Infrastructure.Interfaces;
+using System.Security.Claims;
 
 namespace Northwind.Infrastructure.Claims
 {
     public class ClaimManager : IClaimManager
     {
         public bool ClaimExists(string claimType)
-        {
-            return AuthorizationClaims.All.Select(c => c.Type).Contains(claimType);
-        }
+            => AuthorizationClaims.All.Select(claim => claim.Type).Contains(claimType);
+
+        public IEnumerable<Claim> FilterByTypes(IEnumerable<string> claimTypes)
+            => AuthorizationClaims.All.Where(claim => claimTypes.Contains(claim.Type));
 
         public ClaimsValidationResult AllClaimsExist(IEnumerable<string> claimTypes)
         {
-            var claimTypesNotFound = claimTypes.Where(c => !AuthorizationClaims.All.Select(c => c.Type).Contains(c));
+            var claimTypesNotFound = claimTypes.Except(FilterByTypes(claimTypes).Select(claim => claim.Type));
+
             if (claimTypesNotFound.Any())
             {
-                var errors = claimTypesNotFound.Select(c => new string($"{c} claim not found."));
+                var errors = claimTypesNotFound.Select(claimType => $"{claimType} claim not found.");
                 return new ClaimsValidationResult { Errors = errors };
             }
 
